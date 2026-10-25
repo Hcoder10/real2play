@@ -119,9 +119,21 @@ if __name__ == "__main__":
     # A turn that errors is reported back to Argon as a tool result instead of ending the session.
     _turn = agent.turn
 
+    def digest(results):
+        out = []
+        for r in results or []:
+            res = r.get("result", {})
+            text = json.dumps(res, default=str)
+            out.append({"tool": r.get("tool"), "args": str(r.get("args", ""))[:200], "result": text[:1500]})
+        return out
+
     def turn(number):
         try:
-            return _turn(number)
+            result = _turn(number)
+            # Stateless turns only see the latest tool results: keep a digest of every turn's results in the history
+            # Argon receives, so it does not re-inspect files it already read.
+            agent.history.append({"turn": number, "tool_results_digest": digest(agent.results)})
+            return result
         except KeyboardInterrupt:
             raise
         except Exception as exc:  # noqa: BLE001
@@ -131,6 +143,15 @@ if __name__ == "__main__":
             return {"complete": False}
 
     agent.turn = turn
+
+    class LongHistory(list):
+        """agent.py sends history[-8:]; with per-turn result digests that is only 4 turns. Send the last 20."""
+        def __getitem__(self, item):
+            if isinstance(item, slice) and item.start == -8 and item.stop is None:
+                item = slice(-20, None)
+            return list.__getitem__(self, item)
+
+    agent.history = LongHistory(agent.history)
     try:
         address = agent.serve(8081)
         print(f"Argon Lab HTTP http://{address[0]}:{address[1]} | REAL | autonomous", flush=True)
