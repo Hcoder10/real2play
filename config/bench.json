@@ -1,0 +1,33 @@
+{
+  "rig": "so101_bench",
+  "port": null,
+  "robot_id": "follower_1",
+  "calibration_dir": "~/.cache/huggingface/lerobot/calibration/robots/so_follower",
+  "joint_map": "config/joint_map.json",
+  "control_hz": 30,
+  "replan_every": 1,
+  "ensemble_m": 0.1,
+  "gravity_comp_k": 0.05,
+  "policy_q": "commanded",
+  "load_limit": 500,
+  "max_consecutive_refusals": 60,
+  "divergence_deg": 4,
+  "timeout_s": 60,
+  "control_file": "runs/control.json",
+  "daemon_url": "http://127.0.0.1:8793",
+  "guard": {
+    "margin_deg": 2,
+    "speed_deg_s": 20,
+    "slow_speed_deg_s": 8,
+    "slow_zone_m": 0.04,
+    "table_z": 0,
+    "clearance_m": {"link": 0.005, "gripper": 0.004, "finger": 0.001},
+    "roll_excursion_deg": 100,
+    "max_radius_m": 0.42,
+    "path_resolution_deg": 0.5,
+    "lag_deg": 12
+  },
+  "camera": {"source": "http", "url": "http://127.0.0.1:8792/frame/{index}.jpg", "index": 0, "width": 640, "height": 360, "calibration": "config/camera.json"},
+  "board": {"dictionary": "DICT_4X4_50", "rows": 4, "cols": 6, "marker_length_m": 0.025, "marker_separation_m": 0.006},
+  "perception": {"width": 640, "height": 360, "max_lost_s": 1.0}
+}

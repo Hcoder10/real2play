@@ -1,0 +1,5 @@
+*.rbxl
+*.rbxlx
+node_modules/
+out/
+src/ServerStorage/LocalConfig.lua

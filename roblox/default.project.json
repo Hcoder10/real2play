@@ -1,0 +1,15 @@
+{
+  "name": "Real2Play",
+  "tree": {
+    "$className": "DataModel",
+    "Workspace": {"$properties": {"Gravity": 98.1}},
+    "ReplicatedStorage": {
+      "Twin": {"$path": "src/ReplicatedStorage/Twin"},
+      "SO101Meshes": {"$path": "meshes/SO101Meshes.model.json"}
+    },
+    "ServerStorage": {"$path": "src/ServerStorage"},
+    "ServerScriptService": {"$path": "src/ServerScriptService"},
+    "StarterPlayer": {"StarterPlayerScripts": {"$path": "src/StarterPlayerScripts"}},
+    "Lighting": {"$properties": {"ClockTime": 13, "Brightness": 2, "Ambient": [0.65, 0.7, 0.8]}}
+  }
+}

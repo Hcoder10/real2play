@@ -1,0 +1,13 @@
+{
+  "name": "Teach the robot", "tables": 20, "max_active": 20,
+  "modes": ["solo", "vs_bot", "timed", "daily", "tic_tac_toe"],
+  "round_s": 60, "move_s": 40, "robot_slip": 0.25,
+  "scoring": {"base": 100, "speed": 100, "clean": 50, "combo_cap": 3, "win": 300, "draw": 100},
+  "stars": {"time_fraction": 0.6, "clean_grabs": 1},
+  "tutorial": ["Move the ghost hand with the joystick", "Use Up and Down to reach the piece", "Grab, move to the glow, then Drop"],
+  "tutorial_s": 10,
+  "juice": {"grab": "rbxasset://sounds/switch.wav", "win": "rbxasset://sounds/electronicpingshort.wav", "drop": "rbxasset://sounds/impact_generic.mp3", "shake": 0.035, "particles": 32, "haptic": 0.3},
+  "leaderboards": {"all": "R2P_All_v1", "level": "R2P_Level_v1_", "daily": "R2P_Daily_v1_", "robot": "R2P_Robot_v1"},
+  "unlocks": [{"stars": 2, "name": "Ocean", "color": [55, 139, 224]}, {"stars": 5, "name": "Mint", "color": [78, 203, 169]}, {"stars": 8, "name": "Coral", "color": [248, 119, 111]}, {"stars": 12, "name": "Violet", "color": [167, 132, 224]}, {"stars": 16, "name": "Gold", "color": [242, 206, 92]}],
+  "theme": {"navy": [29, 52, 82], "blue": [47, 113, 200], "paper": [242, 247, 251], "yellow": [242, 206, 92], "mint": [78, 203, 169]}
+}

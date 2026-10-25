@@ -1,0 +1,33 @@
+local L=require("../../roblox/src/ReplicatedStorage/Twin/Levels")
+local S=require("../../roblox/src/ReplicatedStorage/Twin/Score")
+local C=require("../../roblox/src/ReplicatedStorage/Twin/TaskCheck")
+local Skill=require("../../roblox/src/ReplicatedStorage/Twin/SkillOperator")
+local K=require("../../roblox/src/ReplicatedStorage/Twin/Kinematics")
+local Robot=require("../../roblox/src/ReplicatedStorage/Twin/Generated/Robot")
+local n=0
+assert(#L.order>=6)
+for _,name in ipairs(L.order) do
+    local task=L.tasks[name]; assert(#L.commands(task)==#task.skeleton)
+    for seed=1,30 do
+        local scene=L.sample(task,seed); local again=L.sample(task,seed); local poses={}
+        assert(#scene.objects==#again.objects)
+        for i,o in ipairs(scene.objects) do
+            assert(o.xyz[1]==again.objects[i].xyz[1]); poses[o.id]={xyz=o.xyz,yaw_deg=o.yaw_deg,size_m=o.size_m}; n+=1
+        end
+        local slots=L.slots(task,poses); assert(#slots==task.limits.max_objects)
+        for _,slot in ipairs(slots) do assert(#slot==9); n+=1 end
+        local op=Skill.new(task); local _,_,site=K.tips(Robot.home_q)
+        local q,command=op:step({objects=poses,site_xyz=site},1/30)
+        assert(#q==6 and type(command)=="string")
+    end
+end
+local stats=S.new()
+local result=S.round(stats,"a",true,10,40,1)
+assert(result.stars==3 and stats.stars==3 and stats.combo==1)
+S.round(stats,"a",true,30,40,3); assert(stats.stars==3 and stats.combo==2)
+S.round(stats,"b",false,40,40,3); assert(stats.combo==0 and stats.streak==0)
+assert(S.round(stats,"ttt",true,30,40,1,1).points==300)
+assert(S.round(stats,"ttt",true,30,40,1,0).points==100)
+assert(#S.unlocks(16)==5 and #S.unlocks(1)==0)
+assert(S.daily("2026-10-25")==S.daily("2026-10-25") and S.daily("2026-10-25")~=S.daily("2026-10-26"))
+print("levels/scoring: "..n.." scene/slot checks, all task operators, stars, combos, daily seed and unlocks passed")

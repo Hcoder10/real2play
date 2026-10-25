@@ -1,0 +1,252 @@
+{
+ "className": "Folder",
+ "children": [
+  {
+   "name": "base",
+   "className": "MeshPart",
+   "properties": {
+    "MeshId": "rbxassetid://105352630115597",
+    "Size": [
+     0.9609900116920471,
+     0.717710018157959,
+     1.1311299800872803
+    ],
+    "InitialSize": [
+     0.9609900116920471,
+     0.717710018157959,
+     1.1311299800872803
+    ],
+    "Anchored": true,
+    "CanCollide": false
+   }
+  },
+  {
+   "name": "base_1",
+   "className": "MeshPart",
+   "properties": {
+    "MeshId": "rbxassetid://80216815421393",
+    "Size": [
+     0.46952998638153076,
+     0.40018001198768616,
+     0.24799999594688416
+    ],
+    "InitialSize": [
+     0.46952998638153076,
+     0.40018001198768616,
+     0.24799999594688416
+    ],
+    "Anchored": true,
+    "CanCollide": false
+   }
+  },
+  {
+   "name": "gripper",
+   "className": "MeshPart",
+   "properties": {
+    "MeshId": "rbxassetid://128051262584689",
+    "Size": [
+     0.6678000092506409,
+     1.0575900077819824,
+     0.5199999809265137
+    ],
+    "InitialSize": [
+     0.6678000092506409,
+     1.0575900077819824,
+     0.5199999809265137
+    ],
+    "Anchored": true,
+    "CanCollide": false
+   }
+  },
+  {
+   "name": "gripper_1",
+   "className": "MeshPart",
+   "properties": {
+    "MeshId": "rbxassetid://140146955796629",
+    "Size": [
+     0.46953001618385315,
+     0.24800001084804535,
+     0.40017998218536377
+    ],
+    "InitialSize": [
+     0.46953001618385315,
+     0.24800001084804535,
+     0.40017998218536377
+    ],
+    "Anchored": true,
+    "CanCollide": false
+   }
+  },
+  {
+   "name": "lower_arm",
+   "className": "MeshPart",
+   "properties": {
+    "MeshId": "rbxassetid://116351664337011",
+    "Size": [
+     1.3135900497436523,
+     0.644279956817627,
+     0.36900001764297485
+    ],
+    "InitialSize": [
+     1.3135900497436523,
+     0.644279956817627,
+     0.36900001764297485
+    ],
+    "Anchored": true,
+    "CanCollide": false
+   }
+  },
+  {
+   "name": "lower_arm_1",
+   "className": "MeshPart",
+   "properties": {
+    "MeshId": "rbxassetid://82359773885498",
+    "Size": [
+     0.46952998638153076,
+     0.40018001198768616,
+     0.24799999594688416
+    ],
+    "InitialSize": [
+     0.46952998638153076,
+     0.40018001198768616,
+     0.24799999594688416
+    ],
+    "Anchored": true,
+    "CanCollide": false
+   }
+  },
+  {
+   "name": "moving_jaw_so101_v1",
+   "className": "MeshPart",
+   "properties": {
+    "MeshId": "rbxassetid://74751649347644",
+    "Size": [
+     0.22416000068187714,
+     0.4803999662399292,
+     0.9202100038528442
+    ],
+    "InitialSize": [
+     0.22416000068187714,
+     0.4803999662399292,
+     0.9202100038528442
+    ],
+    "Anchored": true,
+    "CanCollide": false
+   }
+  },
+  {
+   "name": "shoulder",
+   "className": "MeshPart",
+   "properties": {
+    "MeshId": "rbxassetid://75983152541270",
+    "Size": [
+     0.6458200216293335,
+     0.8446800112724304,
+     0.5511599779129028
+    ],
+    "InitialSize": [
+     0.6458200216293335,
+     0.8446800112724304,
+     0.5511599779129028
+    ],
+    "Anchored": true,
+    "CanCollide": false
+   }
+  },
+  {
+   "name": "shoulder_1",
+   "className": "MeshPart",
+   "properties": {
+    "MeshId": "rbxassetid://73503649466543",
+    "Size": [
+     0.24799999594688416,
+     0.46952998638153076,
+     0.40017998218536377
+    ],
+    "InitialSize": [
+     0.24799999594688416,
+     0.46952998638153076,
+     0.40017998218536377
+    ],
+    "Anchored": true,
+    "CanCollide": false
+   }
+  },
+  {
+   "name": "upper_arm",
+   "className": "MeshPart",
+   "properties": {
+    "MeshId": "rbxassetid://109967473773224",
+    "Size": [
+     1.4436399936676025,
+     0.6735999584197998,
+     0.2500399947166443
+    ],
+    "InitialSize": [
+     1.4436399936676025,
+     0.6735999584197998,
+     0.2500399947166443
+    ],
+    "Anchored": true,
+    "CanCollide": false
+   }
+  },
+  {
+   "name": "upper_arm_1",
+   "className": "MeshPart",
+   "properties": {
+    "MeshId": "rbxassetid://130612213966212",
+    "Size": [
+     0.247999906539917,
+     0.40018001198768616,
+     0.46952998638153076
+    ],
+    "InitialSize": [
+     0.247999906539917,
+     0.40018001198768616,
+     0.46952998638153076
+    ],
+    "Anchored": true,
+    "CanCollide": false
+   }
+  },
+  {
+   "name": "wrist",
+   "className": "MeshPart",
+   "properties": {
+    "MeshId": "rbxassetid://119799058288530",
+    "Size": [
+     0.3570699989795685,
+     0.6241500377655029,
+     0.76774001121521
+    ],
+    "InitialSize": [
+     0.3570699989795685,
+     0.6241500377655029,
+     0.76774001121521
+    ],
+    "Anchored": true,
+    "CanCollide": false
+   }
+  },
+  {
+   "name": "wrist_1",
+   "className": "MeshPart",
+   "properties": {
+    "MeshId": "rbxassetid://84474228782150",
+    "Size": [
+     0.24799999594688416,
+     0.47964000701904297,
+     0.40289998054504395
+    ],
+    "InitialSize": [
+     0.24799999594688416,
+     0.47964000701904297,
+     0.40289998054504395
+    ],
+    "Anchored": true,
+    "CanCollide": false
+   }
+  }
+ ]
+}
