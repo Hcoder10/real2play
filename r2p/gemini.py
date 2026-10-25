@@ -58,6 +58,19 @@ def _json_default(value):
     raise TypeError(f"Unsupported JSON value: {type(value).__name__}")
 
 
+def _load_dotenv():
+    """GEMINI_API_KEY (and other unset vars) from the gitignored repo .env; real environment wins."""
+    env = Path(__file__).resolve().parents[1] / ".env"
+    if env.exists():
+        for line in env.read_text(encoding="utf-8").splitlines():
+            k, sep, v = line.strip().partition("=")
+            if sep and k and not k.startswith("#") and k not in os.environ:
+                os.environ[k] = v.strip().strip('"').strip("'")
+
+
+_load_dotenv()
+
+
 def _canonical(value):
     return json.dumps(value, sort_keys=True, separators=(",", ":"), allow_nan=False, default=_json_default)
 
