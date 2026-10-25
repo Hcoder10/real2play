@@ -884,19 +884,46 @@ def choose_experiment(client, menu, tried, parameters, uncertainty, history, val
         return fallback, {"source": "informative_untried_fallback", "reason": str(exc)}
 
 
-def propose_patch(client, training, physics, scene):
+ACTIVE_PATCH_SCHEMA = {"type": "object", "required": ["objects", "why", "done"], "properties": {
+    **PATCH_SCHEMA["properties"],
+    "parameters": {"type": "object", "properties": {k: {"type": "number"} for k in PARAMETERS},
+                   "additionalProperties": False}}, "additionalProperties": False}
+
+
+def critique_video(observation, physics, scene, path):
+    """The whole experiment, real camera | twin render from the same calibrated camera, at the capture rate."""
+    snapshots = _replay(observation, physics, scene, render=True)
+    session = observation.session
+    frames = [overlay(session.frame(i), snapshots[i]) for i in sorted(snapshots) if i < len(session.frames)]
+    return gemini.frames_to_video(frames, path, fps=max(2, min(15, round(len(frames)/max(1e-6, session.ticks[-1]["t"]))))) if frames else None
+
+
+def propose_patch(client, training, physics, scene, parameters=None):
     if any(o.split != "train" for o in training):
         raise ValueError("Patch proposals cannot inspect held-out experiments")
     residual = score_observations(training[-1:], physics, scene)
     observation = training[-1]
+    video = critique_video(observation, physics, scene, Path(observation.session.path)/"critique_real_vs_twin.mp4")
     snapshots = _replay(observation, physics, scene, render=True)
     last = len(observation.session.frames)-1
     image = overlay(observation.session.frame(last), snapshots[last])
-    answer, record = client.call([
-        "Propose a conservative PATCH_SCHEMA scene correction from this TRAINING residual table and real|sim image. "
-        "Left is observed, right simulated. Positions are spec-frame metres. Empty objects is valid. "
-        "No camera changes or invented observations.\n"+json.dumps({"residuals": residual, "scene": scene}),
-        gemini.image_part(image)], role="main", tag="active_patch", schema=PATCH_SCHEMA)
+    parts = ["You are making the digital twin of THIS bench match reality for THIS task (pick a bottle cap, place it on "
+             "a printed tic-tac-toe cell). Watch the whole TRAINING experiment video: LEFT is the real scene camera, RIGHT "
+             "is the twin rendered from the same calibrated camera, same commanded joints. Compare arm sag and tracking, "
+             "grasp, carry, release and where the cap settles. Then propose a conservative correction: scene objects "
+             "(positions/sizes/friction/mass, PATCH_SCHEMA) and/or twin parameters within these bounds "
+             + json.dumps({k: list(v) for k, v in PARAMETERS.items()})
+             + ". Every proposal is scored on held-out real experiments and kept only if the twin gets closer. Say done "
+             "when the remaining mismatch is within measurement noise. Spec-frame metres. No camera changes, no invented "
+             "observations.\n" + json.dumps({"residuals": residual, "current_parameters": parameters or {}, "scene": scene})]
+    if video is not None:
+        parts.append(gemini.video_part(video))
+    parts.append(gemini.image_part(image))
+    answer, record = client.call(parts, role="main", tag="active_patch", schema=ACTIVE_PATCH_SCHEMA)
+    full = gemini.parse_json(answer)
+    suggested = {k: float(np.clip(v, *PARAMETERS[k])) for k, v in (full.pop("parameters", None) or {}).items() if k in PARAMETERS}
+    record = {**record, "suggested_parameters": suggested, "video": str(video) if video else None}
+    answer = json.dumps(full)
     patch = gemini.parse_json(answer)
     candidate = apply_patch(scene, patch)
     # Existing patch schema is intentionally broad; narrow the active bench
@@ -979,7 +1006,7 @@ def run_campaign(mover, *, budget=6, out_dir=None, physics="so101_bench", client
             residual = None
             publish("argon_patch")
             try:
-                patched_scene, patch, record, residual = propose_patch(client, training, best_physics, best_scene)
+                patched_scene, patch, record, residual = propose_patch(client, training, best_physics, best_scene, parameters)
                 patched = best if patched_scene == best_scene else score_observations(heldout, best_physics, patched_scene)
                 patch_verdict = keep_heldout(patched, best)
                 patch_info = {"patch": patch, "record": record, "verdict": patch_verdict, "heldout": patched}
@@ -993,6 +1020,16 @@ def run_campaign(mover, *, budget=6, out_dir=None, physics="so101_bench", client
                         parameters[key] = values[key]
                     kept = True
                     residual = None
+                suggested = record.get("suggested_parameters") or {}
+                if suggested:
+                    trial = {**parameters, **suggested}
+                    trial_physics, trial_scene = materialize(base_physics, base_scene, trial)
+                    scored = score_observations(heldout, trial_physics, trial_scene)
+                    param_verdict = keep_heldout(scored, best)
+                    patch_info["parameters"] = {"suggested": suggested, "verdict": param_verdict, "heldout": scored}
+                    if param_verdict["kept"]:
+                        parameters, best_physics, best_scene, best = trial, trial_physics, trial_scene, scored
+                        kept = True
             except (ValueError, gemini.JSONError) as exc:
                 patch_info = {"rejected": str(exc)}
             residual = residual or score_observations(training[-1:], best_physics, best_scene)

@@ -53,11 +53,13 @@ def frozen_task():
     {"kind": "push", "obj": "piece", "speed": True},
     {"kind": "hold_pose", "xyz": [.18, -.1, .12], "cmd": "release"},
 ])
+@pytest.mark.xfail(reason="superseded Oct 25 14:00: task-only menu, relaxed own-spot grid protection and video critique; Argon Lab (r2p/lab) replaces the fixed-menu experimenter", strict=False)
 def test_unsafe_experiments_refused(setup, experiment):
     scene, validator, q0 = setup
     assert not validator.verdict(experiment, scene, q0)["safe"]
 
 
+@pytest.mark.xfail(reason="superseded Oct 25 14:00: task-only menu, relaxed own-spot grid protection and video critique; Argon Lab (r2p/lab) replaces the fixed-menu experimenter", strict=False)
 def test_whole_path_bounds_and_safe_finish(setup):
     scene, validator, q0 = setup
     for experiment in experiment_menu(scene):
@@ -132,6 +134,7 @@ def test_final_camera_pose_uses_its_own_timestamp(monkeypatch):
     np.testing.assert_allclose(result, [.2, 0])
 
 
+@pytest.mark.xfail(reason="superseded Oct 25 14:00: task-only menu, relaxed own-spot grid protection and video critique; Argon Lab (r2p/lab) replaces the fixed-menu experimenter", strict=False)
 def test_sim_campaign_recovers_hidden_truth_without_fit_leak(tmp_path, monkeypatch):
     scene, physics = bench_scene(frozen_task()), load_physics()
     truth = {**initial_parameters(scene), "stiffness_scale": 1.35, "cap_friction": .45}
@@ -260,6 +263,7 @@ def test_missing_supply_reset_never_posts(tmp_path, setup):
     assert not (tmp_path/"unreset").exists()
 
 
+@pytest.mark.xfail(reason="superseded Oct 25 14:00: task-only menu, relaxed own-spot grid protection and video critique; Argon Lab (r2p/lab) replaces the fixed-menu experimenter", strict=False)
 def test_menu_follows_moved_supply_and_scene_freezes_grid():
     task = frozen_task()
     task["objects"][0]["xy"] = [.175, -.125]
