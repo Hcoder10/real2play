@@ -1,0 +1,3559 @@
+{
+  "schema": "r2p_vla_export/1",
+  "policy_type": "smolvla",
+  "task": "place_on_cell",
+  "task_spec": {
+    "schema": "argon_task/1",
+    "name": "place_on_cell",
+    "instruction": "Place the supply piece on the highlighted cell without moving other pieces.",
+    "board": {
+      "center_xy": [
+        0.1737,
+        0.0175
+      ],
+      "cell_m": 0.0364,
+      "cells": {
+        "r0c0": [
+          0.1365,
+          -0.018
+        ],
+        "r0c1": [
+          0.137,
+          0.018
+        ],
+        "r0c2": [
+          0.1375,
+          0.0541
+        ],
+        "r1c0": [
+          0.1732,
+          -0.0186
+        ],
+        "r1c1": [
+          0.1737,
+          0.0175
+        ],
+        "r1c2": [
+          0.1742,
+          0.0535
+        ],
+        "r2c0": [
+          0.2099,
+          -0.0191
+        ],
+        "r2c1": [
+          0.2104,
+          0.017
+        ],
+        "r2c2": [
+          0.2109,
+          0.053
+        ]
+      }
+    },
+    "objects": [
+      {
+        "id": "piece",
+        "role": "manipulated",
+        "shape": "cylinder",
+        "size_m": [
+          0.034,
+          0.017
+        ],
+        "color": "white",
+        "mass_kg": 0.004,
+        "friction": 0.5,
+        "grasp": "top",
+        "xy": [
+          0.175,
+          -0.125
+        ]
+      },
+      {
+        "id": "cell",
+        "role": "target",
+        "shape": "plate",
+        "size_m": [
+          0.0364,
+          0.0364,
+          0.001
+        ],
+        "color": "green",
+        "fixed": true,
+        "collide": false
+      },
+      {
+        "id": "r0c0",
+        "role": "target",
+        "shape": "plate",
+        "size_m": [
+          0.0364,
+          0.0364,
+          0.001
+        ],
+        "color": "gray",
+        "fixed": true,
+        "collide": false,
+        "xy": [
+          0.1365,
+          -0.018
+        ]
+      },
+      {
+        "id": "r0c1",
+        "role": "target",
+        "shape": "plate",
+        "size_m": [
+          0.0364,
+          0.0364,
+          0.001
+        ],
+        "color": "gray",
+        "fixed": true,
+        "collide": false,
+        "xy": [
+          0.137,
+          0.018
+        ]
+      },
+      {
+        "id": "r0c2",
+        "role": "target",
+        "shape": "plate",
+        "size_m": [
+          0.0364,
+          0.0364,
+          0.001
+        ],
+        "color": "gray",
+        "fixed": true,
+        "collide": false,
+        "xy": [
+          0.1375,
+          0.0541
+        ]
+      },
+      {
+        "id": "r1c0",
+        "role": "target",
+        "shape": "plate",
+        "size_m": [
+          0.0364,
+          0.0364,
+          0.001
+        ],
+        "color": "gray",
+        "fixed": true,
+        "collide": false,
+        "xy": [
+          0.1732,
+          -0.0186
+        ]
+      },
+      {
+        "id": "r1c1",
+        "role": "target",
+        "shape": "plate",
+        "size_m": [
+          0.0364,
+          0.0364,
+          0.001
+        ],
+        "color": "gray",
+        "fixed": true,
+        "collide": false,
+        "xy": [
+          0.1737,
+          0.0175
+        ]
+      },
+      {
+        "id": "r1c2",
+        "role": "target",
+        "shape": "plate",
+        "size_m": [
+          0.0364,
+          0.0364,
+          0.001
+        ],
+        "color": "gray",
+        "fixed": true,
+        "collide": false,
+        "xy": [
+          0.1742,
+          0.0535
+        ]
+      },
+      {
+        "id": "r2c0",
+        "role": "target",
+        "shape": "plate",
+        "size_m": [
+          0.0364,
+          0.0364,
+          0.001
+        ],
+        "color": "gray",
+        "fixed": true,
+        "collide": false,
+        "xy": [
+          0.2099,
+          -0.0191
+        ]
+      },
+      {
+        "id": "r2c1",
+        "role": "target",
+        "shape": "plate",
+        "size_m": [
+          0.0364,
+          0.0364,
+          0.001
+        ],
+        "color": "gray",
+        "fixed": true,
+        "collide": false,
+        "xy": [
+          0.2104,
+          0.017
+        ]
+      },
+      {
+        "id": "r2c2",
+        "role": "target",
+        "shape": "plate",
+        "size_m": [
+          0.0364,
+          0.0364,
+          0.001
+        ],
+        "color": "gray",
+        "fixed": true,
+        "collide": false,
+        "xy": [
+          0.2109,
+          0.053
+        ]
+      },
+      {
+        "id": "other1",
+        "role": "obstacle",
+        "shape": "box",
+        "size_m": [
+          0.03,
+          0.03,
+          0.014
+        ],
+        "color": "blue",
+        "mass_kg": 0.02,
+        "friction": 0.6,
+        "fixed": true
+      },
+      {
+        "id": "other2",
+        "role": "obstacle",
+        "shape": "box",
+        "size_m": [
+          0.03,
+          0.03,
+          0.014
+        ],
+        "color": "brown",
+        "mass_kg": 0.02,
+        "friction": 0.6,
+        "fixed": true
+      },
+      {
+        "id": "other3",
+        "role": "obstacle",
+        "shape": "box",
+        "size_m": [
+          0.03,
+          0.03,
+          0.014
+        ],
+        "color": "blue",
+        "mass_kg": 0.02,
+        "friction": 0.6,
+        "fixed": true
+      },
+      {
+        "id": "other4",
+        "role": "obstacle",
+        "shape": "box",
+        "size_m": [
+          0.03,
+          0.03,
+          0.014
+        ],
+        "color": "brown",
+        "mass_kg": 0.02,
+        "friction": 0.6,
+        "fixed": true
+      }
+    ],
+    "goal": [
+      {
+        "pred": "at",
+        "a": "piece",
+        "xy": "cell",
+        "tol_m": 0.01
+      },
+      {
+        "pred": "not_moved",
+        "a": "other1",
+        "tol_m": 0.01,
+        "optional": true
+      },
+      {
+        "pred": "not_moved",
+        "a": "other2",
+        "tol_m": 0.01,
+        "optional": true
+      },
+      {
+        "pred": "not_moved",
+        "a": "other3",
+        "tol_m": 0.01,
+        "optional": true
+      },
+      {
+        "pred": "not_moved",
+        "a": "other4",
+        "tol_m": 0.01,
+        "optional": true
+      }
+    ],
+    "skeleton": [
+      {
+        "skill": "pick",
+        "obj": "piece"
+      },
+      {
+        "skill": "place_at",
+        "obj": "piece",
+        "xy": "cell"
+      },
+      {
+        "skill": "release"
+      },
+      {
+        "skill": "home"
+      }
+    ],
+    "randomize": {
+      "cell": {
+        "xy_choice": [
+          [
+            0.1365,
+            -0.018
+          ],
+          [
+            0.137,
+            0.018
+          ],
+          [
+            0.1375,
+            0.0541
+          ],
+          [
+            0.1732,
+            -0.0186
+          ],
+          [
+            0.1737,
+            0.0175
+          ],
+          [
+            0.1742,
+            0.0535
+          ],
+          [
+            0.2099,
+            -0.0191
+          ],
+          [
+            0.2104,
+            0.017
+          ],
+          [
+            0.2109,
+            0.053
+          ]
+        ]
+      },
+      "other1": {
+        "xy_choice": [
+          [
+            0.1365,
+            -0.018
+          ],
+          [
+            0.137,
+            0.018
+          ],
+          [
+            0.1375,
+            0.0541
+          ],
+          [
+            0.1732,
+            -0.0186
+          ],
+          [
+            0.1737,
+            0.0175
+          ],
+          [
+            0.1742,
+            0.0535
+          ],
+          [
+            0.2099,
+            -0.0191
+          ],
+          [
+            0.2104,
+            0.017
+          ],
+          [
+            0.2109,
+            0.053
+          ]
+        ],
+        "p_present": 0.5
+      },
+      "other2": {
+        "xy_choice": [
+          [
+            0.1365,
+            -0.018
+          ],
+          [
+            0.137,
+            0.018
+          ],
+          [
+            0.1375,
+            0.0541
+          ],
+          [
+            0.1732,
+            -0.0186
+          ],
+          [
+            0.1737,
+            0.0175
+          ],
+          [
+            0.1742,
+            0.0535
+          ],
+          [
+            0.2099,
+            -0.0191
+          ],
+          [
+            0.2104,
+            0.017
+          ],
+          [
+            0.2109,
+            0.053
+          ]
+        ],
+        "p_present": 0.5
+      },
+      "other3": {
+        "xy_choice": [
+          [
+            0.1365,
+            -0.018
+          ],
+          [
+            0.137,
+            0.018
+          ],
+          [
+            0.1375,
+            0.0541
+          ],
+          [
+            0.1732,
+            -0.0186
+          ],
+          [
+            0.1737,
+            0.0175
+          ],
+          [
+            0.1742,
+            0.0535
+          ],
+          [
+            0.2099,
+            -0.0191
+          ],
+          [
+            0.2104,
+            0.017
+          ],
+          [
+            0.2109,
+            0.053
+          ]
+        ],
+        "p_present": 0.5
+      },
+      "other4": {
+        "xy_choice": [
+          [
+            0.1365,
+            -0.018
+          ],
+          [
+            0.137,
+            0.018
+          ],
+          [
+            0.1375,
+            0.0541
+          ],
+          [
+            0.1732,
+            -0.0186
+          ],
+          [
+            0.1737,
+            0.0175
+          ],
+          [
+            0.1742,
+            0.0535
+          ],
+          [
+            0.2099,
+            -0.0191
+          ],
+          [
+            0.2104,
+            0.017
+          ],
+          [
+            0.2109,
+            0.053
+          ]
+        ],
+        "p_present": 0.5
+      },
+      "min_sep_m": 0,
+      "piece": {
+        "x": [
+          0.1142,
+          0.2342
+        ],
+        "y": [
+          -0.1026,
+          -0.0716
+        ],
+        "size_m": [
+          [
+            0.03,
+            0.037
+          ],
+          [
+            0.014,
+            0.02
+          ]
+        ],
+        "mass_kg": [
+          0.002,
+          0.007
+        ],
+        "friction": [
+          0.35,
+          0.7
+        ],
+        "follow_board": true
+      },
+      "board_pose": {
+        "dx": [
+          -0.03,
+          0.03
+        ],
+        "dy": [
+          -0.035,
+          0.045
+        ],
+        "yaw_deg": [
+          -8,
+          8
+        ]
+      }
+    },
+    "limits": {
+      "episode_s": 40,
+      "max_objects": 15
+    },
+    "bench_note": "Oct 25 12:4x (after the paper was reset): grid re-measured by the calibrated camera (36.3 mm cells, centre 0.1695/-0.0169). Robot pieces = white plastic bottle caps (~33 mm, ~17 mm tall); supply line on the robot's right, located by gemini-4-argon at x 0.127/0.175/0.221, y -0.125. Humans play coins."
+  },
+  "start_q": [
+    -5e-05,
+    -0.06786,
+    -0.28181,
+    1.65806,
+    0.0,
+    0.9
+  ],
+  "physics": {
+    "schema": "r2p_physics/1",
+    "rig": "so101_bench",
+    "version": 2,
+    "hz": 30,
+    "substeps": 32,
+    "gravity": [
+      0,
+      0,
+      -9.81
+    ],
+    "latency_ticks": 1,
+    "sag_gain": [
+      0,
+      0.05,
+      0.03333333333333333,
+      0.05,
+      0,
+      0
+    ],
+    "joints": {
+      "shoulder_pan": {
+        "kp": 35,
+        "kv": 0.7,
+        "armature": 0.005,
+        "frictionloss": 0.002,
+        "torque_limit": 3.35
+      },
+      "shoulder_lift": {
+        "kp": 20,
+        "kv": 0.8,
+        "armature": 0.005,
+        "frictionloss": 0.002,
+        "torque_limit": 3.35
+      },
+      "elbow_flex": {
+        "kp": 30,
+        "kv": 0.7,
+        "armature": 0.005,
+        "frictionloss": 0.002,
+        "torque_limit": 3.35
+      },
+      "wrist_flex": {
+        "kp": 20,
+        "kv": 0.4,
+        "armature": 0.003,
+        "frictionloss": 0.001,
+        "torque_limit": 3.35
+      },
+      "wrist_roll": {
+        "kp": 25,
+        "kv": 0.35,
+        "armature": 0.002,
+        "frictionloss": 0.001,
+        "torque_limit": 3.35
+      },
+      "gripper": {
+        "kp": 20,
+        "kv": 0.25,
+        "armature": 0.002,
+        "frictionloss": 0.001,
+        "torque_limit": 0.8
+      }
+    },
+    "object": {
+      "mass_kg": 0.03,
+      "friction": 0.6
+    },
+    "contact": {
+      "solref": [
+        0.015,
+        1
+      ],
+      "solimp": [
+        0.95,
+        0.99,
+        0.001
+      ],
+      "friction": [
+        0.8,
+        0.005,
+        0.0001
+      ],
+      "impratio": 10
+    },
+    "notes": "Provisional compliance calibration, not an identified hardware twin. Gravity acts through the official link inertias and finite position-servo stiffness; no Cartesian sag offset is injected. kp units Nm/rad, kv Nm*s/rad, armature kg*m^2, frictionloss and torque_limit Nm. See README.md for measured sag and refit protocol."
+  },
+  "obs_frame": "spec_footprint",
+  "action": "absolute_q",
+  "target_space": "servo",
+  "gravity_compensation": "included_in_expert_targets",
+  "horizon": 15,
+  "hz": 30,
+  "K": 15,
+  "object_ids": [
+    "piece",
+    "cell",
+    "r0c0",
+    "r0c1",
+    "r0c2",
+    "r1c0",
+    "r1c1",
+    "r1c2",
+    "r2c0",
+    "r2c1",
+    "r2c2",
+    "other1",
+    "other2",
+    "other3",
+    "other4"
+  ],
+  "obs_layout": {
+    "state": [
+      "last_commanded_q[6], reset to measured on any joint >4 degrees",
+      "command_age_s"
+    ],
+    "images": [
+      "observation.images.scene",
+      "observation.images.wrist"
+    ],
+    "image_order": "RGB",
+    "language": "contracts.instruction(command,target_cell)"
+  },
+  "obs_const": {
+    "mean": [
+      0.138066785480352,
+      -0.31625982411448517,
+      0.3451561329914584,
+      1.450770886059962,
+      0.1755981614077275,
+      0.34999903705668345,
+      3.742180876915782
+    ],
+    "std": [
+      0.3916030144110528,
+      0.3026511941823086,
+      0.40812972784246493,
+      0.24235813474307996,
+      0.48818893667944363,
+      0.23316737613641444,
+      2.7258149364852597
+    ],
+    "threshold_std": 5,
+    "floor": 0.001
+  },
+  "camera": {
+    "schema": "r2p_camera/1",
+    "frame": "spec",
+    "K": [
+      [
+        752.1153743727194,
+        0.0,
+        478.74240365741974
+      ],
+      [
+        0.0,
+        749.5116465646025,
+        264.81018854683447
+      ],
+      [
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "dist": [
+      0.04317471748937133,
+      -0.06404805243942509,
+      0.0003388866910065102,
+      -0.0016967964808593662,
+      0.0
+    ],
+    "R": [
+      [
+        0.11134043580394815,
+        0.9935649319868023,
+        0.020785410293000628
+      ],
+      [
+        0.5115364191880085,
+        -0.039366663928370516,
+        -0.8583593406117633
+      ],
+      [
+        -0.852017487613545,
+        0.10620259741273819,
+        -0.5126277490572382
+      ]
+    ],
+    "t": [
+      -0.04038951406252864,
+      -0.007075785273998356,
+      0.5928439083386667
+    ],
+    "image_size": [
+      960,
+      540
+    ]
+  },
+  "mounts": {
+    "wrist": {
+      "parent_body": "gripper",
+      "pos": [
+        0.0058,
+        0.0514,
+        -0.0306
+      ],
+      "quat": [
+        0.959573,
+        -0.280792,
+        0.0193005,
+        -0.00146742
+      ],
+      "fovy_deg": 69.6,
+      "source": "reachy-duplex/sim/so101/v3/calibration.json and generated/scene_v3_bowl150.xml; measured Innomaker mount, 2026-09-19",
+      "limitation": "Mount fit has optical-axis uncertainty; wrist distortion was not calibrated."
+    },
+    "width": 256,
+    "height": 192,
+    "color_order": "RGB"
+  },
+  "eval": {
+    "clean": {
+      "n": 30,
+      "noise": "clean",
+      "scene_seeds": [
+        10000,
+        10001,
+        10002,
+        10003,
+        10004,
+        10005,
+        10006,
+        10007,
+        10008,
+        10009,
+        10010,
+        10011,
+        10012,
+        10013,
+        10014,
+        10015,
+        10016,
+        10017,
+        10018,
+        10019,
+        10020,
+        10021,
+        10022,
+        10023,
+        10024,
+        10025,
+        10026,
+        10027,
+        10028,
+        10029
+      ],
+      "successes": 1,
+      "success": 0.03333333333333333,
+      "episodes": [
+        {
+          "seed": 10000,
+          "success": false,
+          "ticks": 1200,
+          "reason": "timeout",
+          "commands_completed": 0,
+          "observation_resets": 4,
+          "check": {
+            "ok": false,
+            "per_predicate": [
+              {
+                "pred": "at",
+                "ok": false
+              },
+              {
+                "pred": "not_moved",
+                "ok": true
+              },
+              {
+                "pred": "not_moved",
+                "ok": true
+              },
+              {
+                "pred": "not_moved",
+                "ok": true
+              },
+              {
+                "pred": "not_moved",
+                "ok": true
+              },
+              {
+                "pred": "gripper_open",
+                "ok": true
+              },
+              {
+                "pred": "settled",
+                "ok": true
+              }
+            ],
+            "ticks": 15,
+            "required_ticks": 15
+          }
+        },
+        {
+          "seed": 10001,
+          "success": false,
+          "ticks": 1200,
+          "reason": "timeout",
+          "commands_completed": 0,
+          "observation_resets": 9,
+          "check": {
+            "ok": false,
+            "per_predicate": [
+              {
+                "pred": "at",
+                "ok": false
+              },
+              {
+                "pred": "not_moved",
+                "ok": true
+              },
+              {
+                "pred": "not_moved",
+                "ok": true
+              },
+              {
+                "pred": "not_moved",
+                "ok": true
+              },
+              {
+                "pred": "not_moved",
+                "ok": true
+              },
+              {
+                "pred": "gripper_open",
+                "ok": true
+              },
+              {
+                "pred": "settled",
+                "ok": true
+              }
+            ],
+            "ticks": 15,
+            "required_ticks": 15
+          }
+        },
+        {
+          "seed": 10002,
+          "success": false,
+          "ticks": 1200,
+          "reason": "timeout",
+          "commands_completed": 0,
+          "observation_resets": 4,
+          "check": {
+            "ok": false,
+            "per_predicate": [
+              {
+                "pred": "at",
+                "ok": false
+              },
+              {
+                "pred": "not_moved",
+                "ok": true
+              },
+              {
+                "pred": "not_moved",
+                "ok": true
+              },
+              {
+                "pred": "not_moved",
+                "ok": true
+              },
+              {
+                "pred": "not_moved",
+                "ok": true
+              },
+              {
+                "pred": "gripper_open",
+                "ok": true
+              },
+              {
+                "pred": "settled",
+                "ok": true
+              }
+            ],
+            "ticks": 15,
+            "required_ticks": 15
+          }
+        },
+        {
+          "seed": 10003,
+          "success": false,
+          "ticks": 1200,
+          "reason": "timeout",
+          "commands_completed": 0,
+          "observation_resets": 9,
+          "check": {
+            "ok": false,
+            "per_predicate": [
+              {
+                "pred": "at",
+                "ok": false
+              },
+              {
+                "pred": "not_moved",
+                "ok": true
+              },
+              {
+                "pred": "not_moved",
+                "ok": true
+              },
+              {
+                "pred": "not_moved",
+                "ok": true
+              },
+              {
+                "pred": "not_moved",
+                "ok": true
+              },
+              {
+                "pred": "gripper_open",
+                "ok": true
+              },
+              {
+                "pred": "settled",
+                "ok": true
+              }
+            ],
+            "ticks": 15,
+            "required_ticks": 15
+          }
+        },
+        {
+          "seed": 10004,
+          "success": false,
+          "ticks": 1200,
+          "reason": "timeout",
+          "commands_completed": 0,
+          "observation_resets": 7,
+          "check": {
+            "ok": false,
+            "per_predicate": [
+              {
+                "pred": "at",
+                "ok": false
+              },
+              {
+                "pred": "not_moved",
+                "ok": true
+              },
+              {
+                "pred": "not_moved",
+                "ok": true
+              },
+              {
+                "pred": "not_moved",
+                "ok": true
+              },
+              {
+                "pred": "not_moved",
+                "ok": true
+              },
+              {
+                "pred": "gripper_open",
+                "ok": true
+              },
+              {
+                "pred": "settled",
+                "ok": true
+              }
+            ],
+            "ticks": 15,
+            "required_ticks": 15
+          }
+        },
+        {
+          "seed": 10005,
+          "success": false,
+          "ticks": 1200,
+          "reason": "timeout",
+          "commands_completed": 0,
+          "observation_resets": 8,
+          "check": {
+            "ok": false,
+            "per_predicate": [
+              {
+                "pred": "at",
+                "ok": false
+              },
+              {
+                "pred": "not_moved",
+                "ok": true
+              },
+              {
+                "pred": "not_moved",
+                "ok": true
+              },
+              {
+                "pred": "not_moved",
+                "ok": true
+              },
+              {
+                "pred": "not_moved",
+                "ok": true
+              },
+              {
+                "pred": "gripper_open",
+                "ok": true
+              },
+              {
+                "pred": "settled",
+                "ok": true
+              }
+            ],
+            "ticks": 15,
+            "required_ticks": 15
+          }
+        },
+        {
+          "seed": 10006,
+          "success": false,
+          "ticks": 1200,
+          "reason": "timeout",
+          "commands_completed": 1,
+          "observation_resets": 19,
+          "check": {
+            "ok": false,
+            "per_predicate": [
+              {
+                "pred": "at",
+                "ok": false
+              },
+              {
+                "pred": "not_moved",
+                "ok": true
+              },
+              {
+                "pred": "not_moved",
+                "ok": true
+              },
+              {
+                "pred": "not_moved",
+                "ok": true
+              },
+              {
+                "pred": "not_moved",
+                "ok": true
+              },
+              {
+                "pred": "gripper_open",
+                "ok": true
+              },
+              {
+                "pred": "settled",
+                "ok": true
+              }
+            ],
+            "ticks": 15,
+            "required_ticks": 15
+          }
+        },
+        {
+          "seed": 10007,
+          "success": false,
+          "ticks": 1200,
+          "reason": "timeout",
+          "commands_completed": 1,
+          "observation_resets": 18,
+          "check": {
+            "ok": false,
+            "per_predicate": [
+              {
+                "pred": "at",
+                "ok": false
+              },
+              {
+                "pred": "not_moved",
+                "ok": true
+              },
+              {
+                "pred": "not_moved",
+                "ok": true
+              },
+              {
+                "pred": "not_moved",
+                "ok": true
+              },
+              {
+                "pred": "not_moved",
+                "ok": true
+              },
+              {
+                "pred": "gripper_open",
+                "ok": true
+              },
+              {
+                "pred": "settled",
+                "ok": true
+              }
+            ],
+            "ticks": 15,
+            "required_ticks": 15
+          }
+        },
+        {
+          "seed": 10008,
+          "success": false,
+          "ticks": 1200,
+          "reason": "timeout",
+          "commands_completed": 1,
+          "observation_resets": 22,
+          "check": {
+            "ok": false,
+            "per_predicate": [
+              {
+                "pred": "at",
+                "ok": false
+              },
+              {
+                "pred": "not_moved",
+                "ok": true
+              },
+              {
+                "pred": "not_moved",
+                "ok": true
+              },
+              {
+                "pred": "not_moved",
+                "ok": true
+              },
+              {
+                "pred": "not_moved",
+                "ok": true
+              },
+              {
+                "pred": "gripper_open",
+                "ok": true
+              },
+              {
+                "pred": "settled",
+                "ok": true
+              }
+            ],
+            "ticks": 15,
+            "required_ticks": 15
+          }
+        },
+        {
+          "seed": 10009,
+          "success": false,
+          "ticks": 1200,
+          "reason": "timeout",
+          "commands_completed": 0,
+          "observation_resets": 6,
+          "check": {
+            "ok": false,
+            "per_predicate": [
+              {
+                "pred": "at",
+                "ok": false
+              },
+              {
+                "pred": "not_moved",
+                "ok": true
+              },
+              {
+                "pred": "not_moved",
+                "ok": true
+              },
+              {
+                "pred": "not_moved",
+                "ok": true
+              },
+              {
+                "pred": "not_moved",
+                "ok": true
+              },
+              {
+                "pred": "gripper_open",
+                "ok": true
+              },
+              {
+                "pred": "settled",
+                "ok": true
+              }
+            ],
+            "ticks": 15,
+            "required_ticks": 15
+          }
+        },
+        {
+          "seed": 10010,
+          "success": false,
+          "ticks": 1200,
+          "reason": "timeout",
+          "commands_completed": 0,
+          "observation_resets": 11,
+          "check": {
+            "ok": false,
+            "per_predicate": [
+              {
+                "pred": "at",
+                "ok": false
+              },
+              {
+                "pred": "not_moved",
+                "ok": true
+              },
+              {
+                "pred": "not_moved",
+                "ok": true
+              },
+              {
+                "pred": "not_moved",
+                "ok": true
+              },
+              {
+                "pred": "not_moved",
+                "ok": true
+              },
+              {
+                "pred": "gripper_open",
+                "ok": true
+              },
+              {
+                "pred": "settled",
+                "ok": true
+              }
+            ],
+            "ticks": 15,
+            "required_ticks": 15
+          }
+        },
+        {
+          "seed": 10011,
+          "success": false,
+          "ticks": 1200,
+          "reason": "timeout",
+          "commands_completed": 0,
+          "observation_resets": 11,
+          "check": {
+            "ok": false,
+            "per_predicate": [
+              {
+                "pred": "at",
+                "ok": false
+              },
+              {
+                "pred": "not_moved",
+                "ok": true
+              },
+              {
+                "pred": "not_moved",
+                "ok": true
+              },
+              {
+                "pred": "not_moved",
+                "ok": true
+              },
+              {
+                "pred": "not_moved",
+                "ok": true
+              },
+              {
+                "pred": "gripper_open",
+                "ok": true
+              },
+              {
+                "pred": "settled",
+                "ok": true
+              }
+            ],
+            "ticks": 15,
+            "required_ticks": 15
+          }
+        },
+        {
+          "seed": 10012,
+          "success": false,
+          "ticks": 1200,
+          "reason": "timeout",
+          "commands_completed": 0,
+          "observation_resets": 6,
+          "check": {
+            "ok": false,
+            "per_predicate": [
+              {
+                "pred": "at",
+                "ok": false
+              },
+              {
+                "pred": "not_moved",
+                "ok": true
+              },
+              {
+                "pred": "not_moved",
+                "ok": true
+              },
+              {
+                "pred": "not_moved",
+                "ok": true
+              },
+              {
+                "pred": "not_moved",
+                "ok": true
+              },
+              {
+                "pred": "gripper_open",
+                "ok": true
+              },
+              {
+                "pred": "settled",
+                "ok": true
+              }
+            ],
+            "ticks": 15,
+            "required_ticks": 15
+          }
+        },
+        {
+          "seed": 10013,
+          "success": false,
+          "ticks": 1200,
+          "reason": "timeout",
+          "commands_completed": 0,
+          "observation_resets": 6,
+          "check": {
+            "ok": false,
+            "per_predicate": [
+              {
+                "pred": "at",
+                "ok": false
+              },
+              {
+                "pred": "not_moved",
+                "ok": true
+              },
+              {
+                "pred": "not_moved",
+                "ok": true
+              },
+              {
+                "pred": "not_moved",
+                "ok": true
+              },
+              {
+                "pred": "not_moved",
+                "ok": true
+              },
+              {
+                "pred": "gripper_open",
+                "ok": true
+              },
+              {
+                "pred": "settled",
+                "ok": true
+              }
+            ],
+            "ticks": 15,
+            "required_ticks": 15
+          }
+        },
+        {
+          "seed": 10014,
+          "success": false,
+          "ticks": 1200,
+          "reason": "timeout",
+          "commands_completed": 0,
+          "observation_resets": 10,
+          "check": {
+            "ok": false,
+            "per_predicate": [
+              {
+                "pred": "at",
+                "ok": false
+              },
+              {
+                "pred": "not_moved",
+                "ok": true
+              },
+              {
+                "pred": "not_moved",
+                "ok": true
+              },
+              {
+                "pred": "not_moved",
+                "ok": true
+              },
+              {
+                "pred": "not_moved",
+                "ok": true
+              },
+              {
+                "pred": "gripper_open",
+                "ok": true
+              },
+              {
+                "pred": "settled",
+                "ok": true
+              }
+            ],
+            "ticks": 15,
+            "required_ticks": 15
+          }
+        },
+        {
+          "seed": 10015,
+          "success": false,
+          "ticks": 1200,
+          "reason": "timeout",
+          "commands_completed": 0,
+          "observation_resets": 11,
+          "check": {
+            "ok": false,
+            "per_predicate": [
+              {
+                "pred": "at",
+                "ok": false
+              },
+              {
+                "pred": "not_moved",
+                "ok": true
+              },
+              {
+                "pred": "not_moved",
+                "ok": true
+              },
+              {
+                "pred": "not_moved",
+                "ok": true
+              },
+              {
+                "pred": "not_moved",
+                "ok": true
+              },
+              {
+                "pred": "gripper_open",
+                "ok": true
+              },
+              {
+                "pred": "settled",
+                "ok": true
+              }
+            ],
+            "ticks": 15,
+            "required_ticks": 15
+          }
+        },
+        {
+          "seed": 10016,
+          "success": false,
+          "ticks": 1200,
+          "reason": "timeout",
+          "commands_completed": 0,
+          "observation_resets": 10,
+          "check": {
+            "ok": false,
+            "per_predicate": [
+              {
+                "pred": "at",
+                "ok": false
+              },
+              {
+                "pred": "not_moved",
+                "ok": true
+              },
+              {
+                "pred": "not_moved",
+                "ok": true
+              },
+              {
+                "pred": "not_moved",
+                "ok": true
+              },
+              {
+                "pred": "not_moved",
+                "ok": true
+              },
+              {
+                "pred": "gripper_open",
+                "ok": true
+              },
+              {
+                "pred": "settled",
+                "ok": true
+              }
+            ],
+            "ticks": 15,
+            "required_ticks": 15
+          }
+        },
+        {
+          "seed": 10017,
+          "success": false,
+          "ticks": 1200,
+          "reason": "timeout",
+          "commands_completed": 0,
+          "observation_resets": 9,
+          "check": {
+            "ok": false,
+            "per_predicate": [
+              {
+                "pred": "at",
+                "ok": false
+              },
+              {
+                "pred": "not_moved",
+                "ok": true
+              },
+              {
+                "pred": "not_moved",
+                "ok": true
+              },
+              {
+                "pred": "not_moved",
+                "ok": true
+              },
+              {
+                "pred": "not_moved",
+                "ok": true
+              },
+              {
+                "pred": "gripper_open",
+                "ok": true
+              },
+              {
+                "pred": "settled",
+                "ok": true
+              }
+            ],
+            "ticks": 15,
+            "required_ticks": 15
+          }
+        },
+        {
+          "seed": 10018,
+          "success": false,
+          "ticks": 1200,
+          "reason": "timeout",
+          "commands_completed": 0,
+          "observation_resets": 3,
+          "check": {
+            "ok": false,
+            "per_predicate": [
+              {
+                "pred": "at",
+                "ok": false
+              },
+              {
+                "pred": "not_moved",
+                "ok": true
+              },
+              {
+                "pred": "not_moved",
+                "ok": true
+              },
+              {
+                "pred": "not_moved",
+                "ok": true
+              },
+              {
+                "pred": "not_moved",
+                "ok": true
+              },
+              {
+                "pred": "gripper_open",
+                "ok": true
+              },
+              {
+                "pred": "settled",
+                "ok": true
+              }
+            ],
+            "ticks": 15,
+            "required_ticks": 15
+          }
+        },
+        {
+          "seed": 10019,
+          "success": false,
+          "ticks": 1200,
+          "reason": "timeout",
+          "commands_completed": 4,
+          "observation_resets": 11,
+          "check": {
+            "ok": false,
+            "per_predicate": [
+              {
+                "pred": "at",
+                "ok": false
+              },
+              {
+                "pred": "not_moved",
+                "ok": true
+              },
+              {
+                "pred": "not_moved",
+                "ok": true
+              },
+              {
+                "pred": "not_moved",
+                "ok": true
+              },
+              {
+                "pred": "not_moved",
+                "ok": true
+              },
+              {
+                "pred": "gripper_open",
+                "ok": true
+              },
+              {
+                "pred": "settled",
+                "ok": true
+              }
+            ],
+            "ticks": 15,
+            "required_ticks": 15
+          }
+        },
+        {
+          "seed": 10020,
+          "success": true,
+          "ticks": 420,
+          "reason": "goal_reached",
+          "commands_completed": 3,
+          "observation_resets": 17,
+          "check": {
+            "ok": true,
+            "per_predicate": [
+              {
+                "pred": "at",
+                "ok": true
+              },
+              {
+                "pred": "not_moved",
+                "ok": true
+              },
+              {
+                "pred": "not_moved",
+                "ok": true
+              },
+              {
+                "pred": "not_moved",
+                "ok": true
+              },
+              {
+                "pred": "not_moved",
+                "ok": true
+              },
+              {
+                "pred": "gripper_open",
+                "ok": true
+              },
+              {
+                "pred": "settled",
+                "ok": true
+              }
+            ],
+            "ticks": 15,
+            "required_ticks": 15
+          }
+        },
+        {
+          "seed": 10021,
+          "success": false,
+          "ticks": 1200,
+          "reason": "timeout",
+          "commands_completed": 0,
+          "observation_resets": 7,
+          "check": {
+            "ok": false,
+            "per_predicate": [
+              {
+                "pred": "at",
+                "ok": false
+              },
+              {
+                "pred": "not_moved",
+                "ok": true
+              },
+              {
+                "pred": "not_moved",
+                "ok": true
+              },
+              {
+                "pred": "not_moved",
+                "ok": true
+              },
+              {
+                "pred": "not_moved",
+                "ok": true
+              },
+              {
+                "pred": "gripper_open",
+                "ok": true
+              },
+              {
+                "pred": "settled",
+                "ok": true
+              }
+            ],
+            "ticks": 15,
+            "required_ticks": 15
+          }
+        },
+        {
+          "seed": 10022,
+          "success": false,
+          "ticks": 1200,
+          "reason": "timeout",
+          "commands_completed": 0,
+          "observation_resets": 6,
+          "check": {
+            "ok": false,
+            "per_predicate": [
+              {
+                "pred": "at",
+                "ok": false
+              },
+              {
+                "pred": "not_moved",
+                "ok": true
+              },
+              {
+                "pred": "not_moved",
+                "ok": true
+              },
+              {
+                "pred": "not_moved",
+                "ok": true
+              },
+              {
+                "pred": "not_moved",
+                "ok": true
+              },
+              {
+                "pred": "gripper_open",
+                "ok": true
+              },
+              {
+                "pred": "settled",
+                "ok": true
+              }
+            ],
+            "ticks": 15,
+            "required_ticks": 15
+          }
+        },
+        {
+          "seed": 10023,
+          "success": false,
+          "ticks": 1200,
+          "reason": "timeout",
+          "commands_completed": 1,
+          "observation_resets": 17,
+          "check": {
+            "ok": false,
+            "per_predicate": [
+              {
+                "pred": "at",
+                "ok": false
+              },
+              {
+                "pred": "not_moved",
+                "ok": true
+              },
+              {
+                "pred": "not_moved",
+                "ok": true
+              },
+              {
+                "pred": "not_moved",
+                "ok": true
+              },
+              {
+                "pred": "not_moved",
+                "ok": true
+              },
+              {
+                "pred": "gripper_open",
+                "ok": true
+              },
+              {
+                "pred": "settled",
+                "ok": true
+              }
+            ],
+            "ticks": 15,
+            "required_ticks": 15
+          }
+        },
+        {
+          "seed": 10024,
+          "success": false,
+          "ticks": 1200,
+          "reason": "timeout",
+          "commands_completed": 0,
+          "observation_resets": 12,
+          "check": {
+            "ok": false,
+            "per_predicate": [
+              {
+                "pred": "at",
+                "ok": false
+              },
+              {
+                "pred": "not_moved",
+                "ok": true
+              },
+              {
+                "pred": "not_moved",
+                "ok": true
+              },
+              {
+                "pred": "not_moved",
+                "ok": true
+              },
+              {
+                "pred": "not_moved",
+                "ok": true
+              },
+              {
+                "pred": "gripper_open",
+                "ok": true
+              },
+              {
+                "pred": "settled",
+                "ok": true
+              }
+            ],
+            "ticks": 15,
+            "required_ticks": 15
+          }
+        },
+        {
+          "seed": 10025,
+          "success": false,
+          "ticks": 1200,
+          "reason": "timeout",
+          "commands_completed": 0,
+          "observation_resets": 8,
+          "check": {
+            "ok": false,
+            "per_predicate": [
+              {
+                "pred": "at",
+                "ok": false
+              },
+              {
+                "pred": "not_moved",
+                "ok": true
+              },
+              {
+                "pred": "not_moved",
+                "ok": true
+              },
+              {
+                "pred": "not_moved",
+                "ok": true
+              },
+              {
+                "pred": "not_moved",
+                "ok": true
+              },
+              {
+                "pred": "gripper_open",
+                "ok": true
+              },
+              {
+                "pred": "settled",
+                "ok": true
+              }
+            ],
+            "ticks": 15,
+            "required_ticks": 15
+          }
+        },
+        {
+          "seed": 10026,
+          "success": false,
+          "ticks": 1200,
+          "reason": "timeout",
+          "commands_completed": 0,
+          "observation_resets": 4,
+          "check": {
+            "ok": false,
+            "per_predicate": [
+              {
+                "pred": "at",
+                "ok": false
+              },
+              {
+                "pred": "not_moved",
+                "ok": true
+              },
+              {
+                "pred": "not_moved",
+                "ok": true
+              },
+              {
+                "pred": "not_moved",
+                "ok": true
+              },
+              {
+                "pred": "not_moved",
+                "ok": true
+              },
+              {
+                "pred": "gripper_open",
+                "ok": true
+              },
+              {
+                "pred": "settled",
+                "ok": true
+              }
+            ],
+            "ticks": 15,
+            "required_ticks": 15
+          }
+        },
+        {
+          "seed": 10027,
+          "success": false,
+          "ticks": 1200,
+          "reason": "timeout",
+          "commands_completed": 0,
+          "observation_resets": 10,
+          "check": {
+            "ok": false,
+            "per_predicate": [
+              {
+                "pred": "at",
+                "ok": false
+              },
+              {
+                "pred": "not_moved",
+                "ok": true
+              },
+              {
+                "pred": "not_moved",
+                "ok": true
+              },
+              {
+                "pred": "not_moved",
+                "ok": true
+              },
+              {
+                "pred": "not_moved",
+                "ok": true
+              },
+              {
+                "pred": "gripper_open",
+                "ok": true
+              },
+              {
+                "pred": "settled",
+                "ok": true
+              }
+            ],
+            "ticks": 15,
+            "required_ticks": 15
+          }
+        },
+        {
+          "seed": 10028,
+          "success": false,
+          "ticks": 1200,
+          "reason": "timeout",
+          "commands_completed": 0,
+          "observation_resets": 13,
+          "check": {
+            "ok": false,
+            "per_predicate": [
+              {
+                "pred": "at",
+                "ok": false
+              },
+              {
+                "pred": "not_moved",
+                "ok": true
+              },
+              {
+                "pred": "not_moved",
+                "ok": true
+              },
+              {
+                "pred": "not_moved",
+                "ok": true
+              },
+              {
+                "pred": "not_moved",
+                "ok": true
+              },
+              {
+                "pred": "gripper_open",
+                "ok": true
+              },
+              {
+                "pred": "settled",
+                "ok": true
+              }
+            ],
+            "ticks": 15,
+            "required_ticks": 15
+          }
+        },
+        {
+          "seed": 10029,
+          "success": false,
+          "ticks": 1200,
+          "reason": "timeout",
+          "commands_completed": 0,
+          "observation_resets": 9,
+          "check": {
+            "ok": false,
+            "per_predicate": [
+              {
+                "pred": "at",
+                "ok": false
+              },
+              {
+                "pred": "not_moved",
+                "ok": true
+              },
+              {
+                "pred": "not_moved",
+                "ok": true
+              },
+              {
+                "pred": "not_moved",
+                "ok": true
+              },
+              {
+                "pred": "not_moved",
+                "ok": true
+              },
+              {
+                "pred": "gripper_open",
+                "ok": true
+              },
+              {
+                "pred": "settled",
+                "ok": true
+              }
+            ],
+            "ticks": 15,
+            "required_ticks": 15
+          }
+        }
+      ],
+      "seconds": 104.42057647800539,
+      "max_ticks": 1200,
+      "replan_every": 15,
+      "inference_seconds_mean": 0.09618914411715572,
+      "inference_calls": 410,
+      "weights_sha256": "460a0a07848b87864e375a8f933454af87d62b0311899c407c14fc4257d71445",
+      "sampling_seed": 10000,
+      "scheduler": "simulation-only state-based CommandTracker; no live Gemini calls",
+      "noise_parameters": {}
+    },
+    "real": {
+      "n": 30,
+      "noise": "real",
+      "scene_seeds": [
+        10000,
+        10001,
+        10002,
+        10003,
+        10004,
+        10005,
+        10006,
+        10007,
+        10008,
+        10009,
+        10010,
+        10011,
+        10012,
+        10013,
+        10014,
+        10015,
+        10016,
+        10017,
+        10018,
+        10019,
+        10020,
+        10021,
+        10022,
+        10023,
+        10024,
+        10025,
+        10026,
+        10027,
+        10028,
+        10029
+      ],
+      "successes": 0,
+      "success": 0.0,
+      "episodes": [
+        {
+          "seed": 10000,
+          "success": false,
+          "ticks": 1200,
+          "reason": "timeout",
+          "commands_completed": 0,
+          "observation_resets": 13,
+          "check": {
+            "ok": false,
+            "per_predicate": [
+              {
+                "pred": "at",
+                "ok": false
+              },
+              {
+                "pred": "not_moved",
+                "ok": true
+              },
+              {
+                "pred": "not_moved",
+                "ok": true
+              },
+              {
+                "pred": "not_moved",
+                "ok": true
+              },
+              {
+                "pred": "not_moved",
+                "ok": true
+              },
+              {
+                "pred": "gripper_open",
+                "ok": true
+              },
+              {
+                "pred": "settled",
+                "ok": true
+              }
+            ],
+            "ticks": 15,
+            "required_ticks": 15
+          }
+        },
+        {
+          "seed": 10001,
+          "success": false,
+          "ticks": 1200,
+          "reason": "timeout",
+          "commands_completed": 0,
+          "observation_resets": 10,
+          "check": {
+            "ok": false,
+            "per_predicate": [
+              {
+                "pred": "at",
+                "ok": false
+              },
+              {
+                "pred": "not_moved",
+                "ok": true
+              },
+              {
+                "pred": "not_moved",
+                "ok": true
+              },
+              {
+                "pred": "not_moved",
+                "ok": true
+              },
+              {
+                "pred": "not_moved",
+                "ok": true
+              },
+              {
+                "pred": "gripper_open",
+                "ok": true
+              },
+              {
+                "pred": "settled",
+                "ok": true
+              }
+            ],
+            "ticks": 15,
+            "required_ticks": 15
+          }
+        },
+        {
+          "seed": 10002,
+          "success": false,
+          "ticks": 1200,
+          "reason": "timeout",
+          "commands_completed": 0,
+          "observation_resets": 6,
+          "check": {
+            "ok": false,
+            "per_predicate": [
+              {
+                "pred": "at",
+                "ok": false
+              },
+              {
+                "pred": "not_moved",
+                "ok": true
+              },
+              {
+                "pred": "not_moved",
+                "ok": true
+              },
+              {
+                "pred": "not_moved",
+                "ok": true
+              },
+              {
+                "pred": "not_moved",
+                "ok": true
+              },
+              {
+                "pred": "gripper_open",
+                "ok": true
+              },
+              {
+                "pred": "settled",
+                "ok": true
+              }
+            ],
+            "ticks": 15,
+            "required_ticks": 15
+          }
+        },
+        {
+          "seed": 10003,
+          "success": false,
+          "ticks": 1200,
+          "reason": "timeout",
+          "commands_completed": 0,
+          "observation_resets": 14,
+          "check": {
+            "ok": false,
+            "per_predicate": [
+              {
+                "pred": "at",
+                "ok": false
+              },
+              {
+                "pred": "not_moved",
+                "ok": true
+              },
+              {
+                "pred": "not_moved",
+                "ok": true
+              },
+              {
+                "pred": "not_moved",
+                "ok": true
+              },
+              {
+                "pred": "not_moved",
+                "ok": true
+              },
+              {
+                "pred": "gripper_open",
+                "ok": true
+              },
+              {
+                "pred": "settled",
+                "ok": true
+              }
+            ],
+            "ticks": 15,
+            "required_ticks": 15
+          }
+        },
+        {
+          "seed": 10004,
+          "success": false,
+          "ticks": 1200,
+          "reason": "timeout",
+          "commands_completed": 0,
+          "observation_resets": 12,
+          "check": {
+            "ok": false,
+            "per_predicate": [
+              {
+                "pred": "at",
+                "ok": false
+              },
+              {
+                "pred": "not_moved",
+                "ok": true
+              },
+              {
+                "pred": "not_moved",
+                "ok": true
+              },
+              {
+                "pred": "not_moved",
+                "ok": true
+              },
+              {
+                "pred": "not_moved",
+                "ok": true
+              },
+              {
+                "pred": "gripper_open",
+                "ok": true
+              },
+              {
+                "pred": "settled",
+                "ok": true
+              }
+            ],
+            "ticks": 15,
+            "required_ticks": 15
+          }
+        },
+        {
+          "seed": 10005,
+          "success": false,
+          "ticks": 1200,
+          "reason": "timeout",
+          "commands_completed": 0,
+          "observation_resets": 14,
+          "check": {
+            "ok": false,
+            "per_predicate": [
+              {
+                "pred": "at",
+                "ok": false
+              },
+              {
+                "pred": "not_moved",
+                "ok": true
+              },
+              {
+                "pred": "not_moved",
+                "ok": true
+              },
+              {
+                "pred": "not_moved",
+                "ok": true
+              },
+              {
+                "pred": "not_moved",
+                "ok": true
+              },
+              {
+                "pred": "gripper_open",
+                "ok": true
+              },
+              {
+                "pred": "settled",
+                "ok": true
+              }
+            ],
+            "ticks": 15,
+            "required_ticks": 15
+          }
+        },
+        {
+          "seed": 10006,
+          "success": false,
+          "ticks": 1200,
+          "reason": "timeout",
+          "commands_completed": 0,
+          "observation_resets": 8,
+          "check": {
+            "ok": false,
+            "per_predicate": [
+              {
+                "pred": "at",
+                "ok": false
+              },
+              {
+                "pred": "not_moved",
+                "ok": true
+              },
+              {
+                "pred": "not_moved",
+                "ok": true
+              },
+              {
+                "pred": "not_moved",
+                "ok": true
+              },
+              {
+                "pred": "not_moved",
+                "ok": true
+              },
+              {
+                "pred": "gripper_open",
+                "ok": true
+              },
+              {
+                "pred": "settled",
+                "ok": true
+              }
+            ],
+            "ticks": 15,
+            "required_ticks": 15
+          }
+        },
+        {
+          "seed": 10007,
+          "success": false,
+          "ticks": 1200,
+          "reason": "timeout",
+          "commands_completed": 0,
+          "observation_resets": 10,
+          "check": {
+            "ok": false,
+            "per_predicate": [
+              {
+                "pred": "at",
+                "ok": false
+              },
+              {
+                "pred": "not_moved",
+                "ok": true
+              },
+              {
+                "pred": "not_moved",
+                "ok": true
+              },
+              {
+                "pred": "not_moved",
+                "ok": true
+              },
+              {
+                "pred": "not_moved",
+                "ok": true
+              },
+              {
+                "pred": "gripper_open",
+                "ok": true
+              },
+              {
+                "pred": "settled",
+                "ok": true
+              }
+            ],
+            "ticks": 15,
+            "required_ticks": 15
+          }
+        },
+        {
+          "seed": 10008,
+          "success": false,
+          "ticks": 1200,
+          "reason": "timeout",
+          "commands_completed": 0,
+          "observation_resets": 9,
+          "check": {
+            "ok": false,
+            "per_predicate": [
+              {
+                "pred": "at",
+                "ok": false
+              },
+              {
+                "pred": "not_moved",
+                "ok": true
+              },
+              {
+                "pred": "not_moved",
+                "ok": true
+              },
+              {
+                "pred": "not_moved",
+                "ok": true
+              },
+              {
+                "pred": "not_moved",
+                "ok": true
+              },
+              {
+                "pred": "gripper_open",
+                "ok": true
+              },
+              {
+                "pred": "settled",
+                "ok": true
+              }
+            ],
+            "ticks": 15,
+            "required_ticks": 15
+          }
+        },
+        {
+          "seed": 10009,
+          "success": false,
+          "ticks": 1200,
+          "reason": "timeout",
+          "commands_completed": 0,
+          "observation_resets": 9,
+          "check": {
+            "ok": false,
+            "per_predicate": [
+              {
+                "pred": "at",
+                "ok": false
+              },
+              {
+                "pred": "not_moved",
+                "ok": true
+              },
+              {
+                "pred": "not_moved",
+                "ok": true
+              },
+              {
+                "pred": "not_moved",
+                "ok": true
+              },
+              {
+                "pred": "not_moved",
+                "ok": true
+              },
+              {
+                "pred": "gripper_open",
+                "ok": true
+              },
+              {
+                "pred": "settled",
+                "ok": true
+              }
+            ],
+            "ticks": 15,
+            "required_ticks": 15
+          }
+        },
+        {
+          "seed": 10010,
+          "success": false,
+          "ticks": 1200,
+          "reason": "timeout",
+          "commands_completed": 0,
+          "observation_resets": 20,
+          "check": {
+            "ok": false,
+            "per_predicate": [
+              {
+                "pred": "at",
+                "ok": false
+              },
+              {
+                "pred": "not_moved",
+                "ok": true
+              },
+              {
+                "pred": "not_moved",
+                "ok": true
+              },
+              {
+                "pred": "not_moved",
+                "ok": true
+              },
+              {
+                "pred": "not_moved",
+                "ok": true
+              },
+              {
+                "pred": "gripper_open",
+                "ok": true
+              },
+              {
+                "pred": "settled",
+                "ok": true
+              }
+            ],
+            "ticks": 15,
+            "required_ticks": 15
+          }
+        },
+        {
+          "seed": 10011,
+          "success": false,
+          "ticks": 1200,
+          "reason": "timeout",
+          "commands_completed": 0,
+          "observation_resets": 13,
+          "check": {
+            "ok": false,
+            "per_predicate": [
+              {
+                "pred": "at",
+                "ok": false
+              },
+              {
+                "pred": "not_moved",
+                "ok": true
+              },
+              {
+                "pred": "not_moved",
+                "ok": true
+              },
+              {
+                "pred": "not_moved",
+                "ok": true
+              },
+              {
+                "pred": "not_moved",
+                "ok": true
+              },
+              {
+                "pred": "gripper_open",
+                "ok": true
+              },
+              {
+                "pred": "settled",
+                "ok": true
+              }
+            ],
+            "ticks": 15,
+            "required_ticks": 15
+          }
+        },
+        {
+          "seed": 10012,
+          "success": false,
+          "ticks": 1200,
+          "reason": "timeout",
+          "commands_completed": 0,
+          "observation_resets": 16,
+          "check": {
+            "ok": false,
+            "per_predicate": [
+              {
+                "pred": "at",
+                "ok": false
+              },
+              {
+                "pred": "not_moved",
+                "ok": true
+              },
+              {
+                "pred": "not_moved",
+                "ok": true
+              },
+              {
+                "pred": "not_moved",
+                "ok": true
+              },
+              {
+                "pred": "not_moved",
+                "ok": true
+              },
+              {
+                "pred": "gripper_open",
+                "ok": true
+              },
+              {
+                "pred": "settled",
+                "ok": true
+              }
+            ],
+            "ticks": 15,
+            "required_ticks": 15
+          }
+        },
+        {
+          "seed": 10013,
+          "success": false,
+          "ticks": 1200,
+          "reason": "timeout",
+          "commands_completed": 0,
+          "observation_resets": 10,
+          "check": {
+            "ok": false,
+            "per_predicate": [
+              {
+                "pred": "at",
+                "ok": false
+              },
+              {
+                "pred": "not_moved",
+                "ok": true
+              },
+              {
+                "pred": "not_moved",
+                "ok": true
+              },
+              {
+                "pred": "not_moved",
+                "ok": true
+              },
+              {
+                "pred": "not_moved",
+                "ok": true
+              },
+              {
+                "pred": "gripper_open",
+                "ok": true
+              },
+              {
+                "pred": "settled",
+                "ok": true
+              }
+            ],
+            "ticks": 15,
+            "required_ticks": 15
+          }
+        },
+        {
+          "seed": 10014,
+          "success": false,
+          "ticks": 1200,
+          "reason": "timeout",
+          "commands_completed": 0,
+          "observation_resets": 10,
+          "check": {
+            "ok": false,
+            "per_predicate": [
+              {
+                "pred": "at",
+                "ok": false
+              },
+              {
+                "pred": "not_moved",
+                "ok": true
+              },
+              {
+                "pred": "not_moved",
+                "ok": true
+              },
+              {
+                "pred": "not_moved",
+                "ok": true
+              },
+              {
+                "pred": "not_moved",
+                "ok": true
+              },
+              {
+                "pred": "gripper_open",
+                "ok": true
+              },
+              {
+                "pred": "settled",
+                "ok": true
+              }
+            ],
+            "ticks": 15,
+            "required_ticks": 15
+          }
+        },
+        {
+          "seed": 10015,
+          "success": false,
+          "ticks": 1200,
+          "reason": "timeout",
+          "commands_completed": 0,
+          "observation_resets": 7,
+          "check": {
+            "ok": false,
+            "per_predicate": [
+              {
+                "pred": "at",
+                "ok": false
+              },
+              {
+                "pred": "not_moved",
+                "ok": true
+              },
+              {
+                "pred": "not_moved",
+                "ok": true
+              },
+              {
+                "pred": "not_moved",
+                "ok": true
+              },
+              {
+                "pred": "not_moved",
+                "ok": true
+              },
+              {
+                "pred": "gripper_open",
+                "ok": true
+              },
+              {
+                "pred": "settled",
+                "ok": true
+              }
+            ],
+            "ticks": 15,
+            "required_ticks": 15
+          }
+        },
+        {
+          "seed": 10016,
+          "success": false,
+          "ticks": 1200,
+          "reason": "timeout",
+          "commands_completed": 0,
+          "observation_resets": 12,
+          "check": {
+            "ok": false,
+            "per_predicate": [
+              {
+                "pred": "at",
+                "ok": false
+              },
+              {
+                "pred": "not_moved",
+                "ok": true
+              },
+              {
+                "pred": "not_moved",
+                "ok": true
+              },
+              {
+                "pred": "not_moved",
+                "ok": true
+              },
+              {
+                "pred": "not_moved",
+                "ok": true
+              },
+              {
+                "pred": "gripper_open",
+                "ok": true
+              },
+              {
+                "pred": "settled",
+                "ok": true
+              }
+            ],
+            "ticks": 15,
+            "required_ticks": 15
+          }
+        },
+        {
+          "seed": 10017,
+          "success": false,
+          "ticks": 1200,
+          "reason": "timeout",
+          "commands_completed": 0,
+          "observation_resets": 11,
+          "check": {
+            "ok": false,
+            "per_predicate": [
+              {
+                "pred": "at",
+                "ok": false
+              },
+              {
+                "pred": "not_moved",
+                "ok": true
+              },
+              {
+                "pred": "not_moved",
+                "ok": true
+              },
+              {
+                "pred": "not_moved",
+                "ok": true
+              },
+              {
+                "pred": "not_moved",
+                "ok": true
+              },
+              {
+                "pred": "gripper_open",
+                "ok": true
+              },
+              {
+                "pred": "settled",
+                "ok": true
+              }
+            ],
+            "ticks": 15,
+            "required_ticks": 15
+          }
+        },
+        {
+          "seed": 10018,
+          "success": false,
+          "ticks": 1200,
+          "reason": "timeout",
+          "commands_completed": 0,
+          "observation_resets": 10,
+          "check": {
+            "ok": false,
+            "per_predicate": [
+              {
+                "pred": "at",
+                "ok": false
+              },
+              {
+                "pred": "not_moved",
+                "ok": true
+              },
+              {
+                "pred": "not_moved",
+                "ok": true
+              },
+              {
+                "pred": "not_moved",
+                "ok": true
+              },
+              {
+                "pred": "not_moved",
+                "ok": true
+              },
+              {
+                "pred": "gripper_open",
+                "ok": true
+              },
+              {
+                "pred": "settled",
+                "ok": true
+              }
+            ],
+            "ticks": 15,
+            "required_ticks": 15
+          }
+        },
+        {
+          "seed": 10019,
+          "success": false,
+          "ticks": 1200,
+          "reason": "timeout",
+          "commands_completed": 1,
+          "observation_resets": 15,
+          "check": {
+            "ok": false,
+            "per_predicate": [
+              {
+                "pred": "at",
+                "ok": false
+              },
+              {
+                "pred": "not_moved",
+                "ok": true
+              },
+              {
+                "pred": "not_moved",
+                "ok": true
+              },
+              {
+                "pred": "not_moved",
+                "ok": true
+              },
+              {
+                "pred": "not_moved",
+                "ok": true
+              },
+              {
+                "pred": "gripper_open",
+                "ok": true
+              },
+              {
+                "pred": "settled",
+                "ok": true
+              }
+            ],
+            "ticks": 15,
+            "required_ticks": 15
+          }
+        },
+        {
+          "seed": 10020,
+          "success": false,
+          "ticks": 1200,
+          "reason": "timeout",
+          "commands_completed": 0,
+          "observation_resets": 18,
+          "check": {
+            "ok": false,
+            "per_predicate": [
+              {
+                "pred": "at",
+                "ok": false
+              },
+              {
+                "pred": "not_moved",
+                "ok": true
+              },
+              {
+                "pred": "not_moved",
+                "ok": true
+              },
+              {
+                "pred": "not_moved",
+                "ok": true
+              },
+              {
+                "pred": "not_moved",
+                "ok": true
+              },
+              {
+                "pred": "gripper_open",
+                "ok": true
+              },
+              {
+                "pred": "settled",
+                "ok": true
+              }
+            ],
+            "ticks": 15,
+            "required_ticks": 15
+          }
+        },
+        {
+          "seed": 10021,
+          "success": false,
+          "ticks": 1200,
+          "reason": "timeout",
+          "commands_completed": 0,
+          "observation_resets": 11,
+          "check": {
+            "ok": false,
+            "per_predicate": [
+              {
+                "pred": "at",
+                "ok": false
+              },
+              {
+                "pred": "not_moved",
+                "ok": true
+              },
+              {
+                "pred": "not_moved",
+                "ok": true
+              },
+              {
+                "pred": "not_moved",
+                "ok": true
+              },
+              {
+                "pred": "not_moved",
+                "ok": true
+              },
+              {
+                "pred": "gripper_open",
+                "ok": true
+              },
+              {
+                "pred": "settled",
+                "ok": true
+              }
+            ],
+            "ticks": 15,
+            "required_ticks": 15
+          }
+        },
+        {
+          "seed": 10022,
+          "success": false,
+          "ticks": 1200,
+          "reason": "timeout",
+          "commands_completed": 0,
+          "observation_resets": 6,
+          "check": {
+            "ok": false,
+            "per_predicate": [
+              {
+                "pred": "at",
+                "ok": false
+              },
+              {
+                "pred": "not_moved",
+                "ok": true
+              },
+              {
+                "pred": "not_moved",
+                "ok": true
+              },
+              {
+                "pred": "not_moved",
+                "ok": true
+              },
+              {
+                "pred": "not_moved",
+                "ok": true
+              },
+              {
+                "pred": "gripper_open",
+                "ok": true
+              },
+              {
+                "pred": "settled",
+                "ok": true
+              }
+            ],
+            "ticks": 15,
+            "required_ticks": 15
+          }
+        },
+        {
+          "seed": 10023,
+          "success": false,
+          "ticks": 1200,
+          "reason": "timeout",
+          "commands_completed": 0,
+          "observation_resets": 7,
+          "check": {
+            "ok": false,
+            "per_predicate": [
+              {
+                "pred": "at",
+                "ok": false
+              },
+              {
+                "pred": "not_moved",
+                "ok": true
+              },
+              {
+                "pred": "not_moved",
+                "ok": true
+              },
+              {
+                "pred": "not_moved",
+                "ok": true
+              },
+              {
+                "pred": "not_moved",
+                "ok": true
+              },
+              {
+                "pred": "gripper_open",
+                "ok": true
+              },
+              {
+                "pred": "settled",
+                "ok": true
+              }
+            ],
+            "ticks": 15,
+            "required_ticks": 15
+          }
+        },
+        {
+          "seed": 10024,
+          "success": false,
+          "ticks": 1200,
+          "reason": "timeout",
+          "commands_completed": 0,
+          "observation_resets": 7,
+          "check": {
+            "ok": false,
+            "per_predicate": [
+              {
+                "pred": "at",
+                "ok": false
+              },
+              {
+                "pred": "not_moved",
+                "ok": true
+              },
+              {
+                "pred": "not_moved",
+                "ok": true
+              },
+              {
+                "pred": "not_moved",
+                "ok": true
+              },
+              {
+                "pred": "not_moved",
+                "ok": true
+              },
+              {
+                "pred": "gripper_open",
+                "ok": true
+              },
+              {
+                "pred": "settled",
+                "ok": true
+              }
+            ],
+            "ticks": 15,
+            "required_ticks": 15
+          }
+        },
+        {
+          "seed": 10025,
+          "success": false,
+          "ticks": 1200,
+          "reason": "timeout",
+          "commands_completed": 0,
+          "observation_resets": 10,
+          "check": {
+            "ok": false,
+            "per_predicate": [
+              {
+                "pred": "at",
+                "ok": false
+              },
+              {
+                "pred": "not_moved",
+                "ok": true
+              },
+              {
+                "pred": "not_moved",
+                "ok": true
+              },
+              {
+                "pred": "not_moved",
+                "ok": true
+              },
+              {
+                "pred": "not_moved",
+                "ok": true
+              },
+              {
+                "pred": "gripper_open",
+                "ok": true
+              },
+              {
+                "pred": "settled",
+                "ok": true
+              }
+            ],
+            "ticks": 15,
+            "required_ticks": 15
+          }
+        },
+        {
+          "seed": 10026,
+          "success": false,
+          "ticks": 1200,
+          "reason": "timeout",
+          "commands_completed": 0,
+          "observation_resets": 10,
+          "check": {
+            "ok": false,
+            "per_predicate": [
+              {
+                "pred": "at",
+                "ok": false
+              },
+              {
+                "pred": "not_moved",
+                "ok": true
+              },
+              {
+                "pred": "not_moved",
+                "ok": true
+              },
+              {
+                "pred": "not_moved",
+                "ok": true
+              },
+              {
+                "pred": "not_moved",
+                "ok": true
+              },
+              {
+                "pred": "gripper_open",
+                "ok": true
+              },
+              {
+                "pred": "settled",
+                "ok": true
+              }
+            ],
+            "ticks": 15,
+            "required_ticks": 15
+          }
+        },
+        {
+          "seed": 10027,
+          "success": false,
+          "ticks": 1200,
+          "reason": "timeout",
+          "commands_completed": 0,
+          "observation_resets": 13,
+          "check": {
+            "ok": false,
+            "per_predicate": [
+              {
+                "pred": "at",
+                "ok": false
+              },
+              {
+                "pred": "not_moved",
+                "ok": true
+              },
+              {
+                "pred": "not_moved",
+                "ok": true
+              },
+              {
+                "pred": "not_moved",
+                "ok": true
+              },
+              {
+                "pred": "not_moved",
+                "ok": true
+              },
+              {
+                "pred": "gripper_open",
+                "ok": true
+              },
+              {
+                "pred": "settled",
+                "ok": true
+              }
+            ],
+            "ticks": 15,
+            "required_ticks": 15
+          }
+        },
+        {
+          "seed": 10028,
+          "success": false,
+          "ticks": 1200,
+          "reason": "timeout",
+          "commands_completed": 0,
+          "observation_resets": 14,
+          "check": {
+            "ok": false,
+            "per_predicate": [
+              {
+                "pred": "at",
+                "ok": false
+              },
+              {
+                "pred": "not_moved",
+                "ok": true
+              },
+              {
+                "pred": "not_moved",
+                "ok": true
+              },
+              {
+                "pred": "not_moved",
+                "ok": true
+              },
+              {
+                "pred": "not_moved",
+                "ok": true
+              },
+              {
+                "pred": "gripper_open",
+                "ok": true
+              },
+              {
+                "pred": "settled",
+                "ok": true
+              }
+            ],
+            "ticks": 15,
+            "required_ticks": 15
+          }
+        },
+        {
+          "seed": 10029,
+          "success": false,
+          "ticks": 1200,
+          "reason": "timeout",
+          "commands_completed": 0,
+          "observation_resets": 12,
+          "check": {
+            "ok": false,
+            "per_predicate": [
+              {
+                "pred": "at",
+                "ok": false
+              },
+              {
+                "pred": "not_moved",
+                "ok": true
+              },
+              {
+                "pred": "not_moved",
+                "ok": true
+              },
+              {
+                "pred": "not_moved",
+                "ok": true
+              },
+              {
+                "pred": "not_moved",
+                "ok": true
+              },
+              {
+                "pred": "gripper_open",
+                "ok": true
+              },
+              {
+                "pred": "settled",
+                "ok": true
+              }
+            ],
+            "ticks": 15,
+            "required_ticks": 15
+          }
+        }
+      ],
+      "seconds": 104.15351087797899,
+      "max_ticks": 1200,
+      "replan_every": 15,
+      "inference_seconds_mean": 0.09253193560842192,
+      "inference_calls": 400,
+      "weights_sha256": "460a0a07848b87864e375a8f933454af87d62b0311899c407c14fc4257d71445",
+      "sampling_seed": 10000,
+      "scheduler": "simulation-only state-based CommandTracker; no live Gemini calls",
+      "noise_parameters": {
+        "joint_offset_std_deg": 1.5,
+        "pixel_noise_std": 2,
+        "brightness": [
+          0.9,
+          1.1
+        ],
+        "stale_probability": 0.3,
+        "stale_max_ticks": 7,
+        "blur_probability": 0.2,
+        "additional_latency_ticks": 1
+      }
+    }
+  },
+  "pretrained": {
+    "base": {
+      "repo": "lerobot/smolvla_base",
+      "revision": "c83c3163b8ca9b7e67c509fffd9121e66cb96205",
+      "source": "pre-existing upstream HF cache; no finetuned weights"
+    },
+    "backbone": {
+      "repo": "HuggingFaceTB/SmolVLM2-500M-Video-Instruct",
+      "revision": "7b375e1b73b11138ff12fe22c8f2822d8fe03467",
+      "source": "pre-existing upstream HF cache; no finetuned weights"
+    }
+  },
+  "base_weights_sha256": "7cd549ac2351fb069c0ddb3c34ad2d09cfc92b56a15dccdfc2e41467aaca01eb",
+  "deployment": null,
+  "deployment_qualified": false,
+  "training": {
+    "episodes": 400,
+    "frames": 43643,
+    "batch_size": 64,
+    "seed": 0,
+    "lr": 5e-05,
+    "normalization": "actual training mean/std; no identity fallback",
+    "trainable_parameters": 99880992,
+    "image_augmentation": true,
+    "model_image_size": 512,
+    "memory_fraction": 0.167,
+    "gpu_duty": 0.6,
+    "device": "cuda:0",
+    "parent_weights_sha256": "36c913c7b73622618e485bd21daf7473dcd7c5d14cba9da4e7103a4413bd06ec",
+    "parent_steps": 3000,
+    "optimizer_restarted": true,
+    "steps": 1356,
+    "seconds": 840.9224786340492,
+    "first_loss": 0.2282576709985733,
+    "last_loss": 0.03041769005358219,
+    "total_steps": 4356,
+    "peak_vram_gb": 11.220812320709229
+  },
+  "weights_sha256": "460a0a07848b87864e375a8f933454af87d62b0311899c407c14fc4257d71445"
+}

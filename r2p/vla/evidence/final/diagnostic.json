@@ -1,0 +1,17 @@
+{
+  "samples": 128,
+  "chunk_mae_rad": 0.02184221600722004,
+  "first_action_mae_rad": 0.01718217233666305,
+  "per_joint_mae_rad": [
+    0.020966316813521162,
+    0.02130973346966864,
+    0.02733224179892653,
+    0.013640685124411361,
+    0.03268742768481166,
+    0.015116891151980814
+  ],
+  "black_image_prediction_change_rad": 0.0074986668971233975,
+  "different_language_prediction_change_rad": 0.02756610122042026,
+  "note": "Teacher-forced training samples; sensitivity is not closed-loop success.",
+  "weights_sha256": "460a0a07848b87864e375a8f933454af87d62b0311899c407c14fc4257d71445"
+}

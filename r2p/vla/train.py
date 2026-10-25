@@ -61,6 +61,7 @@ def main():
     p.add_argument("--workers", type=int, default=4)
     p.add_argument("--resume", help="Continue from this fine-tuned export; optimizer restarts explicitly")
     p.add_argument("--image-augmentation", action="store_true")
+    p.add_argument("--image-size", type=int, choices=(256, 512), default=256)
     p.add_argument("--gpu-duty", type=float, default=.60, help="Maximum GPU duty fraction of the assigned lease")
     a = p.parse_args()
     if not 0 < a.gpu_duty <= 1 or a.steps < 1 or a.batch_size < 1:
@@ -86,7 +87,8 @@ def main():
             raise ValueError("resume normalization differs from this dataset")
         if file_hash(parent_path/"pretrained/model.safetensors") != parent["weights_sha256"]:
             raise ValueError("resume weights hash mismatch")
-    model = load_model(Path(a.resume)/"pretrained" if a.resume else assets/"base", assets/"backbone", device, fresh=True)
+    model = load_model(Path(a.resume)/"pretrained" if a.resume else assets/"base", assets/"backbone", device,
+                       fresh=True, image_size=a.image_size)
     tokenizer = AutoTokenizer.from_pretrained(str(assets/"backbone"), local_files_only=True)
     optimizer = torch.optim.AdamW([p for p in model.parameters() if p.requires_grad], lr=a.lr, betas=(.9, .95), weight_decay=1e-10)
     loader = DataLoader(data, batch_size=a.batch_size, shuffle=True, num_workers=a.workers, collate_fn=collate,
@@ -111,6 +113,8 @@ def main():
                         "seed": a.seed, "lr": a.lr, "normalization": "actual training mean/std; no identity fallback",
                         "trainable_parameters": sum(p.numel() for p in model.parameters() if p.requires_grad)}}
     cfg["training"].update(image_augmentation=a.image_augmentation,
+                           model_image_size=a.image_size,
+                           memory_fraction=a.memory_fraction, gpu_duty=a.gpu_duty, device=str(device),
                            parent_weights_sha256=parent["weights_sha256"] if parent else None,
                            parent_steps=parent["training"].get("total_steps", parent["training"]["steps"]) if parent else 0,
                            optimizer_restarted=bool(parent))

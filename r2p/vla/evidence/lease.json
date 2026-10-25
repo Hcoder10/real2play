@@ -1,0 +1,12 @@
+{
+  "checked": "2026-10-25T14:40:42",
+  "building": "squaredcube1-ubuntu",
+  "gpu": 0,
+  "trust": "live",
+  "lease": "apt_e05759e0",
+  "pct": 60,
+  "vram_gb": 16,
+  "minutes_left": 101.2,
+  "over_limit": false,
+  "unleased_used_gb": 0
+}

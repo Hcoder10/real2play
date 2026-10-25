@@ -19,10 +19,10 @@ def instruction(command, target_cell=None):
         return "Release the piece."
     if value in ("home", "home()"):
         return "Return the arm to its starting pose."
-    m = re.fullmatch(r"pick\(([a-zA-Z0-9_]+)\)", value)
+    m = re.fullmatch(r"pick\((piece)\)", value)
     if m:
         return f"Pick up the {m[1]}."
-    m = re.fullmatch(r"place_at\(([a-zA-Z0-9_]+),(cell|r[0-2]c[0-2])\)", value.replace(" ", ""))
+    m = re.fullmatch(r"place_at\((piece),(cell|r[0-2]c[0-2])\)", value.replace(" ", ""))
     if m:
         cell = target_cell if m[2] == "cell" else m[2]
         if not re.fullmatch(r"r[0-2]c[0-2]", cell or ""):
@@ -44,6 +44,8 @@ def commanded_state(commanded, measured, age_s):
     commanded, measured = np.asarray(commanded, float), np.asarray(measured, float)
     if commanded.shape != (6,) or measured.shape != (6,):
         raise ValueError("six MJCF joint angles required")
+    if not np.isfinite(commanded).all() or not np.isfinite(measured).all():
+        raise ValueError("joint observations must be finite")
     reset = bool(np.max(np.abs(commanded-measured)) > np.deg2rad(4))
     state = np.r_[measured if reset else commanded, age_s].astype(np.float32)
     if not np.isfinite(state).all() or age_s < 0:
@@ -88,4 +90,3 @@ class Normalizer:
     def action(self, x):
         cfg = self.stats["action"]
         return np.asarray(x)*np.maximum(cfg["std"], 1e-3)+cfg["mean"]
-

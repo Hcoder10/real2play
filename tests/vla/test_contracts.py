@@ -15,6 +15,8 @@ def test_runtime_and_trace_language_are_identical():
         instruction("place_at(piece,cell)")
     with pytest.raises(ValueError):
         instruction("place_at(piece,r9c9)")
+    with pytest.raises(ValueError):
+        instruction("pick(unknown_object)")
 
 
 def test_contact_reset_preserves_command_clock():
@@ -28,6 +30,9 @@ def test_contact_reset_preserves_command_clock():
     state, reset = commanded_state(commanded, measured, 2.)
     assert not reset
     np.testing.assert_array_equal(state[:6], commanded)
+    measured[1] = np.nan
+    with pytest.raises(ValueError, match="finite"):
+        commanded_state(commanded, measured, 2.)
 
 
 def test_chunk_never_crosses_commands_or_uses_executed_target():

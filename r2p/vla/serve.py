@@ -26,7 +26,11 @@ def main():
     p.add_argument("--port", type=int, default=9106)
     p.add_argument("--device", default="cpu")
     p.add_argument("--memory-fraction", type=float)
+    p.add_argument("--max-seconds", type=float, default=1800, help="Auto-stop before the assigned lease expires")
+    p.add_argument("--gpu-duty", type=float, default=.60)
     a = p.parse_args()
+    if not np.isfinite(a.max_seconds) or a.max_seconds <= 0 or not 0 < a.gpu_duty <= 1:
+        p.error("positive finite max-seconds and gpu-duty in (0,1] required")
     from .runtime import Policy
     policy = Policy.load(a.export, a.device, a.memory_fraction)
 
@@ -69,7 +73,7 @@ def main():
                 seconds = time.monotonic()-start
                 # Leave the remainder of this lease's 60% duty budget idle.
                 if policy.device.type == "cuda":
-                    time.sleep(seconds*2/3)
+                    time.sleep(seconds*(1/a.gpu_duty-1))
                 self.reply(200, {"chunk": chunk.tolist(), "action": "absolute_q", "target_space": "servo",
                                  "hz": 30, "inference_seconds": seconds})
             except (ValueError, KeyError, TypeError) as exc:
@@ -78,8 +82,16 @@ def main():
         def log_message(self, *args):
             pass
 
-    print(json.dumps({"listening": f"http://127.0.0.1:{a.port}", "motion": False}), flush=True)
-    HTTPServer(("127.0.0.1", a.port), Handler).serve_forever()
+    print(json.dumps({"listening": f"http://127.0.0.1:{a.port}", "motion": False,
+                      "max_seconds": a.max_seconds}), flush=True)
+    server = HTTPServer(("127.0.0.1", a.port), Handler)
+    server.timeout = 1
+    deadline = time.monotonic()+a.max_seconds
+    try:
+        while time.monotonic() < deadline:
+            server.handle_request()
+    finally:
+        server.server_close()
 
 
 if __name__ == "__main__":

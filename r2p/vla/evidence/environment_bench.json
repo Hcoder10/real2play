@@ -1,0 +1,53 @@
+{
+  "environment": {
+    "torch": "2.11.0+cu128",
+    "numpy": "2.5.4",
+    "mujoco": "3.13.0",
+    "lerobot": "0.6.1",
+    "transformers": "5.4.0",
+    "tokenizers": "0.22.2",
+    "huggingface-hub": "1.6.0"
+  },
+  "bench_probe": [
+    {
+      "seed": 310000,
+      "success": false,
+      "reason": "dropped_during_carry:piece"
+    },
+    {
+      "seed": 310001,
+      "success": false,
+      "reason": "grasp_miss:piece"
+    },
+    {
+      "seed": 310002,
+      "success": false,
+      "reason": "grasp_miss:piece"
+    },
+    {
+      "seed": 310003,
+      "success": false,
+      "reason": "grasp_miss:piece"
+    },
+    {
+      "seed": 310004,
+      "success": false,
+      "reason": "grasp_miss:piece"
+    },
+    {
+      "seed": 310005,
+      "success": false,
+      "reason": "grasp_miss:piece"
+    },
+    {
+      "seed": 310006,
+      "success": false,
+      "reason": "grasp_miss:piece"
+    },
+    {
+      "seed": 310007,
+      "success": false,
+      "reason": "dropped_during_carry:piece"
+    }
+  ]
+}

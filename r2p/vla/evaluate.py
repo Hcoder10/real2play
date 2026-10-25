@@ -29,7 +29,7 @@ class Episode:
         self.offset = np.r_[self.rng.normal(0, np.deg2rad(1.5), 5), 0] if noise == "real" else np.zeros(6)
         self.pending = deque([self.start.copy()] if noise == "real" else [])
         self.chunks, self.states = deque(), deque(maxlen=15)
-        self.images = deque(maxlen=4)
+        self.visual_history = deque([(self.twin.q(), self.initial)], maxlen=8)
         self.command_start, self.resets = 0, 0
         self.done = False
         self.result = None
@@ -40,16 +40,16 @@ class Episode:
         q = self.twin.q()+self.offset
         state, reset = commanded_state(self.last_sent, q, (tick-self.command_start)/HZ)
         self.resets += int(reset)
-        images = self.cameras.render(self.twin.q(), self.twin.poses())
+        visual_q, visual_poses = self.twin.q(), self.twin.poses()
+        if self.noise == "real" and self.rng.random() < .3 and len(self.visual_history) > 1:
+            visual_q, visual_poses = self.visual_history[int(self.rng.integers(len(self.visual_history)))]
+        images = self.cameras.render(visual_q, visual_poses)
         if self.noise == "real":
             import cv2
             gain = self.rng.uniform(.9, 1.1)
             images = np.clip(images.astype(np.float32)*gain+self.rng.normal(0, 2, images.shape), 0, 255).astype(np.uint8)
             if self.rng.random() < .2:
                 images = np.stack([cv2.GaussianBlur(x, (3, 3), .6) for x in images])
-            self.images.append(images)
-            if len(self.images) > 1 and self.rng.random() < .3:
-                images = self.images[int(self.rng.integers(len(self.images)))]
         self.last_observed_tick = tick
         return state, images, instruction(self.tracker.command, self.target_cell)
 
@@ -64,6 +64,7 @@ class Episode:
         self.pending.append(target)
         executed = self.pending.popleft()
         self.twin.step(executed-self.offset)
+        self.visual_history.append((self.twin.q(), self.twin.poses()))
         state = {"objects": self.twin.poses(), "initial": self.initial,
                  "gripper_open": not self.twin.grip_closed()}
         self.states.append(state)
@@ -92,6 +93,8 @@ def evaluate(policy, n=30, noise="clean", seed=10000, batch_size=6, replan=15, m
     training_seeds = {r["seed"] for r in train["episodes"]}
     if training_seeds & set(range(seed, seed+n)):
         raise ValueError("evaluation seeds overlap training episodes")
+    import torch
+    torch.manual_seed(seed)
     started = time.monotonic()
     outcomes, latency = [], []
     for first in range(0, n, batch_size):
@@ -126,9 +129,11 @@ def evaluate(policy, n=30, noise="clean", seed=10000, batch_size=6, replan=15, m
               "episodes": outcomes, "seconds": time.monotonic()-started, "max_ticks": max_ticks,
               "replan_every": replan, "inference_seconds_mean": float(np.mean([r["seconds"] for r in latency])),
               "inference_calls": len(latency), "weights_sha256": policy.config["weights_sha256"],
+              "sampling_seed": seed,
               "scheduler": "simulation-only state-based CommandTracker; no live Gemini calls",
               "noise_parameters": {} if noise == "clean" else {"joint_offset_std_deg": 1.5, "pixel_noise_std": 2,
-                  "brightness": [.9, 1.1], "stale_probability": .3, "blur_probability": .2, "additional_latency_ticks": 1}}
+                  "brightness": [.9, 1.1], "stale_probability": .3, "stale_max_ticks": 7,
+                  "blur_probability": .2, "additional_latency_ticks": 1}}
     path = policy.directory/"config.json"
     cfg = json.loads(path.read_text())
     cfg.setdefault("eval", {})[noise] = report

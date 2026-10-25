@@ -1,0 +1,29 @@
+{
+  "piece_xy_min": [
+    0.09002647588864277,
+    -0.1337743297000216
+  ],
+  "piece_xy_max": [
+    0.2586399282145626,
+    -0.02956822655089475
+  ],
+  "piece_xy_mean": [
+    0.1710279225243275,
+    -0.0811879938607526
+  ],
+  "instruction_counts": {
+    "Pick up the piece.": 16949,
+    "Place the piece on cell r0c2.": 2343,
+    "Release the piece.": 1331,
+    "Return the arm to its starting pose.": 7268,
+    "Place the piece on cell r2c0.": 1714,
+    "Place the piece on cell r1c0.": 1699,
+    "Place the piece on cell r0c0.": 2500,
+    "Place the piece on cell r1c2.": 1748,
+    "Place the piece on cell r2c2.": 1717,
+    "Place the piece on cell r1c1.": 2097,
+    "Place the piece on cell r0c1.": 1969,
+    "Place the piece on cell r2c1.": 2308
+  },
+  "episodes": 400
+}

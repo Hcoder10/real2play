@@ -1,0 +1,33 @@
+{
+  "scope": "Private rig source snapshot used for final evaluation; the VLA package was copied to the persistent inference service.",
+  "files": {
+    "r2p/vla/__init__.py": "31136f2b7712fffca5dd90c0f1354ecc853f8c9885fdd0d61b6644b512abd712",
+    "r2p/vla/train.py": "741314fcfcf6ebad0f2abb8c553f0fca0bd968503d7e6d59dfd6f35639ba0374",
+    "r2p/vla/serve.py": "f7b0f479a0146aeae17a4401f774969bc236f99582292bf90a0535c6caadac69",
+    "r2p/vla/runtime.py": "f8ab56567430ab87b18f719b1af92b8dee72bed8db3e90d7882a7be8e6a4b29a",
+    "r2p/vla/render.py": "c582307651783e9536a8b807b162f44f97e4da051d394affa036d991f45edb51",
+    "r2p/vla/evaluate.py": "c06eaaa1c66fe2bb0c92221cce3de106295ca0d73c7467af94ae3f848b81f57a",
+    "r2p/vla/diagnose.py": "a42ea649449378af641b21b9b675f6e3ca54d856cb769d62010507ff5844772b",
+    "r2p/vla/dataset.py": "cf93dda342b23ed5810c70a89ca135d3d738f18c07f66a3f6a9e77b519c38ff2",
+    "r2p/vla/contracts.py": "f0fe4dd100a76e5ff230be868e18f7e7baa340ba4b9ebd85c25e71ef824223da",
+    "r2p/vla/client.py": "d4317d0cff757625b3fa8506ce054288d8a451e99ce83fb99d1a3cc4c033ef34",
+    "r2p/vla/audit.py": "2ef33d4b3591db2d0629b8e85ce47c5864f4f60ffbb0fdc0084a2cfb06cb5dbc",
+    "r2p/vla/adapter.py": "455a9bf5b8fb653b79f9a3acac53aa2ecc097f7275141c422f1f2dc482c88944",
+    "r2p/frames.py": "3a84a4267cdebf7930aa6c446497599ed2205f20d6e546e6ce078b6342a3a11e",
+    "r2p/sim/twin.py": "3c5361af1997e99931a3514b61c7ceef63d86f87f09660188cd9ae11b62d339e",
+    "r2p/policy/eval.py": "99e717e6e04213fae33d5ede710413053ae702b5e889c25bfd027aebd7186bb3",
+    "r2p/tasks/__main__.py": "eab620b2ec9be2f09a80b68ed7eaf2439f910f700cef3203c2384cb36196999a",
+    "r2p/tasks/__init__.py": "3d54617b1cd4bebf3fb44a25ddee71009ab45d1ccde1a90606fb00f6ce991ff7",
+    "r2p/tasks/spec.py": "ac25a4f7929d67405cbdc4ed632addf2dd3e062fe2d28fbdcadc98155fc2b5dd",
+    "r2p/tasks/scene.py": "ed85f3d0f2083515d3f88558c4b6941bd9642f67dc8f335265f42654b1565a59",
+    "r2p/tasks/make_vectors.py": "342ba511cc26f4187f134a7b8f5ff2dd05e45164e1d810b5761c1977321528a1",
+    "r2p/tasks/commands.py": "f5fe9648464520c0a4bb521b5b9145d9a0cf8cb26d05d31d4f49bb2f607c61e1",
+    "r2p/tasks/check.py": "99ef8311801a3c718803827af5350aed3270ce54a387f620f00aa47eb6493129",
+    "r2p/sim/__init__.py": "0866b0f2e35252ca33281d0338a26727c07764e51c73f41ab4b6702bfe28ac0b",
+    "r2p/sim/traces.py": "570bb40d8d3aab13349f9ef11469ed908e83220534a3d58dd495229c5ea5b5a7",
+    "r2p/sim/ik.py": "7061e613bc40f109439b8ed4895f0fa04722f231e446abaf4d73043de420dc15",
+    "r2p/sim/expert.py": "7b262600ea0c752282e5d9d4a2cd427bf45b2853d76cb0b25bc5b790e504f689",
+    "r2p/sim/bench.py": "93c093ec273ed314ddb5a02337e5d882ca787f87ae9a67c200baa1f90d3b51db",
+    "r2p/model.py": "7af4149f67de4f9dbcd931a2cebb6e342d2e5ba54ff3ebd7c891ac52c35b4a3a"
+  }
+}

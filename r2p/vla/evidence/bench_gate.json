@@ -1,0 +1,39 @@
+{
+  "motion": false,
+  "task": "place_on_cell",
+  "action": "absolute_q",
+  "start_q": [
+    -5e-05,
+    -0.06786,
+    -0.28181,
+    1.65806,
+    0.0,
+    0.9
+  ],
+  "compensated_start_owner": [
+    2.1771352110243463,
+    6.152562196749578,
+    -18.467772066374476,
+    113.82909095849016,
+    164.4,
+    37.29522481700941
+  ],
+  "start_valid": false,
+  "start_limit_joints": [
+    "wrist_flex"
+  ],
+  "twin_gate_passed": false,
+  "deployment_qualified": false,
+  "eval": {
+    "clean": {
+      "n": 30,
+      "successes": 1,
+      "success": 0.03333333333333333
+    },
+    "real": {
+      "n": 30,
+      "successes": 0,
+      "success": 0.0
+    }
+  }
+}

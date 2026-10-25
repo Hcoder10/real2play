@@ -1,0 +1,33 @@
+{
+  "actual_checkpoint_loaded": true,
+  "health": {
+    "ready": true,
+    "weights_sha256": "460a0a07848b87864e375a8f933454af87d62b0311899c407c14fc4257d71445",
+    "deployment_qualified": false,
+    "horizon": 15,
+    "hz": 30,
+    "target_space": "servo"
+  },
+  "command": "pick(piece)",
+  "argon_requests": [
+    {
+      "role": "main",
+      "tag": "vla:command"
+    }
+  ],
+  "live_gemini_requests": 0,
+  "motion_sent": false,
+  "chunk_shape": [
+    15,
+    6
+  ],
+  "finite": true,
+  "roundtrip_seconds": [
+    0.4936281229602173,
+    0.14095094497315586,
+    0.13605358498170972
+  ],
+  "weights_sha256": "460a0a07848b87864e375a8f933454af87d62b0311899c407c14fc4257d71445",
+  "model_image_size": 512,
+  "endpoint": "rig loopback http://127.0.0.1:9106"
+}

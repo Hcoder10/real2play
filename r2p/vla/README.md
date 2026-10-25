@@ -21,7 +21,8 @@ The scene camera uses `config/camera.json`, including its off-center principal
 point. Real scene frames must be undistorted before inference. The wrist mount
 in `cameras.json` is the measured Innomaker mount in the official gripper frame;
 its remaining calibration uncertainty is recorded there. Images are 256x192.
-The model pads/resizes them to 256x256. Camera feature names are exactly
+The model's padding/resize size is recorded in its saved configuration (256 or
+the pretrained model's 512). Camera feature names are exactly
 `observation.images.scene` and `observation.images.wrist` throughout.
 
 Dataset replay reconstructs the recorded pre-action joint and object poses in
@@ -73,16 +74,33 @@ the runner's observation. The high-level controller owns `set_command`.
 boundary and validates the returned vocabulary. Tests inject the call and never
 access hardware or Gemini.
 
+The adapter's minimal interface is:
+
+```python
+from r2p.vla.client import RemotePolicy
+from r2p.vla.adapter import SessionPolicy, argon_command
+
+policy = SessionPolicy(RemotePolicy("http://127.0.0.1:9106"), target_cell="r1c2")
+policy.set_command(argon_command(scene_bgr, "r1c2", task_status))
+policy.observe(measured_q, scene_bgr, wrist_bgr, control_tick)
+chunk = policy.act({"q": last_commanded_q})  # radians, absolute (15, 6)
+```
+
+The control-loop owner supplies these values; no camera capture, command
+completion detection or actuator write is hidden inside this adapter. An
+explicitly unqualified export must not be passed to an armed Session.
+
 To deploy inference on the leased rig:
 
 ```sh
-python -m r2p.vla.serve --export exports/smolvla_cell --device cuda:0 --memory-fraction .167 --port 9106
+python -m r2p.vla.serve --export exports/smolvla_cell --device cuda:0 --memory-fraction .167 --gpu-duty .60 --max-seconds 1800 --port 9106
 ```
 
 Forward port 9106 over SSH from the bench. `GET /health` identifies weights and
 qualification; `POST /act` receives the Argon command, q, measured q, tick and two
 base64 PNGs, and returns an absolute action chunk. The server binds loopback and
-never writes to a robot. A concrete Argon-to-VLA invocation from saved current
+never writes to a robot. Set its lifetime to end before the assigned lease;
+the service stops automatically. A concrete Argon-to-VLA invocation from saved current
 camera frames is:
 
 ```sh

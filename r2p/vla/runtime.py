@@ -19,7 +19,7 @@ def configure_device(device, memory_fraction=None):
     return torch.device(device)
 
 
-def load_model(directory, backbone, device="cpu", *, fresh=False):
+def load_model(directory, backbone, device="cpu", *, fresh=False, image_size=None):
     from lerobot.configs import FeatureType, PolicyFeature
     from lerobot.policies.smolvla.configuration_smolvla import SmolVLAConfig
     from lerobot.policies.smolvla.modeling_smolvla import SmolVLAPolicy
@@ -31,7 +31,8 @@ def load_model(directory, backbone, device="cpu", *, fresh=False):
     config.load_vlm_weights = False
     config.device = "cpu"
     config.chunk_size = config.n_action_steps = 15
-    config.resize_imgs_with_padding = (256, 256)
+    if image_size is not None:
+        config.resize_imgs_with_padding = (image_size, image_size)
     config.input_features = {STATE: PolicyFeature(type=FeatureType.STATE, shape=(7,)),
                              **{key: PolicyFeature(type=FeatureType.VISUAL, shape=(3, 192, 256)) for key in CAMERAS}}
     config.output_features = {"action": PolicyFeature(type=FeatureType.ACTION, shape=(6,))}
