@@ -59,8 +59,11 @@ def train(task, traces, name, steps=1000, device="cpu", *, seeds=(0,), batch_siz
         config["joint_limits"] = deepcopy(dataset.deployment["model_limits"])
         # Round caps have no target yaw. Keep the actually calibrated roll even
         # if a network extrapolates; this convention is part of NEW exports.
-        roll = dataset.deployment["roll_rad"]
-        config["joint_limits"][4] = [roll, roll]
+        if dataset.deployment.get("roll_locked", True):
+            roll = dataset.deployment["roll_rad"]
+            config["joint_limits"][4] = [roll, roll]
+        else:
+            config["joint_limits"][4] = dataset.deployment["roll_window_rad"]
     config["physics"] = dataset.physics
     config["physics_sha256"] = hashlib.sha256(json.dumps(dataset.physics, sort_keys=True).encode()).hexdigest()
     norm, config["obs_const"] = dataset.normalization()

@@ -118,7 +118,7 @@ def validate_export(policy, task):
     cfg = policy.config
     if cfg.get("task") != task["name"] or cfg.get("action") != "absolute_q" or cfg.get("horizon") != 15:
         raise ValueError("export must declare place_on_cell, absolute_q and horizon 15")
-    if cfg.get("K") != len(task["objects"]) or cfg.get("object_ids") != [o["id"] for o in task["objects"]]:
+    if cfg.get("K") != task["limits"]["max_objects"] or cfg.get("object_ids") != [o["id"] for o in task["objects"]]:
         raise ValueError("export slot layout differs from the current measured task")
     for key in ("start_q", "obs_layout", "obs_const", "eval"):
         if key not in cfg:

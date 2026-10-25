@@ -1,0 +1,146 @@
+{
+  "schema": "argon_task/1",
+  "name": "bowl_bench",
+  "instruction": "Put both cubes in the blue bowl.",
+  "objects": [
+    {
+      "id": "cube_a",
+      "role": "manipulated",
+      "shape": "box",
+      "size_m": [
+        0.038,
+        0.038,
+        0.038
+      ],
+      "color": "brown",
+      "mass_kg": 0.03,
+      "friction": 0.6,
+      "grasp": "top",
+      "xy": [
+        0.14,
+        -0.08
+      ]
+    },
+    {
+      "id": "cube_b",
+      "role": "manipulated",
+      "shape": "box",
+      "size_m": [
+        0.038,
+        0.038,
+        0.038
+      ],
+      "color": "brown",
+      "mass_kg": 0.03,
+      "friction": 0.6,
+      "grasp": "top",
+      "xy": [
+        0.14,
+        0.08
+      ]
+    },
+    {
+      "id": "bowl",
+      "role": "container",
+      "shape": "bowl",
+      "size_m": [
+        0.14,
+        0.03
+      ],
+      "wall_m": 0.005,
+      "color": "blue",
+      "mass_kg": 0.25,
+      "fixed": false,
+      "xy": [
+        0.2,
+        0
+      ]
+    }
+  ],
+  "goal": [
+    {
+      "pred": "inside",
+      "a": "cube_a",
+      "b": "bowl"
+    },
+    {
+      "pred": "inside",
+      "a": "cube_b",
+      "b": "bowl"
+    }
+  ],
+  "skeleton": [
+    {
+      "skill": "pick",
+      "obj": "cube_a"
+    },
+    {
+      "skill": "place_in",
+      "obj": "cube_a",
+      "target": "bowl"
+    },
+    {
+      "skill": "release"
+    },
+    {
+      "skill": "pick",
+      "obj": "cube_b"
+    },
+    {
+      "skill": "place_in",
+      "obj": "cube_b",
+      "target": "bowl"
+    },
+    {
+      "skill": "release"
+    },
+    {
+      "skill": "home"
+    }
+  ],
+  "randomize": {
+    "min_sep_m": 0,
+    "cube_a": {
+      "x": [
+        0.13,
+        0.15
+      ],
+      "y": [
+        -0.09,
+        -0.075
+      ],
+      "yaw_deg": [
+        -8,
+        8
+      ]
+    },
+    "cube_b": {
+      "x": [
+        0.13,
+        0.15
+      ],
+      "y": [
+        0.075,
+        0.09
+      ],
+      "yaw_deg": [
+        -8,
+        8
+      ]
+    },
+    "bowl": {
+      "x": [
+        0.195,
+        0.205
+      ],
+      "y": [
+        -0.005,
+        0.005
+      ]
+    }
+  },
+  "limits": {
+    "episode_s": 240,
+    "max_objects": 4
+  }
+}
