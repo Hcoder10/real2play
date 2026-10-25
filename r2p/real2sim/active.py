@@ -133,6 +133,7 @@ class Safety:
     open_grip: float = .5        # ~60 mm jaw gap with vcal_oct25b: wide for a 33 mm cap, keeps the moving jaw high
     # Live abort: measured jaw below this outside grasp/place phases means the fingers are on the table.
     live_min_jaw_z: float = .007
+    grid_free_z: float = .035     # above this the fingers pass over the printed board freely
     finish_tolerance: float = .025   # servo sag at the safe height is real (measured 12 mm) and is what we fit
     max_duration_s: float = 150   # vertical approach/retreat at the daemon's 8 deg/s near-table cap
     clearance: dict = field(default_factory=lambda: {"link": .005, "gripper": .004, "finger": .003})
@@ -181,40 +182,33 @@ def scene_task(scene):
     return task
 
 
-def away_from_board(scene, obj):
-    """Pushes run toward the robot (180 deg): the pusher starts on the far side of the cap, so it never starts over
-    the grid beside the lane (pushing away from the grid would start over it) or too close to the base to reach at
-    contact height (pushing +x). The validator still checks every waypoint against the grid and clearances."""
-    return 180
-
-
-def push_length(obj, wanted):
-    """Pushes run toward the robot; fingers-down contact stops being reachable ~12.7 cm from the base, so a cap close
-    to the robot gets a shorter push (never below 8 mm) instead of an unreachable plan."""
-    return round(float(np.clip(min(wanted, obj["xyz"][0] - .127), .008, wanted)), 3)
+def _cells(scene):
+    return {k: tuple(v) for k, v in scene.get("board", {}).get("cells", {}).items()}
 
 
 def experiment_menu(scene):
+    """place_on_cell on this bench, and nothing else: every experiment is the task's own motion (pick a cap, carry,
+    place it on a printed cell) or a still pose on that path. They measure what the task needs: sag and tracking at
+    the grasp/place poses, the grasp (closing on a 33 mm cap, slip in carry), and where a released cap really lands."""
     obj = next(o for o in scene["objects"] if not o.get("fixed", False))
-    x, y = obj["xyz"][:2]
-    lane = round(y, 2)
-    away = away_from_board(scene, obj)
-    return [Experiment("hold_pose", xyz=(.18, lane, .12)),
-            Experiment("joint_sweep", joint=1, amplitude_deg=7, speed=12),
-            Experiment("push", obj=obj["id"], direction_deg=away, distance_m=push_length(obj, .025), speed=12),
-            Experiment("hold_pose", xyz=(.25, lane, .11)),
-            Experiment("joint_sweep", joint=2, amplitude_deg=8, speed=16),
-            Experiment("push", obj=obj["id"], direction_deg=180, distance_m=push_length(obj, .012), speed=8),
-            Experiment("pick_lift_place", obj=obj["id"], xy=(x+.025, y), lift_m=.08)]
+    oid, (x, y) = obj["id"], obj["xyz"][:2]
+    cells = _cells(scene)
+    return [Experiment("hold_pose", xyz=(x, y, .06)),                      # sag over the supply lane
+            Experiment("hold_pose", xyz=(*cells["r1c1"], .06)),             # sag over the board centre
+            Experiment("joint_sweep", joint=2, amplitude_deg=6, speed=10),  # elbow tracking / damping
+            Experiment("pick_lift_place", obj=oid, xy=cells["r1c0"], lift_m=.08),
+            Experiment("pick_lift_place", obj=oid, xy=cells["r2c1"], lift_m=.08),
+            Experiment("pick_lift_place", obj=oid, xy=cells["r0c2"], lift_m=.08),
+            Experiment("pick_lift_place", obj=oid, xy=(x, y), lift_m=.08)]   # back to the lane
 
 
 def heldout_menu(scene):
     obj = next(o for o in scene["objects"] if not o.get("fixed", False))
-    oid = obj["id"]
-    lane = round(obj["xyz"][1]-.01, 2)
-    return [Experiment("hold_pose", xyz=(.225, lane, .13)),
-            Experiment("joint_sweep", joint=1, amplitude_deg=4, speed=10),
-            Experiment("push", obj=oid, direction_deg=away_from_board(scene, obj), distance_m=push_length(obj, .035), speed=10)]
+    oid, (x, y) = obj["id"], obj["xyz"][:2]
+    cells = _cells(scene)
+    return [Experiment("hold_pose", xyz=(*cells["r2c2"], .06)),
+            Experiment("pick_lift_place", obj=oid, xy=cells["r1c1"], lift_m=.08),
+            Experiment("pick_lift_place", obj=oid, xy=(x, y), lift_m=.08)]
 
 
 class Validator:
@@ -223,11 +217,14 @@ class Validator:
         self.safety = safety or Safety()
         self.arm = Arm()
         self.ik = JawIK(self.arm)
+        self._allowed = []
 
     def _point(self, p):
         s = self.safety
         if not s.reach[0] <= np.linalg.norm(p[:2]) <= s.reach[1] or not s.min_z <= p[2] <= s.max_z:
             raise UnsafeExperiment("Outside reach band 0.10..0.32 m or height bounds")
+        if p[2] >= s.grid_free_z or any(np.linalg.norm(p[:2] - np.asarray(a)) < .012 for a in self._allowed):
+            return
         board = self.task.get("board", {})
         radius = board.get("cell_m", .0361) / 2 + s.grid_margin
         if any(np.all(np.abs(p[:2] - np.asarray(xy)) < radius) for xy in board.get("cells", {}).values()):
@@ -242,6 +239,10 @@ class Validator:
         qstart = q.copy()
         targets, phases, points = [], [], []
         objects = {o["id"]: o for o in scene["objects"]}
+        # The experiment's own pick and place spots may be approached vertically (that is the task).
+        self._allowed = [np.asarray(objects[e.obj]["xyz"][:2])] if e.obj in objects else []
+        if e.xy is not None:
+            self._allowed.append(np.asarray(e.xy))
         self._point(self.arm.tips(q)[2])
 
         def joint(goal, phase, dwell=0):

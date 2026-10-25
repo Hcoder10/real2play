@@ -62,6 +62,22 @@ def scene_loop(folder, stop, fps):
     w.close()
 
 
+def wrist_http_loop(folder, stop, url, fps):
+    """Wrist camera via scripts/lead/wristcam.py (one process owns the USB device)."""
+    w, period = Writer(folder, "wrist", fps), 1.0 / fps
+    while not stop.is_set():
+        t0 = time.time()
+        try:
+            buf = urllib.request.urlopen(url + "/frame/0.jpg", timeout=3).read()
+            img = cv2.imdecode(np.frombuffer(buf, np.uint8), cv2.IMREAD_COLOR)
+            if img is not None:
+                w.add(img, time.time())
+        except Exception:  # noqa: BLE001 - stream gap: keep trying
+            time.sleep(0.5)
+        time.sleep(max(0.0, period - (time.time() - t0)))
+    w.close()
+
+
 def wrist_loop(folder, stop, index, fps):
     cap = cv2.VideoCapture(index, cv2.CAP_DSHOW)
     cap.set(cv2.CAP_PROP_FRAME_WIDTH, 1280)
@@ -80,6 +96,7 @@ def wrist_loop(folder, stop, index, fps):
 if __name__ == "__main__":
     ap = argparse.ArgumentParser()
     ap.add_argument("--wrist-index", type=int, default=1)
+    ap.add_argument("--wrist-url", help="read the wrist camera from wristcam.py instead of the USB device")
     ap.add_argument("--fps", type=float, default=15)
     a = ap.parse_args()
     folder = VID / time.strftime("%Y%m%d_%H%M%S")
@@ -88,7 +105,8 @@ if __name__ == "__main__":
     (VID / "current.txt").write_text(str(folder))
     stop = threading.Event()
     ts = [threading.Thread(target=scene_loop, args=(folder, stop, 2.0), daemon=True),
-          threading.Thread(target=wrist_loop, args=(folder, stop, a.wrist_index, a.fps), daemon=True)]
+          threading.Thread(target=wrist_http_loop, args=(folder, stop, a.wrist_url, a.fps), daemon=True) if a.wrist_url
+          else threading.Thread(target=wrist_loop, args=(folder, stop, a.wrist_index, a.fps), daemon=True)]
     for t in ts:
         t.start()
     print(f"recording both cameras -> {folder}", flush=True)
