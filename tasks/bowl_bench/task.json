@@ -1,0 +1,167 @@
+{
+  "schema": "argon_task/1",
+  "name": "bowl_bench",
+  "instruction": "Put both brown cubes in the blue bowl.",
+  "objects": [
+    {
+      "id": "cube_a",
+      "role": "manipulated",
+      "shape": "box",
+      "size_m": [
+        0.038,
+        0.038,
+        0.038
+      ],
+      "color": "brown",
+      "mass_kg": 0.03,
+      "friction": 0.6,
+      "grasp": "top",
+      "xyz": [
+        0.189677,
+        0.1077,
+        0.019
+      ],
+      "yaw_deg": -22.635,
+      "pose_source": "camera_measurement"
+    },
+    {
+      "id": "cube_b",
+      "role": "manipulated",
+      "shape": "box",
+      "size_m": [
+        0.038,
+        0.038,
+        0.038
+      ],
+      "color": "brown",
+      "mass_kg": 0.03,
+      "friction": 0.6,
+      "grasp": "top",
+      "xyz": [
+        0.249978,
+        0.080208,
+        0.019
+      ],
+      "yaw_deg": -66.782,
+      "pose_source": "camera_measurement"
+    },
+    {
+      "id": "bowl",
+      "role": "container",
+      "shape": "bowl",
+      "size_m": [
+        0.110356,
+        0.025057
+      ],
+      "wall_m": 0.005,
+      "color": "blue",
+      "mass_kg": 0.25,
+      "fixed": false,
+      "xyz": [
+        0.17427,
+        0.009673,
+        0.012528
+      ],
+      "yaw_deg": 0.0,
+      "pose_source": "camera_measurement"
+    }
+  ],
+  "goal": [
+    {
+      "pred": "inside",
+      "a": "cube_a",
+      "b": "bowl"
+    },
+    {
+      "pred": "inside",
+      "a": "cube_b",
+      "b": "bowl"
+    }
+  ],
+  "skeleton": [
+    {
+      "skill": "pick",
+      "obj": "cube_a"
+    },
+    {
+      "skill": "place_in",
+      "obj": "cube_a",
+      "target": "bowl"
+    },
+    {
+      "skill": "release"
+    },
+    {
+      "skill": "pick",
+      "obj": "cube_b"
+    },
+    {
+      "skill": "place_in",
+      "obj": "cube_b",
+      "target": "bowl"
+    },
+    {
+      "skill": "release"
+    },
+    {
+      "skill": "home"
+    }
+  ],
+  "randomize": {
+    "cube_a": {
+      "x": [
+        0.169677,
+        0.209677
+      ],
+      "y": [
+        0.0877,
+        0.1277
+      ],
+      "yaw_deg": [
+        -180,
+        180
+      ]
+    },
+    "cube_b": {
+      "x": [
+        0.229978,
+        0.269978
+      ],
+      "y": [
+        0.060208,
+        0.100208
+      ],
+      "yaw_deg": [
+        -180,
+        180
+      ]
+    },
+    "bowl": {
+      "x": [
+        0.15427,
+        0.19427
+      ],
+      "y": [
+        -0.010327,
+        0.029673
+      ]
+    },
+    "min_sep_m": 0.002
+  },
+  "limits": {
+    "episode_s": 60,
+    "max_objects": 4
+  },
+  "bench_measurement": {
+    "frame": "spec",
+    "date": "2026-10-25",
+    "camera": "config/camera.json",
+    "image": "runs/bench/bowl_measure_fresh.jpg",
+    "video": "out/demo/bowl_scene_measure.mp4",
+    "method": "38 mm cube top-face corners deprojected at z=0.038; blue cylinder silhouette estimates rim height, annotated rim circle estimates centre and diameter",
+    "cube_size_source": "38 mm known dimensions supplied in brief; image edge estimates retained in measurement report",
+    "bowl_wall_source": "5 mm inherited prior, not independently measured; size_m[0] is inner diameter",
+    "layout_note": "Current live feed has BOTH plain brown cubes on robot-left/camera-right; this differs from the owner's approximate one-on-each-side description. Measured actual images, not intended positions.",
+    "paper_note": "Owner moved tic-tac-toe sheet aside; old place_on_cell board coordinates are obsolete for this scene and deliberately not used as an exclusion zone. Visible paper is at camera-right beyond the sampled footprints."
+  }
+}
