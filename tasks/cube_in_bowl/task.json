@@ -1,0 +1,17 @@
+{
+  "schema": "argon_task/1",
+  "name": "cube_in_bowl",
+  "instruction": "Put the brown cube in the blue bowl.",
+  "objects": [
+    {"id": "cube", "role": "manipulated", "shape": "box", "size_m": [0.038, 0.038, 0.038], "color": "brown", "mass_kg": 0.03, "friction": 0.6, "grasp": "top"},
+    {"id": "bowl", "role": "container", "shape": "bowl", "size_m": [0.11, 0.03], "wall_m": 0.005, "color": "blue", "mass_kg": 0.25, "fixed": false}
+  ],
+  "goal": [{"pred": "inside", "a": "cube", "b": "bowl"}],
+  "skeleton": [{"skill": "pick", "obj": "cube"}, {"skill": "place_in", "obj": "cube", "target": "bowl"}, {"skill": "release"}, {"skill": "home"}],
+  "randomize": {
+    "cube": {"r": [0.19, 0.29], "az_deg": [-50, 50], "yaw_deg": [-180, 180], "mass_kg": [0.02, 0.06], "friction": [0.4, 0.9]},
+    "bowl": {"r": [0.20, 0.29], "az_deg": [-50, 50]},
+    "min_sep_m": 0.03
+  },
+  "limits": {"episode_s": 40, "max_objects": 4}
+}

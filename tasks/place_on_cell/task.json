@@ -1,0 +1,507 @@
+{
+  "schema": "argon_task/1",
+  "name": "place_on_cell",
+  "instruction": "Place the supply piece on the highlighted cell without moving other pieces.",
+  "objects": [
+    {
+      "id": "piece",
+      "role": "manipulated",
+      "shape": "box",
+      "size_m": [
+        0.03,
+        0.03,
+        0.014
+      ],
+      "color": "brown",
+      "mass_kg": 0.02,
+      "friction": 0.6,
+      "grasp": "top",
+      "xy": [
+        0.23,
+        0.15
+      ]
+    },
+    {
+      "id": "cell",
+      "role": "target",
+      "shape": "plate",
+      "size_m": [
+        0.045,
+        0.045,
+        0.001
+      ],
+      "color": "green",
+      "fixed": true,
+      "collide": false
+    },
+    {
+      "id": "r0c0",
+      "role": "target",
+      "shape": "plate",
+      "size_m": [
+        0.045,
+        0.045,
+        0.001
+      ],
+      "color": "gray",
+      "fixed": true,
+      "collide": false,
+      "xy": [
+        0.2,
+        -0.045
+      ]
+    },
+    {
+      "id": "r0c1",
+      "role": "target",
+      "shape": "plate",
+      "size_m": [
+        0.045,
+        0.045,
+        0.001
+      ],
+      "color": "gray",
+      "fixed": true,
+      "collide": false,
+      "xy": [
+        0.2,
+        0
+      ]
+    },
+    {
+      "id": "r0c2",
+      "role": "target",
+      "shape": "plate",
+      "size_m": [
+        0.045,
+        0.045,
+        0.001
+      ],
+      "color": "gray",
+      "fixed": true,
+      "collide": false,
+      "xy": [
+        0.2,
+        0.045
+      ]
+    },
+    {
+      "id": "r1c0",
+      "role": "target",
+      "shape": "plate",
+      "size_m": [
+        0.045,
+        0.045,
+        0.001
+      ],
+      "color": "gray",
+      "fixed": true,
+      "collide": false,
+      "xy": [
+        0.245,
+        -0.045
+      ]
+    },
+    {
+      "id": "r1c1",
+      "role": "target",
+      "shape": "plate",
+      "size_m": [
+        0.045,
+        0.045,
+        0.001
+      ],
+      "color": "gray",
+      "fixed": true,
+      "collide": false,
+      "xy": [
+        0.245,
+        0
+      ]
+    },
+    {
+      "id": "r1c2",
+      "role": "target",
+      "shape": "plate",
+      "size_m": [
+        0.045,
+        0.045,
+        0.001
+      ],
+      "color": "gray",
+      "fixed": true,
+      "collide": false,
+      "xy": [
+        0.245,
+        0.045
+      ]
+    },
+    {
+      "id": "r2c0",
+      "role": "target",
+      "shape": "plate",
+      "size_m": [
+        0.045,
+        0.045,
+        0.001
+      ],
+      "color": "gray",
+      "fixed": true,
+      "collide": false,
+      "xy": [
+        0.29,
+        -0.045
+      ]
+    },
+    {
+      "id": "r2c1",
+      "role": "target",
+      "shape": "plate",
+      "size_m": [
+        0.045,
+        0.045,
+        0.001
+      ],
+      "color": "gray",
+      "fixed": true,
+      "collide": false,
+      "xy": [
+        0.29,
+        0
+      ]
+    },
+    {
+      "id": "r2c2",
+      "role": "target",
+      "shape": "plate",
+      "size_m": [
+        0.045,
+        0.045,
+        0.001
+      ],
+      "color": "gray",
+      "fixed": true,
+      "collide": false,
+      "xy": [
+        0.29,
+        0.045
+      ]
+    },
+    {
+      "id": "other1",
+      "role": "obstacle",
+      "shape": "box",
+      "size_m": [
+        0.03,
+        0.03,
+        0.014
+      ],
+      "color": "blue",
+      "mass_kg": 0.02,
+      "friction": 0.6,
+      "fixed": true
+    },
+    {
+      "id": "other2",
+      "role": "obstacle",
+      "shape": "box",
+      "size_m": [
+        0.03,
+        0.03,
+        0.014
+      ],
+      "color": "brown",
+      "mass_kg": 0.02,
+      "friction": 0.6,
+      "fixed": true
+    },
+    {
+      "id": "other3",
+      "role": "obstacle",
+      "shape": "box",
+      "size_m": [
+        0.03,
+        0.03,
+        0.014
+      ],
+      "color": "blue",
+      "mass_kg": 0.02,
+      "friction": 0.6,
+      "fixed": true
+    },
+    {
+      "id": "other4",
+      "role": "obstacle",
+      "shape": "box",
+      "size_m": [
+        0.03,
+        0.03,
+        0.014
+      ],
+      "color": "brown",
+      "mass_kg": 0.02,
+      "friction": 0.6,
+      "fixed": true
+    }
+  ],
+  "goal": [
+    {
+      "pred": "at",
+      "a": "piece",
+      "xy": "cell",
+      "tol_m": 0.012
+    },
+    {
+      "pred": "not_moved",
+      "a": "other1",
+      "tol_m": 0.01,
+      "optional": true
+    },
+    {
+      "pred": "not_moved",
+      "a": "other2",
+      "tol_m": 0.01,
+      "optional": true
+    },
+    {
+      "pred": "not_moved",
+      "a": "other3",
+      "tol_m": 0.01,
+      "optional": true
+    },
+    {
+      "pred": "not_moved",
+      "a": "other4",
+      "tol_m": 0.01,
+      "optional": true
+    }
+  ],
+  "skeleton": [
+    {
+      "skill": "pick",
+      "obj": "piece"
+    },
+    {
+      "skill": "place_at",
+      "obj": "piece",
+      "xy": "cell"
+    },
+    {
+      "skill": "release"
+    },
+    {
+      "skill": "home"
+    }
+  ],
+  "randomize": {
+    "cell": {
+      "xy_choice": [
+        [
+          0.2,
+          -0.045
+        ],
+        [
+          0.2,
+          0
+        ],
+        [
+          0.2,
+          0.045
+        ],
+        [
+          0.245,
+          -0.045
+        ],
+        [
+          0.245,
+          0
+        ],
+        [
+          0.245,
+          0.045
+        ],
+        [
+          0.29,
+          -0.045
+        ],
+        [
+          0.29,
+          0
+        ],
+        [
+          0.29,
+          0.045
+        ]
+      ]
+    },
+    "other1": {
+      "xy_choice": [
+        [
+          0.2,
+          -0.045
+        ],
+        [
+          0.2,
+          0
+        ],
+        [
+          0.2,
+          0.045
+        ],
+        [
+          0.245,
+          -0.045
+        ],
+        [
+          0.245,
+          0
+        ],
+        [
+          0.245,
+          0.045
+        ],
+        [
+          0.29,
+          -0.045
+        ],
+        [
+          0.29,
+          0
+        ],
+        [
+          0.29,
+          0.045
+        ]
+      ],
+      "p_present": 0.5
+    },
+    "other2": {
+      "xy_choice": [
+        [
+          0.2,
+          -0.045
+        ],
+        [
+          0.2,
+          0
+        ],
+        [
+          0.2,
+          0.045
+        ],
+        [
+          0.245,
+          -0.045
+        ],
+        [
+          0.245,
+          0
+        ],
+        [
+          0.245,
+          0.045
+        ],
+        [
+          0.29,
+          -0.045
+        ],
+        [
+          0.29,
+          0
+        ],
+        [
+          0.29,
+          0.045
+        ]
+      ],
+      "p_present": 0.5
+    },
+    "other3": {
+      "xy_choice": [
+        [
+          0.2,
+          -0.045
+        ],
+        [
+          0.2,
+          0
+        ],
+        [
+          0.2,
+          0.045
+        ],
+        [
+          0.245,
+          -0.045
+        ],
+        [
+          0.245,
+          0
+        ],
+        [
+          0.245,
+          0.045
+        ],
+        [
+          0.29,
+          -0.045
+        ],
+        [
+          0.29,
+          0
+        ],
+        [
+          0.29,
+          0.045
+        ]
+      ],
+      "p_present": 0.5
+    },
+    "other4": {
+      "xy_choice": [
+        [
+          0.2,
+          -0.045
+        ],
+        [
+          0.2,
+          0
+        ],
+        [
+          0.2,
+          0.045
+        ],
+        [
+          0.245,
+          -0.045
+        ],
+        [
+          0.245,
+          0
+        ],
+        [
+          0.245,
+          0.045
+        ],
+        [
+          0.29,
+          -0.045
+        ],
+        [
+          0.29,
+          0
+        ],
+        [
+          0.29,
+          0.045
+        ]
+      ],
+      "p_present": 0.5
+    },
+    "min_sep_m": 0
+  },
+  "limits": {
+    "episode_s": 40,
+    "max_objects": 15
+  }
+}

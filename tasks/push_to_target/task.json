@@ -1,0 +1,17 @@
+{
+  "schema": "argon_task/1",
+  "name": "push_to_target",
+  "instruction": "Push the red cube onto the green target.",
+  "objects": [
+    {"id": "cube", "role": "manipulated", "shape": "box", "size_m": [0.038, 0.038, 0.038], "color": "red", "mass_kg": 0.03, "friction": 0.5, "grasp": "top"},
+    {"id": "target", "role": "target", "shape": "plate", "size_m": [0.08, 0.08, 0.002], "color": "green", "fixed": true, "collide": false}
+  ],
+  "goal": [{"pred": "at", "a": "cube", "xy": "target", "tol_m": 0.03}],
+  "skeleton": [{"skill": "push_to", "obj": "cube", "xy": "target"}, {"skill": "home"}],
+  "randomize": {
+    "cube": {"r": [0.18, 0.26], "az_deg": [-40, 40], "yaw_deg": [-180, 180], "mass_kg": [0.02, 0.06], "friction": [0.4, 0.8]},
+    "target": {"r": [0.18, 0.28], "az_deg": [-45, 45]},
+    "min_sep_m": 0.0
+  },
+  "limits": {"episode_s": 40, "max_objects": 4}
+}

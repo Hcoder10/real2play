@@ -1,0 +1,17 @@
+{
+  "schema": "argon_task/1",
+  "name": "pick_place_stick",
+  "instruction": "Pick up the yellow square-prism stick and place it on the green zone.",
+  "objects": [
+    {"id": "stick", "role": "manipulated", "shape": "stick", "size_m": [0.12, 0.022], "color": "yellow", "mass_kg": 0.04, "friction": 0.7, "grasp": "along"},
+    {"id": "zone", "role": "target", "shape": "plate", "size_m": [0.10, 0.10, 0.002], "color": "green", "fixed": true, "collide": false}
+  ],
+  "goal": [{"pred": "at", "a": "stick", "xy": "zone", "tol_m": 0.04}],
+  "skeleton": [{"skill": "pick", "obj": "stick"}, {"skill": "place_at", "obj": "stick", "xy": "zone"}, {"skill": "release"}, {"skill": "home"}],
+  "randomize": {
+    "stick": {"r": [0.19, 0.27], "az_deg": [-45, 45], "yaw_deg": [-180, 180], "size_scale": [0.9, 1.1], "mass_kg": [0.025, 0.06], "friction": [0.5, 1.0]},
+    "zone": {"r": [0.19, 0.29], "az_deg": [-45, 45]},
+    "min_sep_m": 0.0
+  },
+  "limits": {"episode_s": 40, "max_objects": 4}
+}

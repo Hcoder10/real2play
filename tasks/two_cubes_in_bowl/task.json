@@ -1,0 +1,19 @@
+{
+  "schema": "argon_task/1",
+  "name": "two_cubes_in_bowl",
+  "instruction": "Put both cubes in the blue bowl.",
+  "objects": [
+    {"id": "cube_a", "role": "manipulated", "shape": "box", "size_m": [0.038, 0.038, 0.038], "color": "red", "mass_kg": 0.03, "friction": 0.6, "grasp": "top"},
+    {"id": "cube_b", "role": "manipulated", "shape": "box", "size_m": [0.038, 0.038, 0.038], "color": "brown", "mass_kg": 0.03, "friction": 0.6, "grasp": "top"},
+    {"id": "bowl", "role": "container", "shape": "bowl", "size_m": [0.14, 0.03], "wall_m": 0.005, "color": "blue", "mass_kg": 0.25, "fixed": false}
+  ],
+  "goal": [{"pred": "inside", "a": "cube_a", "b": "bowl"}, {"pred": "inside", "a": "cube_b", "b": "bowl"}],
+  "skeleton": [{"skill": "pick", "obj": "cube_a"}, {"skill": "place_in", "obj": "cube_a", "target": "bowl"}, {"skill": "release"}, {"skill": "pick", "obj": "cube_b"}, {"skill": "place_in", "obj": "cube_b", "target": "bowl"}, {"skill": "release"}, {"skill": "home"}],
+  "randomize": {
+    "cube_a": {"r": [0.18, 0.29], "az_deg": [-55, 55], "yaw_deg": [-180, 180]},
+    "cube_b": {"r": [0.18, 0.29], "az_deg": [-55, 55], "yaw_deg": [-180, 180]},
+    "bowl": {"r": [0.21, 0.27], "az_deg": [-40, 40]},
+    "min_sep_m": 0.03
+  },
+  "limits": {"episode_s": 60, "max_objects": 4}
+}
