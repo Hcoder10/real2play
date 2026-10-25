@@ -124,7 +124,7 @@ if __name__ == "__main__":
         for r in results or []:
             res = r.get("result", {})
             text = json.dumps(res, default=str)
-            out.append({"tool": r.get("tool"), "args": str(r.get("args", ""))[:200], "result": text[:1500]})
+            out.append({"tool": r.get("tool"), "args": str(r.get("args", ""))[:200], "result": text[:6000]})
         return out
 
     def turn(number):
