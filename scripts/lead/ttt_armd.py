@@ -26,8 +26,9 @@ from r2p.tasks import load_task  # noqa: E402
 from jaw_move import goto, gripper, armd  # noqa: E402
 from tictactoe import publish  # noqa: E402
 
-# Cap supply line on the robot's right, camera-measured Oct 25 (rim centres deprojected at the rim height).
-SUPPLY = [[0.151, -0.091], [0.101, -0.090], [0.197, -0.098], [0.125, -0.125], [0.175, -0.125]]
+# Cap supply line on the robot's right, located by gemini-4-argon after the Oct 25 12:4x reset (fallback only: the
+# live loop asks Argon every turn; refresh with --find-caps if the caps move).
+SUPPLY = [[0.1748, -0.1245], [0.1274, -0.1272], [0.2205, -0.1248]]
 OPEN, SQUEEZE = 20, 6                 # gripper owner values: ~51 mm jaw gap, squeeze a ~33 mm cap
 GRASP_Z, PLACE_Z, SAFE_Z = 0.009, 0.012, 0.05
 MIN_FINGER = 0.002
