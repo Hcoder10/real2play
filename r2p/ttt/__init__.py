@@ -112,7 +112,7 @@ def history_board(history):
     return validate_board(board)
 
 
-def consistent_board(board, previous, robot_mark):
+def consistent_board(board, previous, robot_mark, *, require_robot_turn=True):
     if robot_mark not in ("X", "O"):
         raise ValueError("robot_mark must be X or O")
     board = normalize_board(board)
@@ -131,7 +131,7 @@ def consistent_board(board, previous, robot_mark):
     if terminal(previous) and additions:
         raise ValueError("a new mark appeared after game end")
     validate_board(board)
-    if not terminal(board):
+    if require_robot_turn and not terminal(board):
         turn = "X" if board.count("X") == board.count("O") else "O"
         if turn != robot_mark:
             raise ValueError("the human has not yet made a confirmed move")
@@ -141,10 +141,11 @@ def consistent_board(board, previous, robot_mark):
 def validate_decision(answer, previous, robot_mark="O"):
     if not isinstance(answer, dict):
         raise ValueError("answer must be a JSON object")
-    board = consistent_board(answer.get("board"), previous, robot_mark)
-    if terminal(board):
+    board = consistent_board(answer.get("board"), previous, robot_mark, require_robot_turn=False)
+    turn = "X" if board.count("X") == board.count("O") else "O"
+    if terminal(board) or turn != robot_mark:
         if answer.get("move") is not None:
-            raise ValueError("move must be null because the game is over")
+            raise ValueError("move must be null because the game is over or it is the human's turn")
         return board, None
     i = cell_index(answer.get("move"))
     if board[i]:
@@ -184,41 +185,50 @@ def board_images(frame, cam_model, task=None):
 
     grid = geometry(task)
     marked = np.asarray(frame).copy()
-    pitch = grid["cell_m"]
+    if hasattr(cam_model, "image_size") and tuple(cam_model.image_size) != marked.shape[1::-1]:
+        cam_model = cam_model.resized(marked.shape[1::-1])
+    # Fit the actual measured board basis, including its rotation and unequal
+    # pitch. The nominal centre/pitch are insufficient on a printed bench grid.
+    indices = np.array([[i // 3, i % 3, 1] for i in range(9)], float)
+    basis = np.linalg.lstsq(indices, np.array(list(grid["cells"].values())), rcond=None)[0]
+    if abs(np.linalg.det(basis[:2])) < 1e-8:
+        raise ValueError("Grid has a degenerate camera projection")
     for key, xy in grid["cells"].items():
         xy = np.asarray(xy)
-        corners = xy + np.array([[-1, -1], [1, -1], [1, 1], [-1, 1]]) * pitch / 2
+        corners = xy + np.array([[-1, -1], [1, -1], [1, 1], [-1, 1]]) @ basis[:2] / 2
         points = np.asarray(cam_model.project(np.c_[corners, np.zeros(4)]), float)
         if not np.isfinite(points).all():
             raise ValueError("Grid projects outside the calibrated camera")
         cv2.polylines(marked, [points.round().astype(np.int32)], True, (0, 255, 255), 1, cv2.LINE_AA)
-        centre = np.asarray(cam_model.project(np.array([[*xy, 0.0]]))).reshape(-1, 2)[0]
-        cv2.putText(marked, key, tuple(centre.round().astype(int)), cv2.FONT_HERSHEY_SIMPLEX,
+        label = points[0].round().astype(int) + [3, 12]
+        cv2.putText(marked, key, tuple(label), cv2.FONT_HERSHEY_SIMPLEX,
                     0.45, (0, 0, 0), 3, cv2.LINE_AA)
-        cv2.putText(marked, key, tuple(centre.round().astype(int)), cv2.FONT_HERSHEY_SIMPLEX,
+        cv2.putText(marked, key, tuple(label), cv2.FONT_HERSHEY_SIMPLEX,
                     0.45, (0, 255, 255), 1, cv2.LINE_AA)
-    x, y = grid["center_xy"]
-    half = 1.5 * pitch
-    # Rows are x, columns y. The warped image uses that exact row/column convention.
-    corners = np.array([[x-half, y-half, 0], [x-half, y+half, 0],
-                        [x+half, y+half, 0], [x+half, y-half, 0]])
-    src = np.asarray(cam_model.project(corners), np.float32).reshape(4, 2)
-    dst = np.array([[0, 0], [449, 0], [449, 449], [0, 449]], np.float32)
-    if abs(cv2.contourArea(src)) < 1:
-        raise ValueError("Grid has a degenerate camera projection")
-    top = cv2.warpPerspective(frame, cv2.getPerspectiveTransform(src, dst), (450, 450))
+    # Dense calibrated remap also honours radial/tangential lens distortion.
+    row, col = np.indices((450, 450))
+    coords = np.stack(((row + .5) / 150 - .5, (col + .5) / 150 - .5, np.ones_like(row)), -1)
+    xy = coords @ basis
+    uv = np.asarray(cam_model.project(np.dstack((xy, np.zeros_like(row)))), np.float32)
+    if not np.isfinite(uv).all():
+        raise ValueError("Grid projects outside the calibrated camera")
+    top = cv2.remap(frame, uv[..., 0], uv[..., 1], cv2.INTER_LINEAR)
     for i, key in enumerate(CELL_IDS):
         cv2.putText(top, key, (i % 3 * 150 + 6, i // 3 * 150 + 20),
                     cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 255), 1, cv2.LINE_AA)
     return marked, top
 
 
-def decide(frame, cam_model, history, robot_mark="O", robot_desc="brown cubes", human_desc="blue discs", *, ask=None):
+def decide(frame, cam_model, history, robot_mark="O", robot_desc="brown cubes or small brown blocks",
+           human_desc="flat metallic coins (pennies or nickels)", *, ask=None):
     previous = history_board(history)
     marked, top = board_images(frame, cam_model)
     prompt = ("Read the physical tic-tac-toe board and select a perfect move. X starts. "
               "Board is row-major r0c0..r2c2; empty is an empty string. Return board[9], move (cell id or null "
-              "when terminal), why. Preserve all earlier marks. At most one new human mark is possible.\n"
+              "when terminal OR waiting for the human), why. Preserve all earlier marks. At most one new human mark is possible. "
+              "Read each cell independently from visible pieces. Printed text, grid lines, yellow labels, shadows, "
+              "the gripper and pieces OUTSIDE the grid are not marks. A piece belongs to the cell under its base, "
+              "even if its raised top projects into another cell. Do not invent a human move on an empty grid.\n"
               f"Robot is {robot_mark}: {robot_desc}. Human: {human_desc}.\n"
               f"Confirmed history: {json.dumps(history)}\nLast confirmed board: {json.dumps(previous)}\n"
               "Image 1: projected cells on the real frame. Image 2: top-down grid, r0 at top, c0 at left.")
@@ -235,9 +245,11 @@ def decide(frame, cam_model, history, robot_mark="O", robot_desc="brown cubes", 
             print(f"Tic-tac-toe answered by {model}")
             answer = gemini.parse_json(text)
             # Retain a trustworthy board even if the move itself is invalid.
-            consistent = consistent_board(answer.get("board"), previous, robot_mark)
+            observed = consistent_board(answer.get("board"), previous, robot_mark, require_robot_turn=False)
             board, move = validate_decision(answer, previous, robot_mark)
-            best = minimax(board, robot_mark)
+            waiting = not terminal(board) and ("X" if board.count("X") == board.count("O") else "O") != robot_mark
+            consistent = observed
+            best = None if waiting else minimax(board, robot_mark)
             if move is not None:
                 opponent = "X" if robot_mark == "O" else "O"
                 played = tuple(board[:move] + [robot_mark] + board[move + 1:])
@@ -245,7 +257,8 @@ def decide(frame, cam_model, history, robot_mark="O", robot_desc="brown cubes", 
                 if _value(played, opponent, robot_mark) < _value(optimal, opponent, robot_mark):
                     raise ValueError(f"move {CELL_IDS[move]} gives a worse minimax outcome than {CELL_IDS[best]}")
             return {"board": board, "move": CELL_IDS[move] if move is not None else None,
-                    "why": answer.get("why", ""), "model": model, "source": "gemini", "record": record}
+                    "why": answer.get("why", ""), "model": model, "source": "gemini", "record": record,
+                    "status": "waiting_for_human" if waiting else "terminal" if terminal(board) else "robot_turn"}
         except gemini.JSONError as exc:
             errors.append(str(exc))
             parts = parts[:3] + ["Exact validation error: " + str(exc) + "\nReturn the requested board, move and why JSON."]
@@ -253,6 +266,12 @@ def decide(frame, cam_model, history, robot_mark="O", robot_desc="brown cubes", 
             errors.append(str(exc))
             break
         except (ValueError, TypeError, AttributeError) as exc:
+            # A reliable board still supports local perfect play if only the
+            # suggested move was invalid; never reuse an out-of-turn board.
+            try:
+                consistent = consistent_board(answer.get("board"), previous, robot_mark)
+            except (ValueError, TypeError, AttributeError, UnboundLocalError):
+                pass
             errors.append(str(exc))
             parts = parts[:3] + ["Your last reply was: " + text + "\nExact validation error: " + str(exc)
                                 + "\nCorrect the reply using the same two images."]

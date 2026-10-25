@@ -8,6 +8,7 @@ from __future__ import annotations
 import base64
 import hashlib
 import json
+import math
 import os
 import re
 import tempfile
@@ -31,6 +32,10 @@ class CacheMiss(GeminiError):
 
 class JSONError(GeminiError):
     pass
+
+
+class RequestLimit(GeminiError):
+    """The caller's explicit live-request budget has been spent."""
 
 
 def atomic_json(path, value):
@@ -201,17 +206,33 @@ def _daily_quota(exc):
 def _status(exc):
     for name in ("code", "status_code"):
         value = getattr(exc, name, None)
-        if value == 429 or str(value) == "429":
-            return 429
-    return 429 if re.search(r"\b429\b|RESOURCE_EXHAUSTED", str(exc)) else None
+        if str(value).isdigit():
+            return int(value)
+    match = re.search(r"\b(408|429|5\d\d)\b", str(exc))
+    return int(match[1]) if match else (429 if "RESOURCE_EXHAUSTED" in str(exc) else None)
+
+
+def _transient(exc):
+    status = _status(exc)
+    if status in (408, 429) or status is not None and 500 <= status <= 599:
+        return True
+    # The SDK uses httpx; importing it is unnecessary for injected/offline clients.
+    return isinstance(exc, (TimeoutError, ConnectionError)) or type(exc).__name__ in (
+        "ReadTimeout", "ConnectTimeout", "WriteTimeout", "PoolTimeout", "ConnectError", "ReadError")
 
 
 class Gemini:
-    def __init__(self, cache_dir=None, *, transport=None, sleep=time.sleep, retries=3):
+    def __init__(self, cache_dir=None, *, transport=None, sleep=time.sleep, retries=3,
+                 timeout_s=None, max_requests=None):
         self.cache_dir = Path(cache_dir or os.getenv("R2P_GEMINI_CACHE", "cache/gemini"))
         self.transport = transport
         self.sleep = sleep
         self.retries = retries
+        self.timeout_s = float(timeout_s if timeout_s is not None else os.getenv("R2P_GEMINI_TIMEOUT_S", "45"))
+        if not math.isfinite(self.timeout_s) or self.timeout_s <= 0 or retries < 0:
+            raise ValueError("Timeout must be positive and retries nonnegative")
+        self.max_requests = max_requests
+        self.requests_used = 0
         self.records = []
 
     def _request(self, model, parts, config):
@@ -222,7 +243,11 @@ class Gemini:
 
         if not os.getenv("GEMINI_API_KEY"):
             raise GeminiError("GEMINI_API_KEY is not configured")
-        with genai.Client(api_key=os.environ["GEMINI_API_KEY"]) as client:
+        # Disable the SDK's hidden five-attempt retry loop: every wire attempt is
+        # budgeted and logged here, including timeouts, 5xx and rate limits.
+        options = types.HttpOptions(timeout=round(self.timeout_s * 1000),
+                                    retry_options=types.HttpRetryOptions(attempts=1))
+        with genai.Client(api_key=os.environ["GEMINI_API_KEY"], http_options=options) as client:
             return client.models.generate_content(model=model, contents=parts,
                                                    config=types.GenerateContentConfig(**config))
 
@@ -238,7 +263,8 @@ class Gemini:
         path = self.cache_dir / (key + ".json")
         start = time.monotonic()
         record = {"model": model, "role": role, "tag": _safe(tag), "key": key, "cached": False,
-                  "served_by": model, "time": time.time(), "latency": 0.0, "attempts": 0}
+                  "served_by": None, "time": time.time(), "latency": 0.0, "attempts": 0,
+                  "attempt_details": []}
         if path.exists():
             saved = json.loads(path.read_text(encoding="utf-8"))
             record.update(cached=True, served_by=saved["served_by"], latency=time.monotonic() - start)
@@ -249,7 +275,13 @@ class Gemini:
             self._log(record)
             raise CacheMiss(f"Cache-only miss for {model}, tag={_safe(tag)}, key={key}")
         for attempt in range(self.retries + 1):
+            if self.max_requests is not None and self.requests_used >= self.max_requests:
+                record.update(error="RequestLimit", latency=time.monotonic() - start)
+                self._log(record)
+                raise RequestLimit(f"Live request budget exhausted ({self.max_requests})")
+            self.requests_used += 1
             record["attempts"] += 1
+            attempt_start = time.monotonic()
             try:
                 reply = self._request(model, parts, config)
                 if isinstance(reply, str):
@@ -262,13 +294,18 @@ class Gemini:
                 if not isinstance(result, str) or not result.strip():
                     raise GeminiError("Gemini returned no text")
                 result = _safe(result)
+                record["attempt_details"].append({"latency": time.monotonic() - attempt_start,
+                                                  "served_by": _safe(served_by), "status": "ok"})
                 record.update(served_by=_safe(served_by), latency=time.monotonic() - start)
                 atomic_json(path, {"text": result, "served_by": record["served_by"], "model": model})
                 self._log(record)
                 return result, record
             except Exception as exc:
                 daily = _status(exc) == 429 and _daily_quota(exc)
-                if _status(exc) == 429 and not daily and attempt < self.retries:
+                record["attempt_details"].append({"latency": time.monotonic() - attempt_start,
+                                                  "status": _status(exc), "error": type(exc).__name__,
+                                                  "served_by": None})
+                if _transient(exc) and not daily and attempt < self.retries:
                     self.sleep(min(30.0, 2.0 ** attempt))
                     continue
                 record.update(error="QuotaError" if daily else type(exc).__name__, latency=time.monotonic() - start)
