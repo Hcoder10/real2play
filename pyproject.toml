@@ -16,6 +16,8 @@ dependencies = [
 robot = ["lerobot[feetech]==0.6.1"]
 gemini = ["google-genai>=2.33.0"]
 train = ["torch"]
+vla = ["lerobot[smolvla]==0.6.1", "transformers==5.4.0", "tokenizers==0.22.2", "huggingface-hub==1.6.0", "safetensors>=0.4.3,<1"]
+vla_prep = ["pip", "huggingface-hub>=1.6,<2"]
 
 [tool.setuptools.packages.find]
 include = ["r2p*"]

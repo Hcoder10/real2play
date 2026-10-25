@@ -1,0 +1,13 @@
+{
+  "wrist": {
+    "parent_body": "gripper",
+    "pos": [0.0058, 0.0514, -0.0306],
+    "quat": [0.959573, -0.280792, 0.0193005, -0.00146742],
+    "fovy_deg": 69.6,
+    "source": "reachy-duplex/sim/so101/v3/calibration.json and generated/scene_v3_bowl150.xml; measured Innomaker mount, 2026-09-19",
+    "limitation": "Mount fit has optical-axis uncertainty; wrist distortion was not calibrated."
+  },
+  "width": 256,
+  "height": 192,
+  "color_order": "RGB"
+}
