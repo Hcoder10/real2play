@@ -31,6 +31,16 @@ class JawIK:
             flat_axis /= max(np.linalg.norm(flat_axis), 1e-8)
             rot_err += np.cross(flat_axis, [0, 0, -1])
             orient = R.T @ np.linalg.solve(R @ R.T + .01*np.eye(3), rot_err)
+            if yaw is not None:
+                # The cross-product error is zero at an upside-down yaw and can
+                # strand the wrist against its limit after a long carry. Resolve
+                # that branch using the SO-101's down-facing roll convention.
+                roll = yaw+q[0]+.06
+                candidates = [roll+turn*2*np.pi for turn in (-1, 0, 1)
+                              if self.arm.range[4, 0] < roll+turn*2*np.pi < self.arm.range[4, 1]]
+                if candidates:
+                    roll = min(candidates, key=lambda value: abs(value-q[4]))
+                    orient[4] += .6*np.clip(roll-q[4], -.8, .8)
             delta = inv @ np.clip(err, -.025, .025) + (np.eye(5)-inv@J) @ (0.6*orient)
             q[:5] += np.clip(delta, -.15, .15)
             q = np.clip(q, self.arm.range[:, 0]+1e-5, self.arm.range[:, 1]-1e-5)

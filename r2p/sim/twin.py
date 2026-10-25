@@ -64,7 +64,7 @@ def build_xml(scene, physics):
     root.find("compiler").set("meshdir", str(MJCF.parent / "assets"))
     ET.SubElement(root, "option", timestep=str(1 / HZ / physics.get("substeps", 16)),
                   gravity=_vec(physics.get("gravity", [0, 0, -9.81])), integrator="implicitfast",
-                  cone="elliptic", iterations="60", noslip_iterations="5", tolerance="1e-9")
+                  cone="elliptic", iterations="60", impratio=str(physics["contact"].get("impratio", 10)), tolerance="1e-9")
     ET.SubElement(root, "size", njmax="4000", nconmax="1000")
     visual = ET.SubElement(root, "visual")
     ET.SubElement(visual, "global", offwidth="1280", offheight="960")

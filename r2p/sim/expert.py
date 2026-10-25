@@ -10,14 +10,16 @@ import argparse
 from collections import Counter
 from copy import deepcopy
 import json
+import hashlib
 import time
+from pathlib import Path
 
 import numpy as np
 
 from r2p.frames import HOME_Q, HZ
 from r2p.tasks import check_window, commands, load_task, sample_scene
 from .ik import JawIK
-from .twin import TaskTwin, extents
+from .twin import TaskTwin, extents, load_physics
 
 
 class Expert:
@@ -36,6 +38,7 @@ class Expert:
     def _bind(self, twin):
         self.twin = twin
         self.qplan = twin.q()
+        self.start_q = self.qplan.copy()
         self.initial = twin.poses()
         self.goal_xyz = self.arm.tips(twin.q())[2]
         self.yaw = None
@@ -44,16 +47,18 @@ class Expert:
         label = np.clip(np.asarray(label, float), *self.arm.range.T)
         q_before = self.twin.q()
         poses_before = self.twin.poses()
+        closed_before = bool(self.twin.grip_closed())
         q_input = self.twin.commanded_q.copy()
         if np.max(np.abs(q_input-q_before)) > np.deg2rad(4):
             q_input = q_before.copy()
         executed = label.copy()
         if self.dart:
             executed[:5] += self.rng.normal(0, self.dart, 5)
+        executed = np.clip(executed, *self.arm.range.T)
         self.twin.step(executed)
         self.ticks.append({"t": len(self.ticks)/HZ, "q": q_before.tolist(), "q_commanded": q_input.tolist(),
                            "q_target": label.tolist(), "q_exec": executed.tolist(), "poses": poses_before,
-                           "grip_closed": bool(self.twin.grip_closed()), "command": self.command, "phase": self.phase})
+                           "grip_closed": closed_before, "command": self.command, "phase": self.phase})
         self.states.append({"objects": self.twin.poses(), "gripper_open": not self.twin.grip_closed(),
                             "site_xyz": self.arm.tips(self.twin.q())[2].tolist(), "initial": self.initial})
 
@@ -145,14 +150,16 @@ class Expert:
         if target_id:
             target = self.twin.objects[target_id]
             target_yaw = np.deg2rad(self.twin.poses()[target_id]["yaw_deg"])
-            if skill in ("place_on", "place_at"):
+            if skill in ("place_on", "place_at", "place_in"):
                 period = np.pi/2 if abs(dims[0]-dims[1]) < 1e-6 else np.pi
                 obj_yaw = np.deg2rad(self.twin.poses()[obj]["yaw_deg"])
                 yaw += (target_yaw-obj_yaw+period/2) % period-period/2
             if skill == "place_on":
                 surface = dest[2]+extents(target)[2]/2
             elif skill == "place_in":
-                surface = dest[2]-extents(target)[2]/2+target.get("wall_m", .005)
+                # Release above the rim: putting the whole closed hand inside a
+                # shallow bowl can pinch its wall or the previously placed cube.
+                surface = dest[2]+extents(target)[2]/2+.004
                 # Spread successive pieces inside a shared container.
                 peers = [s["obj"] for s in self.task["skeleton"]
                          if s["skill"] == "place_in" and s.get("target") == target_id]
@@ -175,7 +182,7 @@ class Expert:
             error = dest[:2]-np.asarray(self.twin.poses()[obj]["xyz"])[:2]
             self.goal_xyz[:2] += np.clip(error, -.0008, .0008)
             self._servo(self.goal_xyz, -.12, yaw)
-        self._hold(22, .5, "release")
+        self._hold(6 if skill == "place_in" else 22, .5, "release")
         self.held = None
         self.move([*self.goal_xyz[:2], safe], .5, yaw, speed=.045, settle=10, phase="retreat")
 
@@ -183,21 +190,37 @@ class Expert:
         obj = step["obj"]
         target, _ = self._target(step)
         dims = extents(self.twin.objects[obj])
-        for attempt in range(4):
+        for attempt in range(3):
             pos = np.asarray(self.twin.poses()[obj]["xyz"])
             delta = target[:2]-pos[:2]
             distance = np.linalg.norm(delta)
-            if distance < .012:
+            if distance < .009:
                 break
             direction = delta/max(distance, 1e-8)
             yaw = np.arctan2(direction[1], direction[0])+np.pi/2
-            radius = np.linalg.norm(dims[:2])/2+.009
+            radius = np.linalg.norm(dims[:2])/2+.022
             behind = pos[:2]-direction*radius
-            self.move([*behind, .08], -.12, yaw, phase="push_approach")
-            self.move([*behind, .008], -.12, yaw, speed=.04, phase="push_descend")
-            self.move([*(target[:2]-direction*.014), .008], -.12, yaw, speed=.025, settle=10,
-                      phase="push" if attempt == 0 else "recovery_push")
-            self.move([*self.goal_xyz[:2], .08], .5, yaw, phase="push_retreat")
+            self.move([*behind, .08], .02, yaw, phase="push_approach")
+            self.move([*behind, .012], .02, yaw, speed=.04, phase="push_descend")
+            self.phase = "push" if attempt == 0 else "recovery_push"
+            for _ in range(220):
+                pos = np.asarray(self.twin.poses()[obj]["xyz"])
+                delta = target[:2]-pos[:2]
+                distance = np.linalg.norm(delta)
+                if distance < .007:
+                    break
+                if np.dot(delta, direction) < 0:
+                    break
+                # Observe the object's progress instead of assuming the fingertip
+                # sits at a particular offset from a rotating cube face.
+                self.goal_xyz[:2] += direction*min(.0008, distance/4)
+                self._servo(self.goal_xyz, .02, yaw)
+            actual = self.arm.tips(self.twin.q())[2]
+            # Back off with the fist closed. Opening beside the cube swats it.
+            self.move([*(actual[:2]-direction*.012), actual[2]], .02, yaw, speed=.035,
+                      settle=3, phase="push_backoff")
+            self.move([*self.goal_xyz[:2], .09], .02, yaw, phase="push_retreat")
+            self._hold(10, .5, "push_open")
 
     def home(self):
         current = self.arm.tips(self.twin.q())[2]
@@ -212,6 +235,7 @@ class Expert:
             self._tick(target)
 
     def run(self, twin=None, *, seed=0, scene=None):
+        self.rng = np.random.default_rng(seed)
         own_twin = twin is None
         if own_twin:
             scene = scene or sample_scene(self.task, np.random.default_rng(seed))
@@ -251,7 +275,10 @@ class Expert:
             meta = {"schema": "r2p_trace/1", "task": self.task, "task_name": self.task["name"], "source": "expert",
                     "player": "reference_expert", "level": self.task["name"], "seed": seed,
                     "scene": twin.scene, "success": success, "fail_reason": None if success else self.fail_reason or "goal_not_met",
-                    "commands": self.segments, "rig": "so101_bench", "start_q": HOME_Q.tolist(), "dart_std_rad": self.dart}
+                    "commands": self.segments, "rig": "so101_bench", "start_q": self.start_q.tolist(), "dart_std_rad": self.dart}
+            meta["physics_config"] = deepcopy(twin.physics)
+            meta["physics_sha256"] = hashlib.sha256(json.dumps(twin.physics, sort_keys=True).encode()).hexdigest()
+            meta["target_space"] = "servo"
             return {"meta": meta, "ticks": self.ticks, "check": result, "final": twin.poses()}
         finally:
             if own_twin:
@@ -261,6 +288,8 @@ class Expert:
 
 
 def evaluate(task, n=100, seed=10000, dart=0.0, progress=False):
+    if not isinstance(n, int) or n < 1:
+        raise ValueError("n must be a positive integer")
     task = load_task(task) if not isinstance(task, dict) else task
     expert = Expert(task, dart=dart, seed=seed)
     failures, errors, outcomes = Counter(), [], []
@@ -280,7 +309,11 @@ def evaluate(task, n=100, seed=10000, dart=0.0, progress=False):
     return {"task": task["name"], "n": n, "seed": seed, "success": float(np.mean(outcomes)),
             "successes": sum(outcomes), "failures": dict(failures),
             "median_placement_mm": float(np.median(errors)) if errors else None,
-            "seconds": time.perf_counter()-start, "outcomes": outcomes}
+            "seconds": time.perf_counter()-start, "outcomes": outcomes,
+            "physics_sha256": hashlib.sha256(json.dumps(load_physics(), sort_keys=True).encode()).hexdigest(),
+            "task_sha256": hashlib.sha256(json.dumps(task, sort_keys=True).encode()).hexdigest(),
+            "code_sha256": {name: hashlib.sha256(Path(__file__).with_name(name).read_bytes()).hexdigest()
+                            for name in ("expert.py", "ik.py", "twin.py")}}
 
 
 def main():
@@ -289,8 +322,13 @@ def main():
     parser.add_argument("--n", type=int, default=100)
     parser.add_argument("--seed", type=int, default=10000)
     parser.add_argument("--dart", type=float, default=0)
+    parser.add_argument("--out", type=Path, help="Optional JSON report path")
     args = parser.parse_args()
-    print(json.dumps(evaluate(args.task, args.n, args.seed, args.dart, progress=True), indent=2))
+    report = evaluate(args.task, args.n, args.seed, args.dart, progress=True)
+    if args.out:
+        args.out.parent.mkdir(parents=True, exist_ok=True)
+        args.out.write_text(json.dumps(report, indent=2), encoding="utf-8")
+    print(json.dumps(report, indent=2))
 
 
 if __name__ == "__main__":

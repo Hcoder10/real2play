@@ -3,7 +3,7 @@
   "rig": "so101_bench",
   "version": 1,
   "hz": 30,
-  "substeps": 16,
+  "substeps": 32,
   "gravity": [0, 0, -9.81],
   "latency_ticks": 1,
   "sag_gain": [0, 0.05, 0.05, 0.05, 0, 0],
@@ -16,6 +16,6 @@
     "gripper": {"kp": 20, "kv": 0.25, "armature": 0.002, "frictionloss": 0.001, "torque_limit": 0.8}
   },
   "object": {"mass_kg": 0.03, "friction": 0.6},
-  "contact": {"solref": [0.006, 1], "solimp": [0.95, 0.99, 0.001], "friction": [0.8, 0.005, 0.0001]},
+  "contact": {"solref": [0.006, 1], "solimp": [0.95, 0.99, 0.001], "friction": [0.8, 0.005, 0.0001], "impratio": 10},
   "notes": "Provisional compliance calibration, not an identified hardware twin. Gravity acts through the official link inertias and finite position-servo stiffness; no Cartesian sag offset is injected. kp units Nm/rad, kv Nm*s/rad, armature kg*m^2, frictionloss and torque_limit Nm. See README.md for measured sag and refit protocol."
 }
