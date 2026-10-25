@@ -94,6 +94,21 @@ def test_ingest_isolates_bad_files_and_deduplicates(trace, tmp_path):
     assert result['counts']['relabeled'] == 1
 
 
+def test_human_provenance_preserved_and_headless_cannot_claim_human(trace, tmp_path):
+    source, task, physics = trace
+    meta, rows = read_trace(source)
+    meta.update(source='human', headless=False, player='human-test-fixture')
+    write_trace(source, meta, rows)
+    destination = tmp_path/'human_replay.jsonl'
+    assert replay_trace(source, destination, task, physics)['accepted']
+    replayed, _ = read_trace(destination)
+    assert replayed['source'] == 'human' and replayed['player'] == 'human-test-fixture'
+    meta['headless'] = True
+    write_trace(source, meta, rows)
+    with pytest.raises(ValueError, match='Headless players must be labeled'):
+        replay_trace(source, tmp_path/'not_written.jsonl', task, physics)
+
+
 def test_chunks_are_absolute_and_stop_at_command_boundary(trace, tmp_path):
     from r2p.policy.data import Augmentation, TraceDataset
     from r2p.policy.features import export_config

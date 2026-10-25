@@ -113,3 +113,6 @@ For real human data, publish the Roblox place, configure its server-only HTTPS
 receiver URL and matching key, and collect complete rounds. No publish or live
 Gemini request is part of this command. Changed task revisions need recollection
 or an explicit `--task <recorded-task.json>`; never silently mix incompatible goals.
+
+Measured commands, counts, prediction errors, HOLD gates and outstanding shared
+test failures are recorded in [Agent L's report](L_GAME_DATA_REPORT.md).
