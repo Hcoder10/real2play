@@ -1,0 +1,10 @@
+.venv/
+__pycache__/
+*.pyc
+runs/
+out/
+cache/
+*.log
+MUJOCO_LOG.TXT
+exports/*/weights.npz
+roblox/*.rbxl.lock

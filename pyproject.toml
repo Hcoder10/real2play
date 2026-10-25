@@ -1,0 +1,24 @@
+[project]
+name = "real2play"
+version = "0.1.0"
+description = "Real2Play: Gemini builds an exact twin of your robot, gamifies the task, trains the robot on play."
+requires-python = ">=3.12"
+dependencies = [
+  "numpy>=2.2",
+  "scipy>=1.14",
+  "mujoco==3.13.0",
+  "opencv-contrib-python==4.13.0.92",
+  "pillow>=11",
+  "pytest>=8",
+]
+
+[project.optional-dependencies]
+robot = ["lerobot[feetech]==0.6.1"]
+gemini = ["google-genai>=1.30"]
+train = ["torch"]
+
+[tool.setuptools.packages.find]
+include = ["r2p*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
