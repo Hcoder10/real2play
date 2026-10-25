@@ -1,0 +1,230 @@
+{
+ "objects": [
+  {
+   "id": "cap1",
+   "shape": "cylinder",
+   "xyz": [
+    0.142,
+    -0.068,
+    0.008
+   ],
+   "size_m": [
+    0.0165,
+    0.008
+   ],
+   "color": [
+    0.95,
+    0.95,
+    0.95,
+    1.0
+   ],
+   "mass_kg": 0.003,
+   "friction": 0.6
+  },
+  {
+   "id": "cap2",
+   "shape": "cylinder",
+   "xyz": [
+    0.155,
+    0.008,
+    0.008
+   ],
+   "size_m": [
+    0.0165,
+    0.008
+   ],
+   "color": [
+    0.95,
+    0.95,
+    0.95,
+    1.0
+   ],
+   "mass_kg": 0.003,
+   "friction": 0.6
+  },
+  {
+   "id": "cap3",
+   "shape": "cylinder",
+   "xyz": [
+    0.218,
+    -0.075,
+    0.008
+   ],
+   "size_m": [
+    0.0165,
+    0.008
+   ],
+   "color": [
+    0.95,
+    0.95,
+    0.95,
+    1.0
+   ],
+   "mass_kg": 0.003,
+   "friction": 0.6
+  },
+  {
+   "id": "weight_near",
+   "shape": "box",
+   "xyz": [
+    0.095,
+    -0.012,
+    0.015
+   ],
+   "size_m": [
+    0.016,
+    0.016,
+    0.015
+   ],
+   "color": [
+    0.4,
+    0.25,
+    0.18,
+    1.0
+   ],
+   "mass_kg": 0.05,
+   "friction": 0.8
+  },
+  {
+   "id": "weight_far",
+   "shape": "box",
+   "xyz": [
+    0.215,
+    -0.025,
+    0.015
+   ],
+   "size_m": [
+    0.02,
+    0.02,
+    0.015
+   ],
+   "color": [
+    0.45,
+    0.3,
+    0.22,
+    1.0
+   ],
+   "mass_kg": 0.05,
+   "friction": 0.8
+  },
+  {
+   "id": "green_cube",
+   "shape": "box",
+   "xyz": [
+    0.095,
+    -0.14,
+    0.012
+   ],
+   "size_m": [
+    0.012,
+    0.012,
+    0.012
+   ],
+   "color": [
+    0.2,
+    0.7,
+    0.3,
+    1.0
+   ],
+   "mass_kg": 0.02,
+   "friction": 0.6
+  }
+ ],
+ "arm": {
+  "z_offset_mm": -1.5,
+  "xy_offset_mm": [
+   10.0,
+   11.0
+  ],
+  "notes": "Successfully picked cap2 and placed it in center cell r1c1. Closing gripper from 19.7 to ~11.0 (squeezing 33mm cap at load ~284) shifts jaw_xyz_m by [-7.6mm, +3.3mm] toward the fixed (+y) jaw; placing at closed-jaw [0.165, 0.020, 0.019] lands squarely in r1c1."
+ },
+ "physics": {
+  "shoulder_pan": {
+   "kp": 35,
+   "kv": 0.7,
+   "armature": 0.005,
+   "frictionloss": 0.002,
+   "torque_limit": 3.35
+  },
+  "shoulder_lift": {
+   "kp": 20,
+   "kv": 0.8,
+   "armature": 0.005,
+   "frictionloss": 0.002,
+   "torque_limit": 3.35
+  },
+  "elbow_flex": {
+   "kp": 30,
+   "kv": 0.7,
+   "armature": 0.005,
+   "frictionloss": 0.002,
+   "torque_limit": 3.35
+  },
+  "wrist_flex": {
+   "kp": 20,
+   "kv": 0.4,
+   "armature": 0.003,
+   "frictionloss": 0.001,
+   "torque_limit": 3.35
+  },
+  "wrist_roll": {
+   "kp": 25,
+   "kv": 0.35,
+   "armature": 0.002,
+   "frictionloss": 0.001,
+   "torque_limit": 3.35
+  },
+  "gripper": {
+   "kp": 20,
+   "kv": 0.25,
+   "armature": 0.002,
+   "frictionloss": 0.001,
+   "torque_limit": 0.8
+  }
+ },
+ "board": {
+  "center_xy": [
+   0.1525,
+   0.0068
+  ],
+  "cell_m": 0.0368,
+  "cells": {
+   "r0c0": [
+    0.1084,
+    -0.0209
+   ],
+   "r0c1": [
+    0.116,
+    0.0146
+   ],
+   "r0c2": [
+    0.1237,
+    0.0502
+   ],
+   "r1c0": [
+    0.1448,
+    -0.0288
+   ],
+   "r1c1": [
+    0.1525,
+    0.0068
+   ],
+   "r1c2": [
+    0.1602,
+    0.0423
+   ],
+   "r2c0": [
+    0.1813,
+    -0.0367
+   ],
+   "r2c1": [
+    0.189,
+    -0.0011
+   ],
+   "r2c2": [
+    0.1967,
+    0.0344
+   ]
+  }
+ }
+}
