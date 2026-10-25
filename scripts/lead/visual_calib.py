@@ -41,7 +41,7 @@ def fresh_frame(after_t):
 def collect():
     OUT.mkdir(parents=True, exist_ok=True)
     poses = []
-    for z in (0.11, 0.17):
+    for z in (0.11, 0.14):
         for x in (0.15, 0.21, 0.27):
             for y in (-0.08, 0.0, 0.08):
                 poses.append([x, y, z])
@@ -53,11 +53,16 @@ def collect():
             continue
         time.sleep(1.0)
         t_settled = time.time()
-        img = fresh_frame(t_settled + 0.3)
+        try:
+            img = fresh_frame(t_settled + 0.3)
+        except RuntimeError:
+            print(k, p, "no fresh frame, skipped", flush=True)
+            continue
         st = json.loads(urllib.request.urlopen(ARMD + "/state", timeout=5).read())
         cv2.imwrite(str(OUT / f"p{k:02d}.jpg"), img)
         rows.append({"k": k, "cmd_xyz": p, "owner_deg": st["q"]})
         print(k, p, "q", st["q"], flush=True)
+        (OUT / "poses.json").write_text(json.dumps(rows, indent=1))
     post({"cmd": "rest"})
     (OUT / "poses.json").write_text(json.dumps(rows, indent=1))
     print(f"{len(rows)} poses saved; arm at rest (torque still on)")

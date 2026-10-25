@@ -1,26 +1,106 @@
 {
-  "active": "via_corpus_audit",
-  "verified": false,
-  "candidates": {
-    "identity": {
-      "joints": {
-        "shoulder_pan": {"sign": 1, "offset_deg": 0, "measured": false},
-        "shoulder_lift": {"sign": 1, "offset_deg": 0, "measured": false},
-        "elbow_flex": {"sign": 1, "offset_deg": 0, "measured": false},
-        "wrist_flex": {"sign": 1, "offset_deg": 0, "measured": false},
-        "wrist_roll": {"sign": 1, "offset_deg": 0, "measured": false}
-      },
-      "gripper": {"closed_rad": -0.17, "open_rad": 1.745}
+ "active": "vcal_oct25",
+ "verified": false,
+ "candidates": {
+  "identity": {
+   "joints": {
+    "shoulder_pan": {
+     "sign": 1,
+     "offset_deg": 0,
+     "measured": false
     },
-    "via_corpus_audit": {
-      "joints": {
-        "shoulder_pan": {"sign": 1, "offset_deg": 0, "measured": false},
-        "shoulder_lift": {"sign": 1, "offset_deg": -11.5, "measured": false},
-        "elbow_flex": {"sign": 1, "offset_deg": 0, "measured": false},
-        "wrist_flex": {"sign": 1, "offset_deg": 0, "measured": false},
-        "wrist_roll": {"sign": 1, "offset_deg": -76, "measured": false}
-      },
-      "gripper": {"closed_rad": -0.17, "open_rad": 1.745}
+    "shoulder_lift": {
+     "sign": 1,
+     "offset_deg": 0,
+     "measured": false
+    },
+    "elbow_flex": {
+     "sign": 1,
+     "offset_deg": 0,
+     "measured": false
+    },
+    "wrist_flex": {
+     "sign": 1,
+     "offset_deg": 0,
+     "measured": false
+    },
+    "wrist_roll": {
+     "sign": 1,
+     "offset_deg": 0,
+     "measured": false
     }
+   },
+   "gripper": {
+    "closed_rad": -0.17,
+    "open_rad": 1.745
+   }
+  },
+  "via_corpus_audit": {
+   "joints": {
+    "shoulder_pan": {
+     "sign": 1,
+     "offset_deg": 0,
+     "measured": false
+    },
+    "shoulder_lift": {
+     "sign": 1,
+     "offset_deg": -11.5,
+     "measured": false
+    },
+    "elbow_flex": {
+     "sign": 1,
+     "offset_deg": 0,
+     "measured": false
+    },
+    "wrist_flex": {
+     "sign": 1,
+     "offset_deg": 0,
+     "measured": false
+    },
+    "wrist_roll": {
+     "sign": 1,
+     "offset_deg": -76,
+     "measured": false
+    }
+   },
+   "gripper": {
+    "closed_rad": -0.17,
+    "open_rad": 1.745
+   }
+  },
+  "vcal_oct25": {
+   "joints": {
+    "shoulder_pan": {
+     "sign": 1,
+     "offset_deg": -2.18,
+     "measured": false
+    },
+    "shoulder_lift": {
+     "sign": 1,
+     "offset_deg": -11.2,
+     "measured": false
+    },
+    "elbow_flex": {
+     "sign": 1,
+     "offset_deg": 1.66,
+     "measured": false
+    },
+    "wrist_flex": {
+     "sign": 1,
+     "offset_deg": -18.93,
+     "measured": false
+    },
+    "wrist_roll": {
+     "sign": 1,
+     "offset_deg": 5.7,
+     "measured": false
+    }
+   },
+   "gripper": {
+    "closed_rad": -0.17,
+    "open_rad": 1.745
+   },
+   "source": "Oct 25: gemini-4-argon visual calibration (14 poses, LOO median 8.8 px ~5 mm); physically checked above r1c1."
   }
+ }
 }
