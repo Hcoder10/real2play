@@ -36,7 +36,10 @@ if __name__ == "__main__":
         print("[auto-approved under owner authorization]", flush=True)
         return "y"
 
-    agent = LabAgent(run, load_task(a.task), client=StatefulGemini(max_requests=a.request_budget, timeout_s=180, retries=0),
+    # Stateless client: every turn already carries goal, history, files and results; chaining turns through
+    # previous_interaction_id made every turn 2 fail with malformed_tool_call (Oct 25, runs 02/03).
+    from r2p import gemini
+    agent = LabAgent(run, load_task(a.task), client=gemini.Gemini(max_requests=a.request_budget, timeout_s=300, retries=0),
                      approve="ask", input_fn=approve)
     PREFACE = ("Context: a 6-DoF hobby desktop arm (SO-101) on a table at a hackathon. The work is calibrating a MuJoCo "
                "physics simulation of a tic-tac-toe game (moving plastic bottle caps onto a paper grid) so it matches the "
@@ -44,6 +47,8 @@ if __name__ == "__main__":
     raw_call = agent.client.call
 
     def call(parts, **kw):
+        # Argon writes whole sim files inside its JSON reply; 16k output tokens (with high thinking) truncates it.
+        kw["max_output_tokens"] = max(kw.get("max_output_tokens") or 0, 60000)
         last = None
         for attempt in range(4):
             try:
