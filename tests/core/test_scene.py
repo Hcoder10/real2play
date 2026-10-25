@@ -36,7 +36,7 @@ def test_board_layout_optional_pieces_and_slot_identity():
             assert obj["size_m"][:2] == [.045,.045]
     by_id = {o["id"]:o for o in task["objects"]}
     assert by_id["piece"]["size_m"] == [.03,.03,.014]
-    assert by_id["piece"]["xy"] == [.23,.15]
+    assert by_id["piece"]["xy"] == [.13,.13]
     targets, counts = set(), set()
     for seed in range(100):
         scene = sample_scene(task, np.random.default_rng(seed))
