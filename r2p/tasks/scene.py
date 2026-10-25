@@ -108,6 +108,35 @@ def _radius(obj):
     return math.hypot(*dims[:2]) / 2
 
 
+def _shift_board(task, rng):
+    """One rigid pose for the whole printed board per episode (the paper is never placed twice the same): every cell
+    plate, every cell xy_choice and the board record move together about the board centre. Drawn first."""
+    rule = task["randomize"]["board_pose"]
+    dx, dy, yaw = (_draw(rng, rule.get(k, 0)) for k in ("dx", "dy", "yaw_deg"))
+    c, s = math.cos(math.radians(yaw)), math.sin(math.radians(yaw))
+    cx, cy = task["board"]["center_xy"]
+
+    def move(p):
+        x, y = p[0] - cx, p[1] - cy
+        return [round(cx + dx + c * x - s * y, 6), round(cy + dy + s * x + c * y, 6)]
+
+    out = copy.deepcopy(task)
+    cells = {tuple(v) for v in task["board"]["cells"].values()}
+    out["board"]["cells"] = {k: move(v) for k, v in task["board"]["cells"].items()}
+    out["board"]["center_xy"] = move(task["board"]["center_xy"])
+    for obj in out["objects"]:
+        if "xy" in obj and tuple(obj["xy"]) in cells:
+            obj["xy"] = move(obj["xy"])
+            obj["yaw_deg"] = obj.get("yaw_deg", 0) + yaw
+    for key, entry in out["randomize"].items():
+        if isinstance(entry, dict) and "xy_choice" in entry:
+            entry["xy_choice"] = [move(p) for p in entry["xy_choice"]]
+            if all(tuple(p) in cells for p in task["randomize"][key]["xy_choice"]):
+                entry.setdefault("yaw_deg", yaw)
+    del out["randomize"]["board_pose"]
+    return out, {"dx": dx, "dy": dy, "yaw_deg": yaw}
+
+
 def sample_scene(task, rng, tries=500) -> dict:
     """Sample with the supplied numpy Generator; raise rather than return overlapping scenes.
 
@@ -118,6 +147,9 @@ def sample_scene(task, rng, tries=500) -> dict:
     errors = validate(task)
     if errors:
         raise ValueError("Invalid task: " + "; ".join(errors))
+    board_pose = None
+    if "board_pose" in task.get("randomize", {}):
+        task, board_pose = _shift_board(task, rng)
     rnd = task.get("randomize", {})
     sep = rnd.get("min_sep_m", 0.03)
     table = copy.deepcopy(task.get("table", {"size_m": [0.8, 0.6], "center_xy": [0.2, 0.0],
@@ -192,7 +224,8 @@ def sample_scene(task, rng, tries=500) -> dict:
                 break
             placed[obj["id"]] = obj
         if not failed:
-            return {"version": 0, "task": task["name"], "robot": copy.deepcopy(task.get("robot", {
+            extra = {"board_pose": board_pose} if board_pose else {}
+            return {**extra, "version": 0, "task": task["name"], "robot": copy.deepcopy(task.get("robot", {
                 "type": "so101", "joint_convention": "mjcf_rad"})), "table": table,
                 "objects": [placed[o["id"]] for o in active], "cameras": copy.deepcopy(task.get("cameras", []))}
     raise ValueError(f"Cannot sample a non-overlapping scene for {task['name']} after {tries} attempts")

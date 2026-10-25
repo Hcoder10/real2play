@@ -48,7 +48,15 @@ def test_board_layout_optional_pieces_and_slot_identity():
         poses = poses_from_scene(scene)
         choices = [tuple(p["xyz"][:2]) for oid,p in poses.items() if oid == "cell" or oid.startswith("other")]
         assert len(set(choices)) == len(choices)
-        targets.add(tuple(poses["cell"]["xyz"][:2]))
+        # The whole printed board moves rigidly per episode: map the target back into the measured board frame.
+        bp = scene["board_pose"]
+        a = np.radians(bp["yaw_deg"])
+        bx, by = task["board"]["center_xy"]
+        dx_, dy_ = np.array(poses["cell"]["xyz"][:2]) - [bx + bp["dx"], by + bp["dy"]]
+        back = (bx + np.cos(a)*dx_ + np.sin(a)*dy_, by - np.sin(a)*dx_ + np.cos(a)*dy_)
+        cell = min(cells, key=lambda k: np.hypot(back[0]-cells[k][0], back[1]-cells[k][1]))
+        assert np.hypot(back[0]-cells[cell][0], back[1]-cells[cell][1]) < 1e-5
+        targets.add(cell)
         counts.add(len(choices)-1)
         slots = encode_slots(task, poses)
         for index,obj in enumerate(task["objects"]):

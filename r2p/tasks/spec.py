@@ -163,8 +163,15 @@ def validate(task) -> list[str]:
         elif (lower is not None and vals[0] < lower) or (positive and vals[0] <= 0):
             errors.append(f"{label} has an invalid lower bound")
 
+    if "board_pose" in rnd:
+        pose = rnd["board_pose"]
+        if not isinstance(pose, dict) or not isinstance(task.get("board"), dict) or set(pose) - {"dx", "dy", "yaw_deg"}:
+            errors.append("randomize.board_pose needs a board and only dx, dy, yaw_deg")
+        else:
+            for key, value in pose.items():
+                interval(value, f"randomize.board_pose.{key}")
     for oid, entry in rnd.items():
-        if oid == "min_sep_m":
+        if oid in ("min_sep_m", "board_pose"):
             continue
         ref(oid, "randomize")
         if not isinstance(entry, dict):

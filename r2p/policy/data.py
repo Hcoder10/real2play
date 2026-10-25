@@ -95,7 +95,10 @@ class TraceDataset:
         self.features = expand_features(self.raw, config).astype(np.float32)
 
     def sample(self, batch_size, rng, augment=True):
-        index = rng.choice(len(self.raw), size=batch_size, p=self.weights)
+        if getattr(self, "_cdf", None) is None:  # rng.choice(p=...) rebuilds an O(N) CDF on every call
+            self._cdf = np.cumsum(self.weights)
+            self._cdf /= self._cdf[-1]
+        index = np.minimum(np.searchsorted(self._cdf, rng.random(batch_size), side="right"), len(self._cdf) - 1)
         x = self.raw[index].copy()
         k = self.config["K"]
         slots = x[:, 6:6+9*k].reshape(-1, k, 9)
