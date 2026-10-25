@@ -102,7 +102,10 @@ class Appearance:
             iou = np.count_nonzero(predicted & mask) / max(1, np.count_nonzero(predicted | mask))
             if iou > best[0]:
                 best = (iou, threshold)
-        model.threshold = float(best[1])
+        # A common colour (white caps versus the robot) can make global IoU
+        # prefer deleting a shaded side of the object. Preserve the measured
+        # foreground; connected-component tracking rejects distant distractors.
+        model.threshold = float(min(best[1], np.percentile(scores[mask], 5)))
         return model
 
     def backproject(self, frame=None, indices=None):

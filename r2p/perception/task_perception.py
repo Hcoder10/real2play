@@ -21,6 +21,10 @@ from .geometry import dimensions, fit_pose, rotation, is_screwdriver
 
 
 class GeminiDetector:
+    def __init__(self, *, ask=None):
+        self.ask = ask
+        self.record = None
+
     def detect(self, frame, task, *, role="small"):
         from r2p import gemini  # no network client is imported until explicitly used
         prompt = ("Locate every visible task object in this image. Return JSON {\"objects\": "
@@ -31,7 +35,8 @@ class GeminiDetector:
             "type": "array", "items": {"type": "object", "required": ["id", "box_2d"], "properties": {
                 "id": {"type": "string"}, "box_2d": {"type": "array", "minItems": 4, "maxItems": 4,
                                                         "items": {"type": "number", "minimum": 0, "maximum": 1000}}}}}}}
-        response, _ = gemini.call([prompt, gemini.image_part(frame)], role=role, tag="perception_boxes", schema=schema)
+        response, self.record = (self.ask or gemini.call)([prompt, gemini.image_part(frame)], role=role,
+                                                        tag="perception_boxes", schema=schema)
         if isinstance(response, str):
             response = response.strip()
             if response.startswith("```"):
@@ -50,6 +55,12 @@ class GeminiDetector:
 
 
 def _known_pose(obj):
+    # A generated twin pose has not been surveyed on the bench. Even a fixed
+    # object needs a visual estimate until its pose has been explicitly verified.
+    if obj.get("pose_source") in ("calibrated_twin", "model_inferred") and not obj.get("pose_verified", False):
+        return None
+    if obj.get("_pose_randomized") and not obj.get("pose_verified", False):
+        return None
     if "xy" in obj and not isinstance(obj["xy"], str):
         xyz = [*obj["xy"], dimensions(obj)[2]/2]
     elif obj.get("fixed") and "xyz" in obj:
@@ -69,7 +80,14 @@ class TaskPerceiver:
         self.task = copy.deepcopy(task)
         self.objects = {obj["id"]: copy.deepcopy(obj) for obj in task["objects"]}
         for oid, obj in self.objects.items():
-            scale = task.get("randomize", {}).get(oid, {}).get("size_scale")
+            rule = task.get("randomize", {}).get(oid, {})
+            # Nominal supply coordinates are not measurements of a randomized
+            # episode. A frozen placement task still uses its exact known spot.
+            obj["_pose_randomized"] = any(
+                isinstance(rule.get(key), (list, tuple)) and len(set(rule[key])) > 1
+                for key in ("x", "y", "r", "az_deg", "yaw_deg", "yaw_rel_deg")) or len(
+                    {tuple(xy) for xy in rule.get("xy_choice", [])}) > 1
+            scale = rule.get("size_scale")
             if isinstance(scale, (list, tuple)) and scale[0] < scale[1]:
                 obj["_size_scale_range"] = list(scale)
         self.detector = detector if detector is not None else GeminiDetector()

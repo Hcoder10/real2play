@@ -135,10 +135,14 @@ def test_live_game_routes_each_turn_through_session_without_hardware(tmp_path, m
     monkeypatch.setattr(r2p.robot, "Session", Session)
     monkeypatch.setattr(r2p.perception, "TaskPerceiver", Perceiver)
     monkeypatch.setattr("builtins.input", lambda prompt: "")
-    turns = iter([(0, 4), (1, 2), (3, 6)])
+    turns = iter([(None, None), (0, 4), (1, 2), (3, 6)])
     def decide(frame, camera, history, *args):
         human, move = next(turns)
         board = ttt.history_board(history)
+        if human is None:
+            assert not calls
+            return {"board": board, "move": None, "status": "waiting_for_human", "why": "Human starts",
+                    "model": "fake", "source": "oracle"}
         board[human] = "X"
         return {"board": board, "move": ttt.CELL_IDS[move], "why": "test reasoning", "model": "fake", "source": "oracle"}
     monkeypatch.setattr(ttt, "decide", decide)

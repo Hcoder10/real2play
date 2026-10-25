@@ -45,10 +45,11 @@ def test_existing_human_command_labels_are_preserved():
 def test_refinement_is_main_only_and_must_preserve_partition():
     rows = synthetic_trace()
     baseline = segment(rows, task())
-    fake = FakeGemini([{"segments": baseline}])
+    reply = [{"start_tick": round(a * 30), "end_tick": round(b * 30), "command": cmd} for a, b, cmd in baseline]
+    fake = FakeGemini([{"segments": reply}])
     assert segment(rows, task(), refine=True, ask=fake) == baseline
     assert fake.requests[0]["model"] == "gemini-4-argon"
-    bad = FakeGemini([{"segments": [[0, 2, "invented_command"]]}])
+    bad = FakeGemini([{"segments": [{"start_tick": 2, "end_tick": 60, "command": "home"}]}] * 2)
     with pytest.raises(ValueError, match="partition"):
         segment(rows, task(), refine=True, ask=bad)
 

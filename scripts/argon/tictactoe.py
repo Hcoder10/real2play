@@ -276,6 +276,9 @@ def live_games(args):
                     publish(args.status, board, decision, status="planning", game=game + 1)
                     history = {"board": board.copy()}
                     if decision["move"] is None:
+                        if decision.get("status") == "waiting_for_human":
+                            publish(args.status, board, decision, status="waiting_for_human", game=game + 1)
+                            continue
                         break
                     task = placement(args, decision["move"], board)
                     # Projection of the measured supply spot seeds perception without a Gemini re-detection.
@@ -334,7 +337,7 @@ def main(argv=None):
     parser.add_argument("--piece-size", type=float, default=0.025, help="piece width in metres")
     parser.add_argument("--piece-height", type=float, default=0.014, help="piece height in metres")
     parser.add_argument("--robot-desc", default="brown cubes")
-    parser.add_argument("--human-desc", default="blue discs")
+    parser.add_argument("--human-desc", default="flat metallic coins (pennies or nickels)")
     parser.add_argument("--camera", help="calibrated camera JSON")
     parser.add_argument("--history", help="JSON file containing prior confirmed moves or board")
     parser.add_argument("--status", default="out/ttt/status.json")

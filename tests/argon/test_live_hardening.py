@@ -79,3 +79,27 @@ def test_rotated_measured_board_remap_and_resized_camera():
         sample = top[i // 3 * 150 + 75, i % 3 * 150 + 75]
         assert sample[1] > 200
         assert abs(int(sample[0]) - 20 * (i + 1)) < 3
+
+
+def test_qa_budget_survives_new_client_and_allows_cache_hits(tmp_path, monkeypatch):
+    from pathlib import Path
+    monkeypatch.syspath_prepend(str(Path(__file__).resolve().parents[2] / "scripts/argon"))
+    from live_qa import QAClient
+    monkeypatch.setenv("R2P_GEMINI_CACHE", str(tmp_path / "cache"))
+    client = QAClient(tmp_path / "audit", limit=1)
+    client.transport = lambda **kw: "ok"
+    try:
+        assert client.call("one", tag="audit")[0] == "ok"
+        with pytest.raises(FileExistsError):
+            QAClient(tmp_path / "audit", limit=1)
+    finally:
+        client.close()
+    again = QAClient(tmp_path / "audit", limit=1)
+    again.transport = lambda **kw: pytest.fail("Budget must prevent any new transport call")
+    try:
+        assert again.call("one", tag="cached")[1]["cached"]
+        with pytest.raises(gemini.RequestLimit):
+            again.call("two", tag="over-budget")
+        assert json.loads((tmp_path / "audit/request_budget.json").read_text())["reserved"] == 1
+    finally:
+        again.close()

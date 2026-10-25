@@ -28,6 +28,11 @@ zero requests and raises `CacheMiss` for any uncached request, including JSON re
 are keyed on model, config and all part bytes under `cache/gemini`; `R2P_GEMINI_CACHE` changes that
 directory. `calls.jsonl` records model, actual `served_by`, attempts, latency and cache state.
 
+The transport timeout defaults to 45 seconds (`R2P_GEMINI_TIMEOUT_S`). Timeouts, connection errors,
+HTTP 408/5xx and RPM 429 retry at most three times with 1/2/4-second backoff. SDK retries are disabled,
+so `attempt_details` accounts for each wire attempt, including failed attempts without an answering
+model. `Gemini(max_requests=N)` bounds retries and JSON repairs as well as initial calls.
+
 Per-day and zero-limit 429s raise `QuotaError`. Per-minute errors use bounded retries; the word
 “billing” is never a quota classification signal. Only `R2P_ALLOW_FALLBACK=1` permits MAIN to fall
 back to SMALL. JSON repair uses SMALL on the cached original reply, never repeats the expensive
@@ -72,8 +77,10 @@ randomization locally and pins badly mismatched grasp width. It writes `tasks/<n
 A calibrated episode with at least two frames then enters the twin loop and writes `scene.json`.
 A bare uncalibrated video produces a task with `scene_status=requires_calibrated_camera`; metric
 geometry is not claimed without calibration. A video without joints cannot validate robot physics.
+Generated poses carry `pose_source=model_inferred`, then `calibrated_twin` after fitting. Perception
+does not treat either as a surveyed location without `pose_verified=true`.
 
-The loop uses one SMALL detection for the critic frame set, local Lab appearance masks and
+The loop uses one SMALL detection on the first critic frame, local Lab appearance masks and
 calibrated silhouette fitting. `TaskTwin` replays **recorded q_target**, and C2's CPU mesh renderer
 renders its joint/object state through the real camera. No CUDA, GPU lease or graphics context is
 needed. The first and subsequent critic images never include held-out evaluation frames. Local
@@ -85,9 +92,16 @@ jaw gaps establish grasp width; an empty close is not a grasp. `--anchors auto` 
 image-consistent anchors (within 25 mm); `hard` forces enforcement and `soft` reports them only.
 Widths are constrained to ±20% of measured gap. Candidate poses remain scoreable so regressions
 are rejected, not hidden. The keep rule requires gain >0.003, per-object IoU no more than 0.10 below
-its observed best, container loss no more than 0.02 without enforced anchors, camera error no worse,
+its accepted best, container loss no more than 0.02 without enforced anchors, camera error no worse,
 and, with enforced anchors, grasp error no worse and release inside the container. Two unsuccessful
 iterations stop the loop. Invalid patches are rejected. Quota/cache-only stops retain the best scene.
+Transport failures and request exhaustion also retain the incumbent. Real masks are tracked once
+independently of proposed scenes. Sensor-clipped objects use clipped predicted silhouettes.
+
+Static calibration collections may carry measured `meta.pose_samples` and explicit `frame_times`
+with an empty command trace. These render measured poses directly and report
+`physics.mode=static_pose_samples`, `replayed=false`, and null trajectory error. Presentation times
+are not motion evidence; no command targets are invented. Overlay panels preserve image aspect.
 
 `out/live/<run>/` contains atomic `r2s_live/1` `run.json`, each `iter_N.json`, candidate scene JSON,
 1280×480 `iter_N_overlay_J.jpg`, `iter_N_physics.jpg`, and `scene_best.json`. Existing run directories
@@ -102,8 +116,9 @@ are never overwritten. The dashboard's per-model request counts include retries 
 ```
 
 `segment(trace, task)` returns contiguous `[t0,t1,command]` intervals from existing command labels,
-gripper commands and motion phases. Optional `--refine` uses one MAIN call; invented vocabulary,
-gaps and overlaps are rejected. `label_trace` writes the shared trace format, including meta.commands.
+gripper commands and motion phases. Optional `--refine` asks MAIN for typed integer tick intervals
+and allows one semantic correction. Invented vocabulary, gaps and overlaps are rejected before
+conversion to seconds. `label_trace` writes the shared trace format, including meta.commands.
 
 The planner prioritizes residual/tolerance, proposes bounded absolute joint excitation and resettable
 push/grasp/drop probes, and never executes hardware. `fit_parameters(train, physics, heldout=...)`
@@ -117,5 +132,33 @@ Whole training/held-out traces must differ. Rank-deficient fits, unconverged opt
 and insufficient static holds fail certification. Held-out gates are jaw RMS <2 mm, maximum object
 endpoint error <5 mm, physical opposing-jaw grasp agreement ≥95%, and timing error <1 tick. Grasp
 success requires opposing physical jaw contacts across three ticks. `--output NEW.json` publishes
-only a passing new version; it never overwrites an incumbent. Real benchmark accuracy and live Argon
-behavior remain unmeasured until recorded hardware trials and authorized model calls are available.
+only a passing new version; it never overwrites an incumbent. Physical benchmark accuracy still
+requires recorded hardware trials. Live Argon measurements are in [Agent G's report](G_LIVE_QA_REPORT.md).
+
+## Visual joint calibration
+
+```powershell
+.venv/Scripts/python.exe scripts/argon/visual_calib.py plan --out runs/visual_plan
+.venv/Scripts/python.exe scripts/argon/visual_calib.py collect --plan runs/visual_plan/plan.json --adapter bench_adapter:make --out runs/visual_capture
+.venv/Scripts/python.exe scripts/argon/visual_calib.py point --poses runs/visual_capture/poses.json --out runs/visual_fit
+.venv/Scripts/python.exe scripts/argon/visual_calib.py fit --poses runs/visual_fit/pointed.json --out runs/visual_fit
+```
+
+`bench_adapter:make` is an operator-provided adapter, not a bundled hardware connection. Its factory
+returns `{mover, capture, close?}`. `mover(spec_xyz)` returns `{ok, owner_deg, settled_at}` after guarded
+motion and settling; `capture(after_timestamp)` returns `(BGR_image, captured_at)` on the same clock.
+Collection rejects stale captures and saves every completed pose. No serial port or daemon is opened
+by this feature. The plan proposes 18 above-table poses; reachability remains the adapter's responsibility.
+
+Pointing resumes saved observations and uses the shared cache. Soft-L1 fitting handles swapped tips
+and independently refits every leave-one-pose-out fold. `fit.json` and `report.md` include rank,
+convergence, reprojection errors and the default 5 px p90 gate. Candidates never activate themselves.
+
+## Read-only live QA
+
+`live_qa.py` provides `prepare`, `empty`, `boards`, `twin`, `task`, `visual`, `perception`, `label`, and
+`summary` stages. Use one root sequentially: `request_budget.json` reserves every attempt before
+network I/O, `qa.lock` excludes concurrent stages, and `calls.jsonl` preserves the audit. The default
+cap is 80 requests across invocations. `empty` performs a camera GET only; other stages use files.
+`compose_boards.py` builds reproducible photo composites with independent expected-board labels.
+See the report for exact commands and the distinction between photos, composites and mock traces.

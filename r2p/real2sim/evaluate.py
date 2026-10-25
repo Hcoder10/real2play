@@ -9,6 +9,51 @@ def centroid(mask):
     return np.array([x.mean(), y.mean()]) if len(x) else None
 
 
+def observation_masks(session, appearances):
+    """Freeze independently tracked real masks before any candidate is scored.
+
+    Colour alone labels brown chairs/table as brown cubes. Match components to
+    the detected object's last observed location and area, in frame order.
+    No simulated pose, candidate patch, or held-out metric enters this tracker.
+    """
+    import cv2
+    from r2p.perception.appearance import seed_mask
+    centers = {oid: np.asarray(model.reference_center, float).copy()
+               for oid, model in appearances.items() if hasattr(model, "reference_center")}
+    areas = {oid: float(appearances[oid].reference_area) for oid in centers}
+    boxes = {oid: np.asarray(appearances[oid].reference_box, float).copy()
+             for oid in centers if hasattr(appearances[oid], "reference_box")}
+    for index in range(len(session.frames)):
+        frame = session.frame(index)
+        for oid, center in centers.items():
+            if oid in session.masks.get(index, {}):
+                continue
+            raw = appearances[oid].mask(frame).astype(np.uint8)
+            if oid in boxes:
+                # Re-estimate foreground within the last observed region so
+                # changing arm shadows do not erase a dark brown object.
+                box = boxes[oid] + [-10, -10, 10, 10]
+                try:
+                    local = seed_mask(frame, box, appearances[oid].reference_color)
+                    if .15 * areas[oid] <= local.sum() <= 3 * areas[oid]:
+                        raw = local
+                except ValueError:
+                    pass
+            count, labels, stats, centroids = cv2.connectedComponentsWithStats(raw, 8)
+            candidates = [j for j in range(1, count) if .15 * areas[oid] <= stats[j, cv2.CC_STAT_AREA] <= 4 * areas[oid]]
+            mask = np.zeros(raw.shape, np.uint8)
+            if candidates:
+                chosen = min(candidates, key=lambda j: np.linalg.norm(centroids[j] - center)
+                             + 20 * abs(np.log(stats[j, cv2.CC_STAT_AREA] / areas[oid])))
+                if np.linalg.norm(centroids[chosen] - center) < max(80, 4 * np.sqrt(areas[oid])):
+                    mask = (labels == chosen).astype(np.uint8)
+                    centers[oid] = centroids[chosen]
+                    if oid in boxes:
+                        x, y, w, h, _ = stats[chosen]
+                        boxes[oid] = np.array([x, y, x + w, y + h], float)
+            session.masks.setdefault(index, {})[oid] = mask
+
+
 def mask_metrics(real, predicted):
     real, predicted = np.asarray(real, bool), np.asarray(predicted, bool)
     union = np.count_nonzero(real | predicted)
@@ -45,6 +90,22 @@ class CalibratedRenderer:
 
 def physics_replay(session, scene, *, indices=None, physics="so101_bench", twin_factory=None, render=True):
     """Replay q_target at 30 Hz; align captures to their recorded times, never to row number."""
+    if session.meta.get("pose_samples") is not None:
+        # Independent calibration photos have measured q but no command stream.
+        # Render their actual poses without inventing targets or dynamics.
+        from r2p.model import Arm
+        from r2p.synthbench.render import CpuRenderer
+        indices = list(range(len(session.frames))) if indices is None else list(indices)
+        renderer = CpuRenderer(Arm(), session.camera) if render else None
+        poses = {obj["id"]: {"xyz": obj["xyz"], "yaw_deg": obj.get("yaw_deg", 0)} for obj in scene["objects"]}
+        snapshots = {}
+        for i in indices:
+            item = {"poses": poses, "q": session.q(i).tolist(), "grip_closed": False}
+            if render:
+                item["image"], item["masks"], _ = renderer.render(session.q(i), scene["objects"], poses, board=False)
+                item["masks"].pop("arm", None)
+            snapshots[i] = item
+        return snapshots
     if twin_factory is None:
         from r2p.sim import TaskTwin
         twin_factory = TaskTwin
@@ -124,13 +185,15 @@ def evaluate(session, scene, indices, appearances, snapshots, anchors=()):
             rows[oid].append(mask_metrics(real, predicted))
             center = centroid(real)
             pose = snapshots[index]["poses"].get(oid)
-            if center is not None and pose is not None:
-                projection = np.asarray(session.camera.project(np.asarray(pose["xyz"]))).reshape(2)
-                trajectory.append(float(np.linalg.norm(projection - center)))
+            predicted_center = centroid(predicted)
+            if center is not None and predicted_center is not None and pose is not None:
+                # Both measurements must describe the same visible silhouette;
+                # a clipped object's 3D centre need not be inside the sensor.
+                trajectory.append(float(np.linalg.norm(predicted_center - center)))
     objects = {oid: {"iou": float(np.mean([row["iou"] for row in values])),
                      "centroid_err_px": float(np.mean([row["centroid_err_px"] for row in values])),
                      "n_frames": len(values)} for oid, values in rows.items()}
-    traj_px = float(np.mean(trajectory)) if trajectory else None
+    traj_px = float(np.mean(trajectory)) if trajectory and session.ticks else None
     camera_errors = []
     for point in session.meta.get("camera_keypoints", []):
         if point["frame"] in indices:
@@ -139,8 +202,22 @@ def evaluate(session, scene, indices, appearances, snapshots, anchors=()):
     if traj_px is not None:
         score -= 0.004 * traj_px
     return {"score": float(score), "objects": objects, "camera_px": float(np.mean(camera_errors)) if camera_errors else None,
-            "camera_locked": True, "physics": {"traj_err_px": traj_px, "replayed": bool(session.ticks)},
+            "camera_locked": True, "physics": {"traj_err_px": traj_px, "replayed": bool(session.ticks),
+                                                 "mode": "static_pose_samples" if session.meta.get("pose_samples") is not None
+                                                 else "command_replay" if session.ticks else "static_scene"},
             **anchor_metrics(scene, anchors)}
+
+
+def _panel(image):
+    """Preserve the calibrated image aspect ratio inside the dashboard's 640x480 panel."""
+    import cv2
+    h, w = image.shape[:2]
+    scale = min(640 / w, 480 / h)
+    size = (round(w * scale), round(h * scale))
+    panel = np.zeros((480, 640, 3), np.uint8)
+    left, top = (640 - size[0]) // 2, (480 - size[1]) // 2
+    panel[top:top + size[1], left:left + size[0]] = cv2.resize(image, size)
+    return panel
 
 
 def overlay(real, snapshot):
@@ -150,7 +227,7 @@ def overlay(real, snapshot):
     for mask in snapshot["masks"].values():
         contours, _ = cv2.findContours(np.asarray(mask, np.uint8), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
         cv2.drawContours(marked, contours, -1, (0, 255, 255), 1)
-    return np.concatenate([cv2.resize(marked, (640, 480)), cv2.resize(snapshot["image"], (640, 480))], axis=1)
+    return np.concatenate([_panel(marked), _panel(snapshot["image"])], axis=1)
 
 
 def physics_image(session, indices, snapshots, appearances):
@@ -169,8 +246,10 @@ def physics_image(session, indices, snapshots, appearances):
                 measured.append(center)
             pose = snapshots[index]["poses"].get(oid)
             if pose:
-                predicted.append(session.camera.project(pose["xyz"]))
+                visible_center = centroid(snapshots[index]["masks"].get(oid, np.zeros(real.shape[:2])))
+                if visible_center is not None:
+                    predicted.append(visible_center)
         for points, color in ((measured, (0, 255, 0)), (predicted, (0, 0, 255))):
             if len(points) >= 2:
                 cv2.polylines(real, [np.asarray(points).reshape(-1, 2).round().astype(np.int32)], False, color, 2)
-    return np.concatenate([cv2.resize(real, (640, 480)), cv2.resize(snapshots[last]["image"], (640, 480))], axis=1)
+    return np.concatenate([_panel(real), _panel(snapshots[last]["image"])], axis=1)

@@ -22,7 +22,7 @@ def main(argv=None):
                       iterations=args.iters, patience=args.patience, anchors=args.anchors,
                       max_calls=args.max_calls, budget_s=args.budget_s)
     print(json.dumps({key: result[key] for key in ("run_dir", "best_iter", "stop_reason", "metrics")}))
-    return 1 if result["stop_reason"] in ("quota", "cache_miss") else 0
+    return 1 if result["stop_reason"] in ("quota", "cache_miss", "request_failed", "invalid_reply") else 0
 
 
 if __name__ == "__main__":

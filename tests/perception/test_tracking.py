@@ -93,6 +93,7 @@ def test_known_supply_rigid_fk_and_release_does_not_reset_to_supply():
         task = copy.deepcopy(world.task)
         supply = np.asarray(world.poses()["cube"]["xyz"])
         task["objects"][0]["xy"] = supply[:2].tolist()
+        task["objects"][0]["pose_verified"] = True
         class FakeArm:
             mid = supply + [.003, 0, 0]
             R = np.eye(3)

@@ -11,8 +11,37 @@ from r2p import gemini
 from .anchors import extract_anchors
 from .session import load_session
 
+def _vector(n):
+    return {"type": "array", "minItems": n, "maxItems": n, "items": {"type": "number"}}
+
+
+_TEXT = {"type": "string"}
+_NUMBER = {"type": "number"}
+_XY = {"anyOf": [_TEXT, _vector(2)]}
+# An unstructured {type: object} generates {} under Gemini's constrained
+# decoder. Describe every payload field; domain validation still checks object
+# references, shape-dependent dimensions and legal predicate/skill arguments.
+_OBJECT = {"type": "object", "required": ["id", "role", "shape", "size_m"], "properties": {
+    "id": _TEXT, "role": _TEXT, "shape": _TEXT,
+    "size_m": {"type": "array", "minItems": 1, "maxItems": 3, "items": _NUMBER},
+    "color": _TEXT, "xyz": _vector(3), "yaw_deg": _NUMBER, "mass_kg": _NUMBER,
+    "friction": _NUMBER, "wall_m": _NUMBER, "fixed": {"type": "boolean"}, "grasp": _TEXT, "on": _TEXT}}
+_GOAL = {"type": "object", "required": ["pred"], "properties": {
+    "pred": _TEXT, "a": _TEXT, "b": _TEXT, "xy": _XY, "tol_m": _NUMBER, "d_m": _NUMBER,
+    "h_m": _NUMBER, "tol_deg": _NUMBER, "deg": _NUMBER, "optional": {"type": "boolean"},
+    "objs": {"type": "array", "items": _TEXT}}}
+_SKILL = {"type": "object", "required": ["skill"], "properties": {
+    "skill": _TEXT, "obj": _TEXT, "target": _TEXT, "xy": _XY, "s": _NUMBER}}
 TASK_REPLY_SCHEMA = {"type": "object", "required": ["task"], "properties": {
-    "task": {"type": "object"}, "boxes": {"type": "array", "items": {"type": "object"}}}}
+    "task": {"type": "object", "required": ["schema", "name", "objects", "goal", "skeleton", "limits"],
+             "properties": {"schema": _TEXT, "name": _TEXT, "instruction": _TEXT,
+                "objects": {"type": "array", "minItems": 1, "items": _OBJECT},
+                "goal": {"type": "array", "minItems": 1, "items": _GOAL},
+                "skeleton": {"type": "array", "minItems": 1, "items": _SKILL},
+                "limits": {"type": "object", "required": ["episode_s", "max_objects"], "properties": {
+                    "episode_s": _NUMBER, "max_objects": {"type": "integer"}}}}},
+    "boxes": {"type": "array", "items": {"type": "object", "required": ["id", "box"],
+                                            "properties": {"id": _TEXT, "box": _vector(4)}}}}}
 
 CONTRACT = """Write task schema argon_task/1: name (snake_case), instruction, objects, goal, skeleton,
 randomize, limits {episode_s,max_objects}. Object fields: id, role, shape, size_m, color, optional xyz/yaw_deg,
@@ -104,6 +133,8 @@ def task_from_video(source, instruction=None, *, out_root="tasks", ask=None, cam
         if errors:
             raise ValueError("Task still invalid after validation re-asks: " + "; ".join(errors))
     task["source"] = {"kind": session.kind, "path": str(session.path), "model": records[-1]["served_by"]}
+    for obj in task["objects"]:
+        obj["pose_source"] = "model_inferred"
     destination = Path(out_root) / task["name"]
     gemini.atomic_json(destination / "task.json", task)
     result = {"task": task, "task_path": str(destination / "task.json"), "records": records,
@@ -122,11 +153,28 @@ def task_from_video(source, instruction=None, *, out_root="tasks", ask=None, cam
             fitted = (twin_runner or run_twin)(session, task=task, ask=ask, **options)
             gemini.atomic_json(destination / "scene.json", fitted["scene"])
             result.update(scene_path=str(destination / "scene.json"), scene_status="fitted", twin=fitted)
-            # Preserve the measured fitted pose in the training distribution without narrowing supplied ranges.
+            # Publish calibrated geometry, not the writer's camera-free xyz
+            # guesses (especially important for fixed objects in perception).
+            by_id = {obj["id"]: obj for obj in task["objects"]}
+            supplied_ranges = answer["task"].get("randomize", {})
             for obj in fitted["scene"]["objects"]:
+                target = by_id[obj["id"]]
+                for field in ("xyz", "size_m", "yaw_deg"):
+                    if field in obj:
+                        target[field] = copy.deepcopy(obj[field])
+                target.pop("xy", None)
+                target["pose_source"] = "calibrated_twin"
                 entry = task["randomize"].get(obj["id"], {})
+                if "yaw_deg" in entry and "yaw_deg" not in supplied_ranges.get(obj["id"], {}):
+                    radius = 0 if target.get("fixed") else 15
+                    yaw = target.get("yaw_deg", 0)
+                    entry["yaw_deg"] = [yaw - radius, yaw + radius]
                 for axis, coordinate in zip(("x", "y"), obj["xyz"][:2]):
                     if axis in entry and isinstance(entry[axis], list):
-                        entry[axis] = [min(entry[axis][0], coordinate), max(entry[axis][1], coordinate)]
+                        if axis in supplied_ranges.get(obj["id"], {}):
+                            entry[axis] = [min(entry[axis][0], coordinate), max(entry[axis][1], coordinate)]
+                        else:
+                            radius = 0 if target.get("fixed") or target.get("role") == "fixture" else .025
+                            entry[axis] = [coordinate - radius, coordinate + radius]
             gemini.atomic_json(destination / "task.json", task)
     return result

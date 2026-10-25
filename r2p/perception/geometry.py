@@ -68,10 +68,21 @@ def fit_pose(cam, obj, mask, bottom=0.0, previous=None):
     angles = np.linspace(0, 2*np.pi, 24, endpoint=False)
     directions = np.column_stack((np.cos(angles), np.sin(angles)))
     observed = np.max(hull @ directions.T, axis=0)
+    height, width = mask.shape[:2]
+    clipped = bool(np.any(hull[:, 0] <= 1) or np.any(hull[:, 0] >= width - 2)
+                   or np.any(hull[:, 1] <= 1) or np.any(hull[:, 1] >= height - 2))
+    image_boundary = np.array([[0, 0], [width - 1, 0], [width - 1, height - 1], [0, height - 1]], np.float32)
     center = cam.deproject(hull.mean(axis=0), h=z)[:2]
     def residual(p):
         scale = p[3] if len(p) > 3 else 1.
         pixels = cam.project(scale*points @ rotation(p[2]).T + [p[0], p[1], bottom+scale*size[2]/2])
+        if clipped:
+            # A clipped sensor image must be compared to a clipped projection.
+            polygon = cv2.convexHull(pixels.astype(np.float32))
+            area, intersection = cv2.intersectConvexConvex(polygon, image_boundary)
+            if area <= 0 or intersection is None:
+                return np.full(len(directions), 1e4)
+            pixels = intersection.reshape(-1, 2)
         return np.max(pixels @ directions.T, axis=0) - observed
     round_shape = obj.get("shape") in ("bowl", "sphere") or (obj.get("shape") == "cylinder" and obj.get("axis", "z") == "z")
     directed = is_screwdriver(obj)
@@ -115,4 +126,5 @@ def fit_pose(cam, obj, mask, bottom=0.0, previous=None):
     return {"xyz": [float(best[0]), float(best[1]), float(bottom+size[2]*scale/2)], "yaw_deg": yaw,
             "quat": [float(np.cos(half_angle)), 0., 0., float(np.sin(half_angle))],
             "directed_yaw_deg": float((best[2]+180)%360-180),
-            "size_m": (np.asarray(obj["size_m"])*scale).tolist(), "fit_px": float(np.sqrt(error))}
+            "size_m": (np.asarray(obj["size_m"])*scale).tolist(), "fit_px": float(np.sqrt(error)),
+            "clipped": clipped}

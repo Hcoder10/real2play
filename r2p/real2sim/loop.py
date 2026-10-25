@@ -11,7 +11,7 @@ from pathlib import Path
 from r2p import gemini
 from .anchors import apply_anchors, extract_anchors
 from .detect import detect, initial_scene
-from .evaluate import evaluate, overlay, physics_image, physics_replay
+from .evaluate import evaluate, observation_masks, overlay, physics_image, physics_replay
 from .keep import keep_candidate
 from .patch import PATCH_SCHEMA, apply_patch
 from .session import load_session, split_frames
@@ -110,6 +110,13 @@ def run_twin(source, *, task=None, out_dir=None, iterations=6, patience=2, ask=N
     def tracked_ask(*args, **kwargs):
         records = getattr(owner, "records", None)
         count = len(records) if records is not None else 0
+        used = sum(r.get("attempts", 0 if r.get("cached") else 1) for r in live.records)
+        if used >= max_calls and not isinstance(owner, gemini.Gemini):
+            raise gemini.RequestLimit("Twin request budget exhausted")
+        old_limit = getattr(owner, "max_requests", None)
+        if isinstance(owner, gemini.Gemini):
+            remaining_limit = owner.requests_used + max_calls - used
+            owner.max_requests = min(old_limit, remaining_limit) if old_limit is not None else remaining_limit
         try:
             text, record = provider(*args, **kwargs)
             if records is None:
@@ -119,6 +126,9 @@ def run_twin(source, *, task=None, out_dir=None, iterations=6, patience=2, ask=N
             if records is not None:
                 for record in records[count:]:
                     live.record(record)
+            if isinstance(owner, gemini.Gemini):
+                owner.max_requests = old_limit
+            live.save()
     best_scene = best_metrics = None
     try:
         critic, heldout = split_frames(session)
@@ -132,6 +142,7 @@ def run_twin(source, *, task=None, out_dir=None, iterations=6, patience=2, ask=N
             scene, appearances = initial_scene(session, detections, task=task, first_index=critic[0])
         scene = apply_anchors(scene, facts, mode=anchors)
         appearances = appearances or {}
+        observation_masks(session, appearances)
         enforced = bool(facts) and all(a.get("enforced", False) for a in facts)
         live.save(anchors=facts, anchors_enforced=enforced, detection=detections, stage="evaluate")
         replay_fn, evaluate_fn = replay or physics_replay, evaluator or evaluate
@@ -170,8 +181,11 @@ def run_twin(source, *, task=None, out_dir=None, iterations=6, patience=2, ask=N
             try:
                 text, record = tracked_ask(parts, role="main", tag=f"real2sim:critique:{iteration}", schema=PATCH_SCHEMA)
                 patch = gemini.parse_json(text)
-            except (gemini.QuotaError, gemini.CacheMiss) as exc:
-                reason = "quota" if isinstance(exc, gemini.QuotaError) else "cache_miss"
+            except gemini.GeminiError as exc:
+                reason = ("quota" if isinstance(exc, gemini.QuotaError) else
+                          "cache_miss" if isinstance(exc, gemini.CacheMiss) else
+                          "call_budget" if isinstance(exc, gemini.RequestLimit) else
+                          "invalid_reply" if isinstance(exc, gemini.JSONError) else "request_failed")
                 live.save(error=str(exc))
                 break
             try:
@@ -187,9 +201,10 @@ def run_twin(source, *, task=None, out_dir=None, iterations=6, patience=2, ask=N
                 verdict = {"kept": False, "verdict": "REJECTED", "reasons": ["invalid_patch: " + str(exc)]}
             live.iteration(iteration, candidate, metrics, verdict, patch, session, critic, candidate_snapshots, appearances)
             previous_proposal = {"patch": patch, "verdict": verdict}
-            for oid, values in metrics["objects"].items():
-                peaks[oid] = max(peaks.get(oid, 0), values["iou"])
             if verdict["kept"]:
+                # Rejected proposals must never tighten the incumbent's gates.
+                for oid, values in metrics["objects"].items():
+                    peaks[oid] = max(peaks.get(oid, 0), values["iou"])
                 best_scene, best_metrics, snapshots = candidate, metrics, candidate_snapshots
                 gemini.atomic_json(directory / "scene_best.json", best_scene)
                 stale = 0

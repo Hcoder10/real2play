@@ -117,15 +117,41 @@ def segment(trace, task=None, *, refine=False, ask=None):
             labels.append(command)
         segments = _runs(ticks, labels)
     if refine:
-        schema = {"type": "object", "required": ["segments"], "properties": {"segments": {"type": "array",
-                  "items": {"type": "array", "minItems": 3, "maxItems": 3}}}}
-        summary = [{"t": row["t"], "phase": row.get("phase"), "q_target": row["q_target"],
-                    "poses": row.get("poses", {})} for row in ticks[::6]]
-        text, _ = (ask or gemini.call)(["Refine skill boundaries without changing the task's command vocabulary. "
-                                      "Return segments [t0,t1,command] as a contiguous partition of the same time range.\n"
-                                      + json.dumps({"task": task, "vocabulary": vocab, "segments": segments,
-                                                    "trace_5hz": summary})], role="main", tag="labeling:refine", schema=schema)
-        segments = gemini.parse_json(text)["segments"]
+        # Typed objects avoid constrained-decoder ambiguity between floating
+        # times and command strings in heterogeneous tuple arrays. Integer tick
+        # boundaries also prevent rounding gaps in otherwise valid partitions.
+        schema = {"type": "object", "required": ["segments"], "properties": {"segments": {
+            "type": "array", "minItems": 1, "items": {"type": "object",
+                "required": ["start_tick", "end_tick", "command"], "properties": {
+                    "start_tick": {"type": "integer", "minimum": 0, "maximum": len(ticks) - 1},
+                    "end_tick": {"type": "integer", "minimum": 1, "maximum": len(ticks)},
+                    "command": {"type": "string", "enum": vocab}}}}}}
+        summary = [{"tick": i, "t": ticks[i]["t"], "phase": ticks[i].get("phase"),
+                    "q_target": ticks[i]["q_target"], "poses": ticks[i].get("poses", {})}
+                   for i in range(0, len(ticks), 6)]
+        boundaries = np.r_[times, times[-1] + 1 / 30]
+        initial = [{"start_tick": int(np.argmin(abs(boundaries - a))),
+                    "end_tick": int(np.argmin(abs(boundaries - b))), "command": cmd} for a, b, cmd in segments]
+        prompt = ("Refine skill boundaries without changing the task's command vocabulary. Return typed segment "
+                  "objects {start_tick,end_tick,command}, half-open intervals forming a contiguous partition of "
+                  f"ticks 0 through {len(ticks)} (exclusive). Keep observed command labels unless motion evidence "
+                  "supports a corrected boundary. Never put JSON syntax inside a command string.\n"
+                  + json.dumps({"task": task, "vocabulary": vocab, "segments": initial, "trace_5hz": summary}))
+        parts = [prompt]
+        for attempt in range(2):
+            text, _ = (ask or gemini.call)(parts, role="main", tag="labeling:refine", schema=schema)
+            try:
+                rows = gemini.parse_json(text)["segments"]
+                errors = gemini.schema_errors({"segments": rows}, schema)
+                if errors:
+                    raise ValueError("; ".join(errors))
+                segments = [[float(boundaries[r["start_tick"]]), float(boundaries[r["end_tick"]]), r["command"]]
+                            for r in rows]
+                return _validate_segments(segments, ticks, vocab)
+            except (ValueError, KeyError, TypeError, IndexError, gemini.JSONError) as exc:
+                if attempt:
+                    raise ValueError("Invalid refined partition after re-ask: " + str(exc)) from None
+                parts = [prompt, "Previous reply: " + text + "\nCorrect this exact validation error: " + str(exc)]
     return _validate_segments(segments, ticks, vocab)
 
 

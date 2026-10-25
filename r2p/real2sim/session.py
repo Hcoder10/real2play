@@ -50,12 +50,23 @@ class SessionData:
         return int(np.argmin(abs(times - self.times[index])))
 
     def q(self, index):
+        samples = self.meta.get("pose_samples")
+        if samples is not None:
+            value = np.asarray(samples[index]["q"], float)
+            if value.shape != (6,) or not np.isfinite(value).all():
+                raise ValueError("Pose samples must contain six finite measured MJCF radians")
+            return value
         if not self.ticks:
             from r2p.frames import HOME_Q
             return HOME_Q.copy()
         return np.asarray(self.ticks[self.tick_index(index)]["q"], dtype=float)
 
     def joint_table(self, hz=5):
+        if self.meta.get("pose_samples") is not None:
+            return ("Independent static measured poses; timestamps are presentation times, NOT a motion trace. "
+                    "No command targets or motion timing were recorded.\n" +
+                    "\n".join(f"frame {i} | measured q {self.q(i).round(4).tolist()}"
+                              for i in range(len(self.frames))))
         lines = ["t | measured q (MJCF rad) | commanded q_target (MJCF rad)"]
         next_t = -float("inf")
         for row in self.ticks:
@@ -185,6 +196,12 @@ def load_session(source, *, camera=None):
         raise ValueError("Session has no frames")
     if len(times) > 1 and np.any(np.diff(times) <= 0):
         raise ValueError("Frame timestamps must be increasing")
+    if not np.isfinite(times).all():
+        raise ValueError("Frame timestamps must be finite")
+    if meta.get("pose_samples") is not None and len(meta["pose_samples"]) != len(frames):
+        raise ValueError("Static pose samples must align one-to-one with frames")
+    if meta.get("pose_samples") is not None and ticks:
+        raise ValueError("Static pose samples cannot override a recorded command trace")
     video = next(iter(sorted(path.glob("*.mp4"))), None)
     return SessionData(path, meta, ticks, frames, times, camera, video, float(meta.get("fps", 30)))
 

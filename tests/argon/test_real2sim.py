@@ -225,16 +225,32 @@ def test_task_video_validation_reasks_and_reuses_whole_video(tmp_path):
     assert fake.requests[0]["parts"][1] == fake.requests[1]["parts"][1]
     assert fake.requests[0]["parts"][1]["inline_data"]["mime_type"] == "video/mp4"
     assert Path(result["task_path"]).exists() and Path(result["scene_path"]).exists()
+    obj = result["task"]["objects"][0]
+    assert obj["xyz"] == [.24, .03, .02] and obj["pose_source"] == "calibrated_twin"
+    assert result["task"]["randomize"][obj["id"]]["y"] == pytest.approx([.005, .055])
 
 
 def test_task_video_stops_after_two_reasks(tmp_path):
+    from r2p.tasks import load_task
     session = session_fixture(tmp_path)
-    fake = FakeGemini([{"task": {"name": "bad"}}] * 3)
+    invalid = load_task("cube_in_bowl")
+    invalid["name"] = "bad"
+    invalid["goal"][0]["a"] = "unobserved_ghost"
+    fake = FakeGemini([{"task": invalid}] * 3)
     with pytest.raises(ValueError, match="still invalid"):
         task_from_video(session, out_root=tmp_path / "tasks", ask=fake)
     # Different correction prompts can reuse a cached reply; request count never exceeds three.
     assert len(fake.records) == 3 and len(fake.requests) <= 3
     assert not (tmp_path / "tasks/bad/task.json").exists()
+
+
+def test_task_decoder_declares_nested_fields_instead_of_empty_objects():
+    from r2p.real2sim.task_video import TASK_REPLY_SCHEMA
+    from r2p.gemini import schema_errors
+    task_schema = TASK_REPLY_SCHEMA["properties"]["task"]
+    assert {"schema", "name", "objects", "goal", "skeleton", "limits"} <= task_schema["properties"].keys()
+    assert schema_errors({"task": {}}, TASK_REPLY_SCHEMA)
+    assert "id" in task_schema["properties"]["objects"]["items"]["properties"]
 
 
 def test_bare_video_does_not_claim_metric_scene_without_calibration(tmp_path):
@@ -271,3 +287,71 @@ def test_physics_replay_uses_commanded_q_and_timestamps(tmp_path):
             return False
     physics_replay(session, {"objects": []}, twin_factory=Twin, render=False)
     assert commands == [row["q_target"] for row in session.ticks[:3]]
+
+
+def test_static_pose_photos_never_invent_commands(tmp_path):
+    session = session_fixture(tmp_path, n=2)
+    session.meta["pose_samples"] = [{"q": [.1] * 6}, {"q": [.2] * 6}]
+    assert session.ticks == []
+    assert "No command targets" in session.joint_table()
+    def forbidden(*args, **kwargs):
+        pytest.fail("Static photos must not construct a physics simulator")
+    snapshots = physics_replay(session, {"objects": []}, twin_factory=forbidden, render=False)
+    assert snapshots[1]["q"] == [.2] * 6
+
+
+def test_transient_failure_preserves_best_scene_and_logs_requests(tmp_path):
+    session = session_fixture(tmp_path)
+    scene = {"objects": [{"id": "cube", "xyz": [.2, 0, .015], "size_m": [.03] * 3}]}
+    fake = FakeGemini([TimeoutError("slow")] * 4)
+    result = run_twin(session, scene=scene, appearances={"cube": Mask()}, ask=fake,
+                      out_dir=tmp_path / "live", replay=replay_stub, evaluator=lambda *args: metrics(), max_calls=2)
+    assert result["best_iter"] == 0 and result["stop_reason"] == "call_budget"
+    assert len(fake.requests) == result["run"]["calls"]["requests"] == 2
+    assert (tmp_path / "live/scene_best.json").exists()
+
+
+def test_rejected_peak_cannot_poison_later_keep(tmp_path):
+    session = session_fixture(tmp_path)
+    scene = {"objects": [{"id": "cube", "xyz": [.2, 0, .015], "size_m": [.03] * 3},
+                          {"id": "bowl", "role": "container", "xyz": [.3, 0, .03], "size_m": [.1, .06]}]}
+    fake = FakeGemini([{"objects": [{"id": "cube", "xyz": [x, 0, .015]}], "why": "test", "done": False}
+                       for x in (.21, .22)])
+    scores = iter([metrics(.5, cube=.7), metrics(.6, cube=.99, bowl=.4), metrics(.6, cube=.8)])
+    result = run_twin(session, scene=scene, appearances={"cube": Mask(), "bowl": Mask()}, ask=fake,
+                      out_dir=tmp_path / "live", replay=replay_stub, evaluator=lambda *args: next(scores), iterations=2)
+    assert result["best_iter"] == 2
+    assert [r["kept"] for r in result["run"]["iters"]] == [True, False, True]
+
+
+def test_overlay_preserves_wide_camera_aspect_ratio():
+    from r2p.real2sim.evaluate import overlay
+    real = np.full((540, 960, 3), 100, np.uint8)
+    image = overlay(real, {"image": real, "masks": {}})
+    assert image.shape == (480, 1280, 3)
+    assert not image[:60].any() and not image[420:].any()
+    assert np.all(image[60:420] == 100)
+
+
+def test_observed_masks_reject_same_color_background_distractor(tmp_path):
+    from r2p.real2sim.evaluate import observation_masks
+    session = session_fixture(tmp_path, n=2)
+    class Appearance:
+        reference_center = np.array([15, 15])
+        reference_area = 100
+        def mask(self, image):
+            mask = np.zeros(image.shape[:2], np.uint8)
+            mask[10:20, 10:20] = 1
+            mask[25:45, 35:60] = 1
+            return mask
+    observation_masks(session, {"cube": Appearance()})
+    assert session.masks[0]["cube"].sum() == 100
+    assert not session.masks[1]["cube"][30, 40]
+
+
+def test_detector_rejects_three_dimension_bowl_before_fitting(tmp_path):
+    from r2p.real2sim.detect import initial_scene
+    session = session_fixture(tmp_path)
+    detection = {"id": "bowl", "shape": "bowl", "role": "container", "box": [.1, .1, .9, .9], "size_m": [.1, .1, .04]}
+    with pytest.raises(ValueError, match="expected 2 metre dimensions"):
+        initial_scene(session, [detection])
