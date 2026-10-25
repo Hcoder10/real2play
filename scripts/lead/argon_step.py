@@ -84,14 +84,21 @@ if __name__ == "__main__":
     ap = argparse.ArgumentParser()
     ap.add_argument("--turns", type=int, default=40)
     ap.add_argument("--run", default=time.strftime("step_%H%M%S"))
+    ap.add_argument("--task", default="place_on_cell", help="task name for the sim seed (board etc.)")
+    ap.add_argument("--goal", help="replace the task paragraph of the goal (e.g. the bowl task)")
     a = ap.parse_args()
     out = ROOT / "runs" / "argon_step" / a.run
     out.mkdir(parents=True, exist_ok=True)
     cam = CameraModel.load(ROOT / "config" / "camera.json")
     jm, arm = JointMap.load(ROOT / "config" / "joint_map.json"), Arm()
-    task = load_task("place_on_cell")
+    task = load_task(a.task)
+    goal = GOAL
+    if a.goal:
+        goal = GOAL.replace("""(pick a white bottle cap from the lane on the left of the paper and place it on a grid cell)""", "(" + a.goal + ")")
+        goal = goal.replace("Gripper value 0-100 (20 = open ~51 mm, ~6 = squeezing a\n33 mm cap)",
+                            "Gripper value 0-100 (20 = open ~51 mm, 30 = ~73 mm; ~8-10 = squeezing a 38 mm box)")
     sim = {"objects": [], "arm": {}, "physics": json.loads((ROOT / "config/physics/so101_bench.json").read_text()).get("joints", {}),
-           "board": task["board"]}
+           "board": task.get("board", {})}
     client = gemini.Gemini(max_requests=a.turns * 3, timeout_s=180, retries=0)
     transcript, last = [], "start"
     for turn in range(1, a.turns + 1):
@@ -114,7 +121,7 @@ if __name__ == "__main__":
                  gemini.image_part(side), "Wrist camera (REAL):", gemini.image_part(wrist)]
         for attempt in range(3):
             try:
-                text, rec = client.call([PREFACE, GOAL, *transcript, *parts], role="main", tag="argon_step",
+                text, rec = client.call([PREFACE, goal, *transcript, *parts], role="main", tag="argon_step",
                                         thinking="low", max_output_tokens=8000)
                 reply = gemini.parse_json(text) if text.strip().startswith("{") else json.JSONDecoder().raw_decode(text[text.index("{"):])[0]
                 break
