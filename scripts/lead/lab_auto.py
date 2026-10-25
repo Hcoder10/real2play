@@ -76,10 +76,20 @@ if __name__ == "__main__":
                "physics simulation of a tic-tac-toe game (moving plastic bottle caps onto a paper grid) so it matches the "
                "camera footage. Benign robotics engineering.\n")
     raw_call = agent.client.call
+    # Full transcript, like a coding agent's context: every earlier turn's prompt parts (observation, ALL tool results,
+    # camera images, real|sim videos) and Argon's own replies are re-sent each turn. The 1M window holds it; the only
+    # earlier problem was server-side chaining (previous_interaction_id), not context length.
+    transcript = []
+    turns_sent = [0]
 
     def call(parts, **kw):
-        # Argon writes whole sim files inside its JSON reply; 16k output tokens (with high thinking) truncates it.
+        # Argon writes whole sim files inside its JSON reply; 16k output tokens truncated it.
         kw["max_output_tokens"] = max(kw.get("max_output_tokens") or 0, 60000)
+        kw["thinking"] = "medium"   # owner's choice
+        history_parts = list(transcript)
+        if history_parts:
+            history_parts = ["=== FULL TRANSCRIPT OF YOUR PREVIOUS TURNS (oldest first) ===", *history_parts,
+                             "=== CURRENT TURN ==="]
         last = None
         for attempt in range(4):
             try:
@@ -93,7 +103,11 @@ if __name__ == "__main__":
                     else:
                         extra = [PREFACE]
                     print(f"[transient Argon error, retry {attempt}: {msg[:90]}]", flush=True)
-                return raw_call([*extra, *parts], **kw)
+                text, record = raw_call([*extra, *history_parts, *parts], **kw)
+                turns_sent[0] += 1
+                transcript.extend([f"--- turn {turns_sent[0]} prompt ---", *parts,
+                                   "--- your reply ---", text])
+                return text, record
             except Exception as exc:  # noqa: BLE001
                 text = str(exc).lower()
                 if not any(k in text for k in ("blocked", "json", "malformed", "500", "502", "503", "504", "timeout", "unavailable", "overloaded")):
