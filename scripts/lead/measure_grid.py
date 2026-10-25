@@ -82,7 +82,12 @@ if __name__ == "__main__":
         t = json.loads(p.read_text())
         old = {tuple(v): k for k, v in t["board"]["cells"].items()}
         cell_m = round(float(cell_m), 4)
+        old_c = t["board"]["center_xy"]
         t["board"].update(center_xy=cells["r1c1"], cell_m=cell_m, cells=cells)
+        for v in t["randomize"].values():   # a supply lane laid out beside the sheet moves with it
+            if isinstance(v, dict) and v.get("follow_board") and "x" in v:
+                v["x"] = [round(a + cells["r1c1"][0] - old_c[0], 4) for a in v["x"]]
+                v["y"] = [round(a + cells["r1c1"][1] - old_c[1], 4) for a in v["y"]]
         for o in t["objects"]:
             if o["id"] in cells:
                 o["xy"] = cells[o["id"]]

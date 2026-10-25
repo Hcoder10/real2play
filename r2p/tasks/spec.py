@@ -24,7 +24,7 @@ SKILLS = {
 }
 RANDOMIZE_KEYS = {
     "r", "az_deg", "x", "y", "yaw_deg", "yaw_rel_deg", "size_scale", "size_m",
-    "mass_kg", "friction", "xy_choice", "p_present",
+    "mass_kg", "friction", "xy_choice", "p_present", "follow_board",
 }
 TASK_ROOT = Path(__file__).resolve().parents[2] / "tasks"
 
@@ -181,6 +181,9 @@ def validate(task) -> list[str]:
             label = f"randomize.{oid}.{key}"
             if key not in RANDOMIZE_KEYS:
                 errors.append(f"{label} is not in the closed vocabulary")
+            elif key == "follow_board":
+                if not isinstance(value, bool) or "board_pose" not in rnd or "x" not in entry:
+                    errors.append(f"{label} must be a boolean on an x/y rule of a task with board_pose")
             elif key == "p_present":
                 if not number(value) or not 0 <= value <= 1:
                     errors.append(f"{label} must be in [0,1]")

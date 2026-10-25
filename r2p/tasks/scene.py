@@ -129,6 +129,10 @@ def _shift_board(task, rng):
             obj["xy"] = move(obj["xy"])
             obj["yaw_deg"] = obj.get("yaw_deg", 0) + yaw
     for key, entry in out["randomize"].items():
+        if isinstance(entry, dict) and entry.pop("follow_board", False) and "x" in entry:
+            # A supply lane laid out relative to the sheet (e.g. caps a few cm beside the grid) moves with it.
+            entry["x"] = [v + dx for v in entry["x"]]
+            entry["y"] = [v + dy for v in entry["y"]]
         if isinstance(entry, dict) and "xy_choice" in entry:
             entry["xy_choice"] = [move(p) for p in entry["xy_choice"]]
             if all(tuple(p) in cells for p in task["randomize"][key]["xy_choice"]):
