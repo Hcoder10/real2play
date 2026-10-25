@@ -1,0 +1,297 @@
+"""Closed-loop, command-labelled manipulation expert for task skeletons.
+
+Run: python -m r2p.sim.expert --task place_on_cell --n 100
+Only absolute servo targets are produced. DART changes the executed target, never
+the recorded training label. Object motion always comes from physical contacts.
+"""
+from __future__ import annotations
+
+import argparse
+from collections import Counter
+from copy import deepcopy
+import json
+import time
+
+import numpy as np
+
+from r2p.frames import HOME_Q, HZ
+from r2p.tasks import check_window, commands, load_task, sample_scene
+from .ik import JawIK
+from .twin import TaskTwin, extents
+
+
+class Expert:
+    def __init__(self, task, *, dart=0.0, seed=0):
+        self.task = load_task(task) if not isinstance(task, dict) else deepcopy(task)
+        self.ik = JawIK()
+        self.arm = self.ik.arm
+        self.dart = float(dart)
+        self.rng = np.random.default_rng(seed)
+        self.ticks, self.states = [], []
+        self.segments = []
+        self.command, self.phase = "home", "home"
+        self.held = None
+        self.fail_reason = None
+
+    def _bind(self, twin):
+        self.twin = twin
+        self.qplan = twin.q()
+        self.initial = twin.poses()
+        self.goal_xyz = self.arm.tips(twin.q())[2]
+        self.yaw = None
+
+    def _tick(self, label):
+        label = np.clip(np.asarray(label, float), *self.arm.range.T)
+        q_before = self.twin.q()
+        poses_before = self.twin.poses()
+        q_input = self.twin.commanded_q.copy()
+        if np.max(np.abs(q_input-q_before)) > np.deg2rad(4):
+            q_input = q_before.copy()
+        executed = label.copy()
+        if self.dart:
+            executed[:5] += self.rng.normal(0, self.dart, 5)
+        self.twin.step(executed)
+        self.ticks.append({"t": len(self.ticks)/HZ, "q": q_before.tolist(), "q_commanded": q_input.tolist(),
+                           "q_target": label.tolist(), "q_exec": executed.tolist(), "poses": poses_before,
+                           "grip_closed": bool(self.twin.grip_closed()), "command": self.command, "phase": self.phase})
+        self.states.append({"objects": self.twin.poses(), "gripper_open": not self.twin.grip_closed(),
+                            "site_xyz": self.arm.tips(self.twin.q())[2].tolist(), "initial": self.initial})
+
+    def _servo(self, xyz, grip, yaw=None):
+        measured = self.twin.q()
+        # Predict a fraction of the hinge motion, while respecting a contact-held jaw.
+        g = measured[5] + np.clip(grip-measured[5], -.015, .015)
+        self.qplan[5] = g
+        self.qplan = self.ik.solve(xyz, self.qplan, grip=g, yaw=yaw, iterations=8)
+        label = self.ik.compensate(self.qplan, self.twin.physics)
+        label[5] = grip
+        # Local feedback corrects payload and friction residuals without accumulating
+        # measured joint sag into an ever-descending commanded pose.
+        actual = self.arm.tips(measured)[2]
+        predicted = self.arm.tips(self.qplan)[2]
+        J = self.arm.jac_tip(measured)[0]
+        correction = J.T @ np.linalg.solve(J@J.T + 0.0001*np.eye(3), np.clip(predicted-actual, -.005, .005))
+        label[:5] += .35 * correction
+        previous = self.twin.commanded_q
+        label[:5] = previous[:5] + np.clip(label[:5]-previous[:5], -.075, .075)
+        self._tick(label)
+
+    def move(self, xyz, grip=-.12, yaw=None, *, speed=.075, settle=12, phase="move"):
+        self.phase = phase
+        xyz = np.asarray(xyz, float)
+        start = self.arm.tips(self.twin.q())[2].copy()
+        n = max(12, int(np.linalg.norm(xyz-start)/speed*HZ))
+        for t in range(1, n+1):
+            u = t/n
+            u = u*u*(3-2*u)
+            self._servo(start+(xyz-start)*u, grip, yaw)
+        for _ in range(settle):
+            self._servo(xyz, grip, yaw)
+        self.goal_xyz, self.yaw = xyz.copy(), yaw
+
+    def _hold(self, ticks, grip, phase):
+        self.phase = phase
+        for _ in range(ticks):
+            self._servo(self.goal_xyz, grip, self.yaw)
+
+    def _grasp_yaw(self, obj):
+        pose = self.twin.poses()[obj]
+        dims = extents(self.twin.objects[obj])
+        angle = np.deg2rad(pose["yaw_deg"]) + (np.pi/2 if dims[0] > dims[1]+1e-6 else 0)
+        # A square has four equivalent grasps; choose the reachable wrist roll.
+        period = np.pi/2 if abs(dims[0]-dims[1]) < 1e-6 else np.pi
+        bearing = np.arctan2(pose["xyz"][1], pose["xyz"][0])
+        return bearing+(angle-bearing+period/2) % period-period/2
+
+    def pick(self, obj):
+        definition = self.twin.objects[obj]
+        dims = extents(definition)
+        width = min(dims[:2])
+        yaw = self._grasp_yaw(obj)
+        open_grip = float(np.clip((width+.018-.017)/.081, .35, .95))
+        for attempt in range(2):
+            pos = np.asarray(self.twin.poses()[obj]["xyz"])
+            low = max(.0035, pos[2]-dims[2]/2+.0035)
+            safe = max(.09, pos[2]+.06)
+            current = self.arm.tips(self.twin.q())[2]
+            if current[2] < safe-.01:
+                self.move([*current[:2], safe], open_grip, yaw, phase="approach_up")
+            self.move([*pos[:2], safe], open_grip, yaw, phase="approach")
+            self.move([*pos[:2], low], open_grip, yaw, speed=.045, settle=20, phase="descend")
+            self._hold(35, -.12, "close" if not attempt else "recovery_close")
+            self.move([*pos[:2], low+.065], -.12, yaw, speed=.045, settle=20, phase="lift")
+            actual = np.asarray(self.twin.poses()[obj]["xyz"])
+            if actual[2]-pos[2] > .04:
+                self.held = obj
+                return True
+            self.phase = "recovery"
+        self.fail_reason = f"grasp_miss:{obj}"
+        return False
+
+    def _target(self, step):
+        target = step.get("target", step.get("xy"))
+        if isinstance(target, str):
+            return np.asarray(self.twin.poses()[target]["xyz"]), target
+        return np.r_[np.asarray(target, float), 0.0], None
+
+    def place(self, step):
+        obj, skill = step["obj"], step["skill"]
+        dest, target_id = self._target(step)
+        dims = extents(self.twin.objects[obj])
+        current = np.asarray(self.twin.poses()[obj]["xyz"])
+        mid = self.arm.tips(self.twin.q())[2]
+        offset = current-mid
+        yaw = self.yaw
+        if target_id:
+            target = self.twin.objects[target_id]
+            target_yaw = np.deg2rad(self.twin.poses()[target_id]["yaw_deg"])
+            if skill in ("place_on", "place_at"):
+                period = np.pi/2 if abs(dims[0]-dims[1]) < 1e-6 else np.pi
+                obj_yaw = np.deg2rad(self.twin.poses()[obj]["yaw_deg"])
+                yaw += (target_yaw-obj_yaw+period/2) % period-period/2
+            if skill == "place_on":
+                surface = dest[2]+extents(target)[2]/2
+            elif skill == "place_in":
+                surface = dest[2]-extents(target)[2]/2+target.get("wall_m", .005)
+                # Spread successive pieces inside a shared container.
+                peers = [s["obj"] for s in self.task["skeleton"]
+                         if s["skill"] == "place_in" and s.get("target") == target_id]
+                if len(peers) > 1:
+                    dest[1] += (peers.index(obj)-(len(peers)-1)/2)*(dims[1]+.006)
+            else:
+                surface = dest[2]+extents(target)[2]/2 if target.get("collide", True) else 0
+        else:
+            surface = 0
+        safe = max(.09, surface+.065)
+        self.move([*(dest[:2]-offset[:2]), safe], -.12, yaw, speed=.065, settle=25, phase="carry")
+        # Measure the grasp after rotating, so the held object, not the jaw, is centred.
+        current = np.asarray(self.twin.poses()[obj]["xyz"])
+        mid = self.arm.tips(self.twin.q())[2]
+        offset = current-mid
+        target_mid = np.r_[dest[:2], surface+dims[2]/2+.002]-offset
+        target_mid[2] = max(.003, target_mid[2])
+        self.move(target_mid, -.12, yaw, speed=.035, settle=20, phase="lower")
+        for _ in range(12):
+            error = dest[:2]-np.asarray(self.twin.poses()[obj]["xyz"])[:2]
+            self.goal_xyz[:2] += np.clip(error, -.0008, .0008)
+            self._servo(self.goal_xyz, -.12, yaw)
+        self._hold(22, .5, "release")
+        self.held = None
+        self.move([*self.goal_xyz[:2], safe], .5, yaw, speed=.045, settle=10, phase="retreat")
+
+    def push(self, step):
+        obj = step["obj"]
+        target, _ = self._target(step)
+        dims = extents(self.twin.objects[obj])
+        for attempt in range(4):
+            pos = np.asarray(self.twin.poses()[obj]["xyz"])
+            delta = target[:2]-pos[:2]
+            distance = np.linalg.norm(delta)
+            if distance < .012:
+                break
+            direction = delta/max(distance, 1e-8)
+            yaw = np.arctan2(direction[1], direction[0])+np.pi/2
+            radius = np.linalg.norm(dims[:2])/2+.009
+            behind = pos[:2]-direction*radius
+            self.move([*behind, .08], -.12, yaw, phase="push_approach")
+            self.move([*behind, .008], -.12, yaw, speed=.04, phase="push_descend")
+            self.move([*(target[:2]-direction*.014), .008], -.12, yaw, speed=.025, settle=10,
+                      phase="push" if attempt == 0 else "recovery_push")
+            self.move([*self.goal_xyz[:2], .08], .5, yaw, phase="push_retreat")
+
+    def home(self):
+        current = self.arm.tips(self.twin.q())[2]
+        self.move([*current[:2], max(.1, current[2])], .5, self.yaw, phase="home_up")
+        start = self.twin.commanded_q.copy()
+        self.phase = "home"
+        target = self.ik.compensate(HOME_Q, self.twin.physics)
+        for i in range(60):
+            u = (i+1)/60
+            self._tick(start+(target-start)*u)
+        for _ in range(20):
+            self._tick(target)
+
+    def run(self, twin=None, *, seed=0, scene=None):
+        own_twin = twin is None
+        if own_twin:
+            scene = scene or sample_scene(self.task, np.random.default_rng(seed))
+            twin = TaskTwin(scene)
+        self.ticks, self.states, self.segments = [], [], []
+        self.fail_reason, self.held = None, None
+        self._bind(twin)
+        try:
+            for step, command in zip(self.task["skeleton"], commands(self.task)):
+                self.command = command
+                start = len(self.ticks)/HZ
+                skill = step["skill"]
+                if skill == "pick":
+                    ok = self.pick(step["obj"])
+                elif skill in ("place_in", "place_on", "place_at"):
+                    self.place(step)
+                    ok = True
+                elif skill == "push_to":
+                    self.push(step)
+                    ok = True
+                elif skill == "home":
+                    self.home()
+                    ok = True
+                elif skill == "release":
+                    self._hold(15, .5, "release")
+                    ok = True
+                elif skill == "wait":
+                    self._hold(max(1, round(step["s"]*HZ)), twin.commanded_q[5], "wait")
+                    ok = True
+                else:
+                    raise ValueError(f"Unsupported skill {skill}")
+                self.segments.append([start, len(self.ticks)/HZ, command])
+                if not ok:
+                    break
+            result = check_window(self.task, self.states, hz=HZ)
+            success = bool(result["ok"])
+            meta = {"schema": "r2p_trace/1", "task": self.task, "task_name": self.task["name"], "source": "expert",
+                    "player": "reference_expert", "level": self.task["name"], "seed": seed,
+                    "scene": twin.scene, "success": success, "fail_reason": None if success else self.fail_reason or "goal_not_met",
+                    "commands": self.segments, "rig": "so101_bench", "start_q": HOME_Q.tolist(), "dart_std_rad": self.dart}
+            return {"meta": meta, "ticks": self.ticks, "check": result, "final": twin.poses()}
+        finally:
+            if own_twin:
+                twin.close()
+
+    rollout = run
+
+
+def evaluate(task, n=100, seed=10000, dart=0.0, progress=False):
+    task = load_task(task) if not isinstance(task, dict) else task
+    expert = Expert(task, dart=dart, seed=seed)
+    failures, errors, outcomes = Counter(), [], []
+    start = time.perf_counter()
+    for i in range(n):
+        result = expert.run(seed=seed+i)
+        success = result["meta"]["success"]
+        outcomes.append(success)
+        if not success:
+            failures[result["meta"]["fail_reason"]] += 1
+        for goal in task["goal"]:
+            if goal["pred"] == "at":
+                target = result["final"][goal["xy"]]["xyz"][:2] if isinstance(goal["xy"], str) else goal["xy"]
+                errors.append(float(np.linalg.norm(np.asarray(result["final"][goal["a"]]["xyz"][:2])-target)*1000))
+        if progress and ((i+1) % 10 == 0 or i == 0):
+            print(f"{task['name']} {i+1}/{n}: {sum(outcomes)}/{i+1} successes", flush=True)
+    return {"task": task["name"], "n": n, "seed": seed, "success": float(np.mean(outcomes)),
+            "successes": sum(outcomes), "failures": dict(failures),
+            "median_placement_mm": float(np.median(errors)) if errors else None,
+            "seconds": time.perf_counter()-start, "outcomes": outcomes}
+
+
+def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--task", default="cube_in_bowl")
+    parser.add_argument("--n", type=int, default=100)
+    parser.add_argument("--seed", type=int, default=10000)
+    parser.add_argument("--dart", type=float, default=0)
+    args = parser.parse_args()
+    print(json.dumps(evaluate(args.task, args.n, args.seed, args.dart, progress=True), indent=2))
+
+
+if __name__ == "__main__":
+    main()
