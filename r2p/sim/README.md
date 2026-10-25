@@ -51,3 +51,20 @@ reasons, placement error, and task/physics/code hashes. `expert_results.json`
 contains the recorded acceptance results. All success decisions use
 `r2p.tasks.check_window` on the final 0.5 seconds. These are simulation results;
 the provisional servo parameters still need held-out real-arm identification.
+
+Recorded acceptance (physics version 2, seeds starting at 10000):
+
+| Task | Success | Median placement error |
+|---|---:|---:|
+| place_on_cell | 100/100 | 1.97 mm |
+| cube_in_bowl | 95/100 | — |
+| pick_place_stick | 10/10 | 1.54 mm |
+| stack_two_cubes | 10/10 | — |
+| push_to_target | 10/10 | 5.87 mm |
+| two_cubes_in_bowl | 10/10 | — |
+
+The component suite passed all 18 tests, including both physical grasp holds,
+sag bands, six-task regressions, trace validation/DART, multiprocessing collection,
+tiny CPU training, two-seed export, standalone runtime parity (1e-4), and all
+three evaluation noise modes. These expert success rates do not describe the
+tiny trained smoke policy; no deployment-quality learned incumbent was trained.
