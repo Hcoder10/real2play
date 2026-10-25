@@ -1,0 +1,513 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Real2Play Architecture</title>
+<style>
+  :root {
+    --bg: #0b0f17;
+    --panel: #121927;
+    --panel-2: #182133;
+    --line: #2a3650;
+    --text: #e8edf7;
+    --muted: #9aa7bf;
+    --chain: #6f86b3;
+    --loop: #ffc94d;
+    --argon: #8ab4ff;
+    --accent: #ffc94d;
+    --real: #3ddc97;
+    --sim: #6aa8ff;
+    --pending: #ffb547;
+    --soft: #c49bff;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: "Segoe UI", system-ui, -apple-system, Roboto, "Helvetica Neue", Arial, sans-serif;
+    font-size: 20px;
+    line-height: 1.4;
+    display: grid;
+    grid-template-rows: auto 1fr auto;
+    min-height: 100vh;
+  }
+  header {
+    display: flex; align-items: baseline; gap: 28px; flex-wrap: wrap;
+    padding: 18px 32px 10px;
+    border-bottom: 1px solid var(--line);
+  }
+  header h1 { margin: 0; font-size: 36px; letter-spacing: 0.01em; }
+  header .tag { color: var(--muted); font-size: 21px; flex: 1 1 520px; }
+  header .tag b { color: var(--loop); font-weight: 600; }
+  .legend { display: flex; gap: 14px; flex-wrap: wrap; font-size: 16px; }
+  main {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 600px;
+    gap: 0;
+    min-height: 0;
+  }
+  #diagram { padding: 10px 16px 6px 24px; display: flex; flex-direction: column; justify-content: center; min-height: 0; }
+  #diagram .hint { color: var(--muted); font-size: 17px; text-align: center; margin-top: 6px; }
+  #diagram svg { width: 100%; height: auto; max-height: calc(100vh - 190px); display: block; }
+  aside {
+    background: var(--panel);
+    border-left: 1px solid var(--line);
+    padding: 22px 28px 20px;
+    overflow-y: auto;
+    max-height: calc(100vh - 120px);
+  }
+  aside .kind { font-size: 15px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); }
+  aside h2 { margin: 4px 0 6px; font-size: 34px; line-height: 1.15; }
+  aside .sub { color: var(--muted); margin: 0 0 14px; font-size: 19px; }
+  aside h3 { margin: 18px 0 8px; font-size: 16px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--argon); }
+  aside h3.loop { color: var(--loop); }
+  aside p { margin: 0 0 8px; }
+  aside ol, aside ul { margin: 0; padding-left: 24px; }
+  aside li { margin: 4px 0; }
+  .metrics { list-style: none; padding: 0 !important; margin: 0; }
+  .metrics li {
+    display: grid; grid-template-columns: auto 1fr; gap: 12px; align-items: baseline;
+    background: var(--panel-2); border: 1px solid var(--line); border-radius: 10px;
+    padding: 9px 12px; margin: 7px 0;
+  }
+  .metrics .n { font-weight: 650; color: var(--text); }
+  .chip {
+    display: inline-block; font-size: 13px; font-weight: 700; letter-spacing: 0.08em;
+    padding: 2px 8px; border-radius: 999px; border: 1px solid currentColor; white-space: nowrap;
+  }
+  .chip.real { color: var(--real); }
+  .chip.sim { color: var(--sim); }
+  .chip.pending { color: var(--pending); }
+  .chip.soft { color: var(--soft); }
+  .chip.comp { color: var(--sim); border-style: dashed; }
+  code { font-family: Consolas, "Cascadia Mono", Menlo, monospace; font-size: 0.86em; color: #cfe0ff; background: #0e1522; padding: 1px 5px; border-radius: 5px; }
+  .code { color: var(--muted); font-size: 16px; margin-top: 14px; }
+  footer {
+    display: flex; gap: 24px; align-items: center; flex-wrap: wrap;
+    padding: 10px 32px 14px; border-top: 1px solid var(--line); color: var(--muted); font-size: 17px;
+  }
+  footer .nav { margin-left: auto; display: flex; gap: 10px; }
+  button {
+    font: inherit; font-size: 17px; color: var(--text); background: var(--panel-2);
+    border: 1px solid var(--line); border-radius: 10px; padding: 7px 16px; cursor: pointer;
+  }
+  button:hover, button:focus-visible { border-color: var(--accent); outline: none; }
+
+  /* SVG */
+  .node rect, .node circle { fill: var(--panel); stroke: var(--line); stroke-width: 3; transition: stroke 0.2s, fill 0.2s; }
+  .node text { fill: var(--text); pointer-events: none; }
+  .node .t { font-size: 34px; font-weight: 700; }
+  .node .s { font-size: 22px; fill: var(--muted); }
+  .node { cursor: pointer; }
+  .node:hover rect, .node:hover circle, .node:focus-visible rect, .node:focus-visible circle { stroke: var(--accent); }
+  .node.sel rect, .node.sel circle { stroke: var(--accent); stroke-width: 5; fill: #1b2436; }
+  .node.argon circle { fill: #10213f; stroke: var(--argon); }
+  .node.argon .t { fill: var(--argon); font-size: 26px; }
+  .node.argon.sel circle { stroke: var(--accent); }
+  .chain { stroke: var(--chain); stroke-width: 4; fill: none; }
+  .chainlbl { fill: var(--muted); font-size: 23px; }
+  .spoke { stroke: var(--argon); stroke-width: 2; stroke-dasharray: 3 9; opacity: 0.45; fill: none; }
+  .loop path.arc { stroke: var(--loop); stroke-width: 5; fill: none; stroke-dasharray: 14 10; animation: flow 1.2s linear infinite; }
+  .loop path.hit { stroke: transparent; stroke-width: 44; fill: none; }
+  .loop text { fill: var(--loop); font-size: 24px; font-weight: 700; letter-spacing: 0.08em; pointer-events: none; }
+  .loop { cursor: pointer; }
+  .loop.sel path.arc { stroke-width: 8; filter: drop-shadow(0 0 8px rgba(255, 201, 77, 0.8)); }
+  .loop:hover path.arc, .loop:focus-visible path.arc { stroke-width: 7; }
+  .node:focus, .loop:focus { outline: none; }
+  @keyframes flow { to { stroke-dashoffset: -24; } }
+  @media (prefers-reduced-motion: reduce) { .loop path.arc { animation: none; } }
+  @media (max-width: 1300px) {
+    main { grid-template-columns: 1fr; }
+    aside { max-height: none; border-left: 0; border-top: 1px solid var(--line); }
+  }
+</style>
+</head>
+<body>
+<header>
+  <h1>Real2Play</h1>
+  <div class="tag">Gemini 4 Argon turns a real robot bench into an exact twin, the twin into a game, play into a policy.
+    The goal of every render, watch, critique, fix loop is <b>reality: the real robot's camera</b>.</div>
+  <div class="legend">
+    <span class="chip real">REAL BENCH</span>
+    <span class="chip sim">SIMULATION</span>
+    <span class="chip comp">REAL FRAMES, COMPOSITED</span>
+    <span class="chip soft">SOFTWARE / TESTS</span>
+    <span class="chip pending">NOT YET / IN PROGRESS</span>
+  </div>
+</header>
+
+<main>
+  <div id="diagram">
+    <svg viewBox="0 0 1600 780" role="img" aria-labelledby="svgtitle">
+      <title id="svgtitle">Chain: Real, Twin, Game, Play data, Twin replay, Policy with Gemini commands, back to Real. Argon at the centre; three highlighted loops.</title>
+      <defs>
+        <marker id="ah" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+          <path d="M0,0 L10,5 L0,10 z" fill="#6f86b3"/>
+        </marker>
+        <marker id="ahl" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="4" markerHeight="4" orient="auto-start-reverse">
+          <path d="M0,0 L10,5 L0,10 z" fill="#ffc94d"/>
+        </marker>
+      </defs>
+
+      <!-- Argon spokes (drawn first, under everything) -->
+      <g id="spokes">
+        <path class="spoke" d="M720 445 L360 290"/>
+        <path class="spoke" d="M800 365 L800 310"/>
+        <path class="spoke" d="M880 445 L1240 290"/>
+        <path class="spoke" d="M880 445 L1240 600"/>
+        <path class="spoke" d="M800 525 L800 580"/>
+        <path class="spoke" d="M720 445 L360 600"/>
+      </g>
+
+      <!-- Chain arrows -->
+      <path class="chain" d="M370 250 L630 250" marker-end="url(#ah)"/>
+      <text class="chainlbl" x="500" y="292" text-anchor="middle">probe, photos, joint log</text>
+      <path class="chain" d="M960 250 L1220 250" marker-end="url(#ah)"/>
+      <text class="chainlbl" x="1090" y="292" text-anchor="middle">physics, task, board</text>
+      <path class="chain" d="M1390 310 L1390 575" marker-end="url(#ah)"/>
+      <text class="chainlbl" x="1404" y="450" text-anchor="start">public plays</text>
+      <path class="chain" d="M1220 640 L970 640" marker-end="url(#ah)"/>
+      <text class="chainlbl" x="1095" y="685" text-anchor="middle">traces @ 30 Hz</text>
+      <path class="chain" d="M630 640 L380 640" marker-end="url(#ah)"/>
+      <text class="chainlbl" x="505" y="685" text-anchor="middle">labelled chunks</text>
+      <path class="chain" d="M210 580 L210 315" marker-end="url(#ah)"/>
+      <text class="chainlbl" x="196" y="425" text-anchor="end">deploy</text>
+      <text class="chainlbl" x="196" y="455" text-anchor="end">pick / place_at</text>
+      <text class="chainlbl" x="196" y="485" text-anchor="end">+ 30 Hz control</text>
+
+      <!-- Loops -->
+      <g class="loop" data-id="calib" tabindex="0" role="button" aria-label="Calibration loop">
+        <path class="hit" d="M680 195 Q 500 40 330 195"/>
+        <path class="arc" d="M680 195 Q 500 40 330 195" marker-end="url(#ahl)"/>
+        <text x="505" y="88" text-anchor="middle">CALIBRATION LOOP</text>
+      </g>
+      <g class="loop" data-id="twinloop" tabindex="0" role="button" aria-label="Twin loop">
+        <path class="hit" d="M760 195 C 700 60, 900 60, 840 195"/>
+        <path class="arc" d="M760 195 C 700 60, 900 60, 840 195" marker-end="url(#ahl)"/>
+        <text x="800" y="52" text-anchor="middle">TWIN LOOP</text>
+      </g>
+      <g class="loop" data-id="gameloop" tabindex="0" role="button" aria-label="Game-builder loop">
+        <path class="hit" d="M1350 195 C 1290 60, 1490 60, 1430 195"/>
+        <path class="arc" d="M1350 195 C 1290 60, 1490 60, 1430 195" marker-end="url(#ahl)"/>
+        <text x="1390" y="52" text-anchor="middle">GAME-BUILDER LOOP</text>
+      </g>
+
+      <!-- Nodes -->
+      <g class="node" data-id="real" tabindex="0" role="button" aria-label="Real bench">
+        <rect x="50" y="195" width="320" height="115" rx="18"/>
+        <text class="t" x="210" y="246" text-anchor="middle">Real</text>
+        <text class="s" x="210" y="282" text-anchor="middle">SO-101, phone camera, board</text>
+      </g>
+      <g class="node" data-id="twin" tabindex="0" role="button" aria-label="Twin">
+        <rect x="640" y="195" width="320" height="115" rx="18"/>
+        <text class="t" x="800" y="246" text-anchor="middle">Twin</text>
+        <text class="s" x="800" y="282" text-anchor="middle">MuJoCo + servo model</text>
+      </g>
+      <g class="node" data-id="game" tabindex="0" role="button" aria-label="Game">
+        <rect x="1230" y="195" width="320" height="115" rx="18"/>
+        <text class="t" x="1390" y="246" text-anchor="middle">Game</text>
+        <text class="s" x="1390" y="282" text-anchor="middle">Roblox harness</text>
+      </g>
+      <g class="node" data-id="play" tabindex="0" role="button" aria-label="Play data">
+        <rect x="1230" y="585" width="320" height="115" rx="18"/>
+        <text class="t" x="1390" y="636" text-anchor="middle">Play data</text>
+        <text class="s" x="1390" y="672" text-anchor="middle">people at ~20 tables</text>
+      </g>
+      <g class="node" data-id="replay" tabindex="0" role="button" aria-label="Twin replay">
+        <rect x="640" y="585" width="320" height="115" rx="18"/>
+        <text class="t" x="800" y="636" text-anchor="middle">Twin replay</text>
+        <text class="s" x="800" y="672" text-anchor="middle">filter, relabel, label</text>
+      </g>
+      <g class="node" data-id="policy" tabindex="0" role="button" aria-label="Policy with Gemini commands">
+        <rect x="50" y="585" width="320" height="115" rx="18"/>
+        <text class="t" x="210" y="636" text-anchor="middle">Policy</text>
+        <text class="s" x="210" y="672" text-anchor="middle">+ Argon commands</text>
+      </g>
+      <g class="node argon" data-id="argon" tabindex="0" role="button" aria-label="Gemini 4 Argon">
+        <circle cx="800" cy="445" r="82"/>
+        <text class="t" x="800" y="438" text-anchor="middle">GEMINI 4</text>
+        <text class="t" x="800" y="470" text-anchor="middle">ARGON</text>
+      </g>
+    </svg>
+    <div class="hint">Click any node or yellow loop · ← → step through · 1-9 jump · 0 = Argon</div>
+  </div>
+
+  <aside id="panel" aria-live="polite"></aside>
+</main>
+
+<footer>
+  <span><code>python -m r2p run --task place_on_cell</code>: probe, twin, data, label, train, eval, gate, deploy. 18 stages, resumable, 860+ tests.</span>
+  <div class="nav">
+    <button id="prev" aria-label="Previous">&larr; Prev</button>
+    <button id="next" aria-label="Next">Next &rarr;</button>
+  </div>
+</footer>
+
+<script>
+const R = "real", S = "sim", P = "pending", W = "soft", C = "comp";
+const LABEL = { real: "REAL BENCH", sim: "SIMULATION", pending: "NOT YET", soft: "SOFTWARE", comp: "COMPOSITED" };
+
+const DATA = {
+  real: {
+    kind: "Node 1 · start and end of the chain",
+    title: "Real bench",
+    sub: "SO-101 follower arm, Windows laptop, Pixel phone as a calibrated scene camera, a printed tic-tac-toe grid, white bottle caps for the robot, coins for humans.",
+    argon: [
+      "Reads the real phone frame each turn: board state, a legal move, and the reason for it.",
+      "Finds bottle caps in the supply zone so the arm knows what to pick.",
+      "Points at the jaw tips in calibration photos (see the calibration loop)."
+    ],
+    metrics: [
+      [R, "0.70 px", "scene camera reprojection from an ArUco board; the board flush against the robot base is the ruler, no tape measure"],
+      [R, "36.3 mm", "grid cells measured by the camera (printed at ~73 % scale)"],
+      [R, "14 mm", "real pick-and-place: bottle cap onto the centre cell, 14 mm off"],
+      [R, "picked + carried", "second autonomous attempt with Argon locating the supply caps"],
+      [C, "20/20", "boards read correctly, all moves legal, on real frames with composited boards; latency p50 5.1 s / p90 6.1 s"]
+    ],
+    code: "scripts/lead/ttt_armd.py · scripts/lead/jaw_move.py · armd checks every path"
+  },
+  calib: {
+    loop: true,
+    kind: "Loop · Real ⇄ Twin kinematics",
+    title: "Calibration loop",
+    sub: "Render the arm model where it should be, watch where Argon sees it, critique the offset, fix the joint map.",
+    steps: [
+      "Move the real arm to 14 poses; the phone photographs each one.",
+      "Argon points at the fixed finger tip and the moving jaw tip.",
+      "Project the model's tips through the calibrated camera; compare.",
+      "Robust fit of joint offsets; judge on leave-one-out poses."
+    ],
+    argon: [
+      "Jaw-tip pointing on real photos (call sites visual:point, vcal_tips).",
+      "Caught a hidden error: with the jaw closed the wrist roll is unobservable (the fixed fingertip sits near the roll axis). Shown three photos with the jaw opening wider, Argon told the fixed finger from the moving jaw."
+    ],
+    metrics: [
+      [R, "84 → 7 px", "reprojection, training poses"],
+      [R, "8.8 px", "leave-one-out median (~5 mm)"],
+      [R, "~190°", "wrist roll error found; the real gripper also opens much wider than the model"],
+      [R, "130 → 6.5 px", "error after fixing roll and gripper opening"]
+    ],
+    code: "r2p/sysid/visual.py · scripts/lead/visual_calib.py · config/joint_map.json"
+  },
+  twin: {
+    kind: "Node 2",
+    title: "Twin",
+    sub: "MuJoCo twin of the bench with a servo model; the measured board, caps and camera.",
+    argon: [
+      "Extracts the scene (objects, sizes) from real frames.",
+      "Writes the task spec from a whole recorded attempt (task_from_video).",
+      "Designs the next safe experiment on the arm to shrink the twin's largest uncertainty (active twin, high thinking)."
+    ],
+    metrics: [
+      [S, "3.3 / 9.8 mm", "gravity sag emerges from the servo model at 18 / 30 cm reach"],
+      [R, "9-12 mm", "real arm sag at 30 cm, for comparison"],
+      [S, "87.5 %", "expert success (224/256) with the whole board pose and cap size randomized"],
+      [S, "-94.6 %", "held-out error in a simulated active-twin campaign that recovered hidden stiffness, friction and mass"],
+      [P, "in progress", "active-twin experiments on the real arm"]
+    ],
+    code: "r2p/sim · r2p/real2sim/active.py · config/physics/"
+  },
+  twinloop: {
+    loop: true,
+    kind: "Loop · Twin vs reality",
+    title: "Twin loop",
+    sub: "Render the twin from the calibrated camera, watch the real frame, critique, patch. Reality is the goal.",
+    steps: [
+      "Replay recorded commands through the twin; render from the real camera model.",
+      "Argon compares real frames with the renders of the same state.",
+      "Argon proposes a bounded scene or physics patch.",
+      "Keep it only if held-out frames improve and no object's overlap gets worse."
+    ],
+    argon: [
+      "Critique and patch (real2sim:critique, medium thinking).",
+      "Experiment choice and physics patch on the real arm (active_choose, active_patch, high thinking)."
+    ],
+    metrics: [
+      [R, "0.84", "object IoU, cube, held-out real frames"],
+      [R, "0.95", "object IoU, bowl, held-out real frames"],
+      [R, "rejected", "a worse proposed iteration was rejected by the keep rule"]
+    ],
+    code: "r2p/real2sim/loop.py · scripts/argon/run_twin.py · scripts/argon/active_twin.py"
+  },
+  game: {
+    kind: "Node 3",
+    title: "Game",
+    sub: "A reusable Roblox harness, not one game: a lobby of ~20 tables, sit at a table to play, preset tools in configurable levels.",
+    argon: [
+      "Builds the game as an Antigravity managed agent (see the game-builder loop).",
+      "Authors new tasks with positive and negative checker vectors, also as a managed agent."
+    ],
+    metrics: [
+      [W, "442", "shared test vectors: the same success checker ported to Luau"],
+      [W, "4.97 mm", "parity with the twin (cube final position)"],
+      [P, "not published", "the Roblox game is not public yet"]
+    ],
+    code: "roblox/ · roblox/ACCEPTANCE.md"
+  },
+  gameloop: {
+    loop: true,
+    kind: "Loop · Antigravity managed agent",
+    title: "Game-builder loop",
+    sub: "Argon writes the game, runs its tests, fixes it; we only accept what passes our own tests.",
+    steps: [
+      "Argon, in a Google-hosted Antigravity sandbox, receives the task, measured board, physics, camera and harness sources.",
+      "It writes the game configuration and runs the tests in the sandbox.",
+      "Returned files are applied in an isolated local workspace.",
+      "All Luau suites and numerical trajectory parity must pass. Nothing publishes itself; the owner publishes."
+    ],
+    argon: [
+      "build_game and author_task, gemini-4-argon inside Antigravity managed agents."
+    ],
+    metrics: [
+      [W, "5/5 suites", "dry run: all Luau suites pass; joint RMS 0.009° and jaw RMS 0.07 mm vs the twin over 180 ticks"],
+      [P, "in progress", "live managed game run"]
+    ],
+    code: "r2p/agents.py · scripts/argon/build_game.py · scripts/argon/author_task.py"
+  },
+  play: {
+    kind: "Node 4",
+    title: "Play data",
+    sub: "The public plays the task at a table. Every round is logged at 30 Hz and uploaded to an authenticated trace receiver.",
+    argon: [
+      "Nothing at play time: success is decided server-side by the shared checker, so a player cannot claim a win the twin would not grant."
+    ],
+    metrics: [
+      [W, "r2p_trace/1", "30 Hz episode format shared by game, twin and robot"],
+      [P, "pending", "human play starts when the game is published"]
+    ],
+    code: "roblox/src · scripts/demo_up.py (trace receiver :8770)"
+  },
+  replay: {
+    kind: "Node 5",
+    title: "Twin replay",
+    sub: "Every game trace goes back through the accurate twin before it can train anything.",
+    argon: [
+      "Labels each episode into commands: pick(piece), place_at(piece, cell), release, home (labeling:refine)."
+    ],
+    steps: [
+      "Replay in MuJoCo with the current identified physics.",
+      "Reject physically impossible episodes.",
+      "Relabel actions as the robot's absolute joint-target chunks.",
+      "Attach Argon's command segments."
+    ],
+    metrics: [
+      [S, "87.5 %", "expert traces from the same twin (224/256), mixed with play"],
+      [P, "in progress", "replay of real human play (needs the published game)"]
+    ],
+    code: "r2p/traces.py · r2p/labeling.py · r2p/pipeline"
+  },
+  policy: {
+    kind: "Node 6 · back to Real",
+    title: "Policy + Argon commands",
+    sub: "Argon is the brain, the policy is the hands. Argon issues pick(piece) and place_at(piece, cell); the learned policy does low-level control at 30 Hz.",
+    argon: [
+      "Chooses the next command from the camera (one call per subtask, ~5 s).",
+      "Real attempts are recorded and go back to the twin loop: the chain is closed."
+    ],
+    metrics: [
+      [S, "3 seeds", "ensemble; absolute 15×6 joint-target chunks at 30 Hz"],
+      [S, "thousands", "expert traces; trained on the RTX PRO 6000 rig"],
+      [W, "gate", "deploys only if it beats the incumbent on identical scenes"],
+      [P, "not yet", "the learned policy has not run on the real arm"]
+    ],
+    code: "r2p/policy · r2p/robot · scripts/robot/run_policy.py"
+  },
+  argon: {
+    kind: "The brain",
+    title: "Gemini 4 Argon",
+    sub: "gemini-4-argon only, through the Interactions API with a thinking level per call. Antigravity managed agents run Argon in a Google-hosted sandbox for game building and task authoring. Flash is off.",
+    list: [
+      ["Board reading + move", "ttt:decide · medium"],
+      ["Cap finding", "ttt:caps · low"],
+      ["Jaw-tip pointing", "visual:point, vcal_tips · low"],
+      ["Scene extraction", "real2sim:detect · low"],
+      ["Task from video", "task_from_video · low"],
+      ["Twin critique + patch", "real2sim:critique · medium"],
+      ["Experiment design", "active_choose, active_patch · high"],
+      ["Trace labelling", "labeling:refine · low"],
+      ["Task authoring", "author_task · Antigravity"],
+      ["Game building", "build_game · Antigravity"]
+    ],
+    metrics: [
+      [C, "p50 5.1 s", "board turn latency (p90 6.1 s): why Argon plans and the policy moves"],
+      [W, "cache-only", "every call is hashed and logged; the demo replays with zero requests"]
+    ],
+    code: "r2p/gemini.py · r2p/agents.py · README.md (call-site table)"
+  }
+};
+
+const ORDER = ["real", "calib", "twin", "twinloop", "game", "gameloop", "play", "replay", "policy", "argon"];
+let cur = 0;
+
+function el(tag, cls, text) {
+  const e = document.createElement(tag);
+  if (cls) e.className = cls;
+  if (text !== undefined) e.textContent = text;
+  return e;
+}
+
+function render(id) {
+  const d = DATA[id];
+  const p = document.getElementById("panel");
+  p.replaceChildren();
+  p.append(el("div", "kind", d.kind), el("h2", null, d.title), el("p", "sub", d.sub));
+  if (d.steps) {
+    p.append(el("h3", "loop", d.loop ? "Render · watch · critique · fix" : "Steps"));
+    const ol = el("ol");
+    d.steps.forEach(s => ol.append(el("li", null, s)));
+    p.append(ol);
+  }
+  if (d.list) {
+    p.append(el("h3", null, "Call sites"));
+    const ul = el("ul", "metrics");
+    d.list.forEach(([a, b]) => {
+      const li = el("li");
+      li.append(el("span", "n", a), el("span", null, b));
+      ul.append(li);
+    });
+    p.append(ul);
+  }
+  if (d.argon) {
+    p.append(el("h3", null, "What Argon does here"));
+    const ul = el("ul");
+    d.argon.forEach(s => ul.append(el("li", null, s)));
+    p.append(ul);
+  }
+  p.append(el("h3", null, "Measured today"));
+  const ml = el("ul", "metrics");
+  d.metrics.forEach(([k, n, t]) => {
+    const li = el("li");
+    const left = el("div");
+    left.append(el("span", "chip " + k, LABEL[k]));
+    const right = el("div");
+    right.append(el("span", "n", n + "  "), document.createTextNode(t));
+    li.append(left, right);
+    ml.append(li);
+  });
+  p.append(ml);
+  p.append(el("div", "code", d.code));
+  document.querySelectorAll(".node, .loop").forEach(g => g.classList.toggle("sel", g.dataset.id === id));
+  cur = ORDER.indexOf(id);
+}
+
+document.querySelectorAll(".node, .loop").forEach(g => {
+  g.addEventListener("click", () => render(g.dataset.id));
+  g.addEventListener("keydown", e => {
+    if (e.key === "Enter" || e.key === " ") { e.preventDefault(); render(g.dataset.id); }
+  });
+});
+document.getElementById("next").onclick = () => render(ORDER[(cur + 1) % ORDER.length]);
+document.getElementById("prev").onclick = () => render(ORDER[(cur - 1 + ORDER.length) % ORDER.length]);
+document.addEventListener("keydown", e => {
+  if (e.key === "ArrowRight" || e.key === "PageDown") render(ORDER[(cur + 1) % ORDER.length]);
+  else if (e.key === "ArrowLeft" || e.key === "PageUp") render(ORDER[(cur - 1 + ORDER.length) % ORDER.length]);
+  else if (e.key >= "1" && e.key <= "9") render(ORDER[+e.key - 1]);
+  else if (e.key === "0") render("argon");
+});
+window.addEventListener("hashchange", () => { const h = location.hash.slice(1); if (DATA[h]) render(h); });
+render(DATA[location.hash.slice(1)] ? location.hash.slice(1) : "real");
+</script>
+</body>
+</html>
