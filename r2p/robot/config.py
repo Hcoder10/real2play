@@ -20,6 +20,11 @@ def load_config(path=None, platform=None):
     extra = path.with_name(f"{path.stem}.{platform or sys.platform}{path.suffix}")
     if extra.exists():
         cfg = overlay(cfg, json.loads(extra.read_text(encoding="utf-8")))
+    # Bench overlays use a nested robot section; the bus API consumes flat keys.
+    robot = cfg.get("robot", {})
+    for source, target in (("port", "port"), ("id", "robot_id"), ("calibration_dir", "calibration_dir")):
+        if source in robot:
+            cfg[target] = robot[source]
     return cfg
 
 
@@ -42,8 +47,8 @@ def sag_gain(cfg=None):
         if "sag_gain" in physics:
             import numpy as np
             gains = np.asarray(physics["sag_gain"], float)
-            if gains.shape == (6,) and np.allclose(gains[1:4], gains[1]):
-                return float(gains[1])
+            if gains.shape == (6,):
+                return gains
         for key in ("gravity_comp_k", "gravity_sag_k", "sag_k"):
             if key in physics:
                 return float(physics[key])

@@ -125,5 +125,9 @@ def test_platform_overlay_and_unverified_candidates():
     assert cfg["camera"]["width"] == 640
     jm = load_joint_map(cfg)
     assert not jm.verified
-    assert np.allclose(jm.offset, [0, -11.5, 0, 0, -76])
+    # The bench's active calibration is fitted independently of the platform.
+    from r2p.model import JointMap
+    from r2p.robot.config import config_path
+    active = JointMap.load(config_path(cfg["joint_map"]))
+    assert np.allclose(jm.offset, active.offset)
     assert np.allclose(jm.to_model(jm.to_owner(HOME_Q)), HOME_Q)

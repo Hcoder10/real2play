@@ -23,8 +23,10 @@ def main(argv=None):
     parser.add_argument("--config")
     parser.add_argument("--timeout", type=float, default=60)
     parser.add_argument("--seed", type=int, default=0)
+    parser.add_argument("--frame-stride", type=int, default=1, help="Synthetic recording image interval; ticks remain 30 Hz")
+    parser.add_argument("--publish", help="Publish camera and status files for the read-only dashboard")
     args = parser.parse_args(argv)
-    if args.attempts < 1 or not 0 < args.speed <= 1:
+    if args.attempts < 1 or args.frame_stride < 1 or not 0 < args.speed <= 1:
         parser.error("attempts must be positive and speed in (0,1]")
     from r2p.model import Arm
     from r2p.tasks import load_task
@@ -43,7 +45,7 @@ def main(argv=None):
     stamp = datetime.now().strftime("%Y%m%d_%H%M%S_%f")
     with Operator(cfg["control_file"], keyboard=not args.dry_run) as operator:
         for attempt in range(args.attempts):
-            policy = ScriptedPolicy(task, arm) if args.policy == "stub" else load_policy(args.policy)
+            policy = ScriptedPolicy(task, arm, cfg) if args.policy == "stub" else load_policy(args.policy)
             policy_cfg = policy_config(policy, None if args.policy == "stub" else args.policy)
             if policy_cfg.get("task") != task["name"]:
                 parser.error("policy task does not match --task")
@@ -53,6 +55,8 @@ def main(argv=None):
                 from r2p.robot.gravity import GravitySag
                 robot = MockRobot(arm=arm, joint_map=joint_map, q0=policy_cfg["start_q"], sag=GravitySag(arm, sag_gain(cfg)))
                 world, camera, source = make_world(task, arm, args.seed + attempt)
+                if camera is not None:
+                    camera.stride = args.frame_stride
             else:
                 from r2p.robot.daemon import DaemonRobot
                 from r2p.perception import CameraModel, TaskPerceiver, open_camera
@@ -64,11 +68,17 @@ def main(argv=None):
                 source = "real"
             record = Path(args.record) / stamp / f"attempt_{attempt+1:02d}" if args.record else None
             try:
+                from r2p.robot.publisher import Publisher
+                publisher = Publisher(args.publish) if args.publish else None
                 session = Session(robot, policy, task, arm=arm, joint_map=joint_map, camera=camera if (not args.dry_run or args.record) else None,
                                   perceiver=perceiver, world=world, cfg=cfg, operator=operator,
                                   gravity_comp=args.gravity_comp, speed=min(args.speed, .5) if not args.dry_run and not joint_map.verified else args.speed,
-                                  realtime=not args.dry_run, record=record, policy_cfg=policy_cfg)
+                                  realtime=not args.dry_run, record=record, policy_cfg=policy_cfg, publisher=publisher)
                 result = session.run(timeout_s=args.timeout)
+                if record:
+                    from r2p.perception import CameraModel
+                    calibration = camera.world.cam if args.dry_run and camera else CameraModel.load(config_path(cfg["camera"]["calibration"]))
+                    calibration.save(record / "camera.json")
                 result.update(attempt=attempt+1, source=source, record=str(record) if record else None)
                 results.append(result)
                 print(json.dumps(result, default=json_default), flush=True)

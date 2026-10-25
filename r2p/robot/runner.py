@@ -23,7 +23,7 @@ def observation_q(commanded, measured, threshold_deg=4):
 class Session:
     def __init__(self, robot, policy, task, *, arm=None, joint_map=None, camera=None,
                  perceiver=None, world=None, cfg=None, operator=None, gravity_comp=True,
-                 speed=1.0, realtime=True, record=None, policy_cfg=None):
+                 speed=1.0, realtime=True, record=None, policy_cfg=None, publisher=None):
         from r2p.model import Arm, JointMap
         from r2p.tasks import load_task
         self.cfg = overlay(load_config(), cfg or {})
@@ -42,6 +42,7 @@ class Session:
         self.operator = operator or Operator(self.cfg["control_file"], keyboard=False)
         self.camera, self.perceiver, self.world = camera, perceiver, world
         self.realtime, self.record = realtime, record
+        self.publisher = publisher
         self.last_commanded = self.joint_map.to_model(self.robot.read())
         self.last_sent = self.last_commanded.copy()
         self.last_nominal = self.last_sent.copy()
@@ -216,7 +217,9 @@ class Session:
                     if tick % replan == 0 or not ensemble.chunks:
                         ensemble.add(tick, self.policy.act(obs))
                     nominal = ensemble.target(tick)
-                    correction = self.comp.offset(nominal)
+                    # Expert exports already contain servo-space compensation.
+                    correction = (np.zeros(6) if self.policy_cfg.get("gravity_compensation") == "included_in_expert_targets"
+                                  else self.comp.offset(nominal))
                     guarded = self.guard.project(self.last_sent, nominal + correction, measured=measured)
                     if guarded.accepted:
                         self.last_sent = guarded.target
@@ -237,8 +240,14 @@ class Session:
                     goal_ticks = goal_ticks + 1 if eligible else 0
                     if self.world is not None:
                         truth = self.world.truth_check()
+                    if self.publisher and frame is not None and tick % 6 == 0:
+                        self.publisher.update({"source": "bot" if self.world is not None else "real",
+                                               "status": "running", "task": self.task["name"],
+                                               "command": command, "phase": getattr(self.policy, "phase", "policy"),
+                                               "synthetic": self.world is not None}, frame)
                     if writer:
                         writer.submit({"t": tick * self.dt, "q": measured,
+                            "q_commanded": q_obs,
                             "q_target": self.last_nominal,
                             "q_exec": self.last_sent, "poses": poses, "grip_closed": not gripper_open,
                             "command": command, "phase": getattr(self.policy, "phase", "policy"),
@@ -270,9 +279,13 @@ class Session:
                 "timing_ms": {"p50": float(np.percentile(timings, 50)) if timings else 0,
                               "p90": float(np.percentile(timings, 90)) if timings else 0},
                 "refusals": refusal_count, "clipped_ticks": clipped, "commanded_q_resets": resets,
+                "clipped_fraction": clipped / len(timings) if timings else 0,
                 "ticks": len(timings), "duration_s": time.perf_counter() - started_run,
                 "error": error, "record_dropped": writer.dropped if writer else 0}
             summary["observation_source"] = "perception" if self.perceiver is not None else "synthetic_truth"
+            if self.publisher:
+                self.publisher.update({"source": "bot" if self.world is not None else "real",
+                                       "synthetic": self.world is not None, "status": "idle", **summary})
             if writer:
                 writer.meta["commands"] = command_segments
                 writer.close(summary)

@@ -93,7 +93,7 @@ def test_live_game_routes_each_turn_through_session_without_hardware(tmp_path, m
     import r2p.perception
     import r2p.robot
     import r2p.robot.config
-    import r2p.robot.daemon
+    import r2p.robot.io
     import r2p.robot.policy
 
     script_dir = Path(__file__).resolve().parents[2] / "scripts/argon"
@@ -108,7 +108,8 @@ def test_live_game_routes_each_turn_through_session_without_hardware(tmp_path, m
                                                                      "daemon_url": "unused", "control_file": "unused"})
     monkeypatch.setattr(r2p.robot.config, "load_joint_map", lambda cfg: SimpleNamespace(verified=True))
     monkeypatch.setattr(r2p.perception, "open_camera", lambda cfg: camera)
-    monkeypatch.setattr(r2p.robot.daemon, "DaemonRobot", lambda *args: robot)
+    monkeypatch.setattr(r2p.robot.io, "RealRobot", lambda *args: robot)
+    namespace["live_games"].__globals__["require_released_bus"] = lambda *args: None
     monkeypatch.setattr(r2p.robot.policy, "load_policy", lambda name: SimpleNamespace(config={"task": "place_on_cell", "start_q": [0]*6}))
     class Operator:
         def __init__(self, *args, **kwargs):

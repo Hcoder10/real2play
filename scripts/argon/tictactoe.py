@@ -24,6 +24,124 @@ def publish(path, board, decision=None, **fields):
                              "move": decision.get("move") if decision else None, **fields})
 
 
+def bench_supply(piece_height):
+    from r2p.tasks import load_task
+    obj = next(o for o in load_task("place_on_cell")["objects"] if o["role"] == "manipulated")
+    return [*(obj.get("xyz", obj.get("xy"))[:2]), piece_height / 2]
+
+
+def placement(args, cell, board=None):
+    task = ttt.placement_task(cell, args.supply_xyz, piece_size=args.piece_size, board=board)
+    piece = next(o for o in task["objects"] if o["role"] == "manipulated")
+    piece["size_m"][2] = getattr(args, "piece_height", args.piece_size)
+    return task
+
+
+def check_plans(args):
+    """Read configuration and solve IK; no camera, serial bus or Gemini access."""
+    from r2p.model import Arm
+    from r2p.robot.config import load_config, load_joint_map
+    from r2p.robot.dryrun import ScriptedPolicy
+    from r2p.tasks import encode_slots, sample_scene
+    cfg, arm = load_config(args.config), Arm()
+    joint_map = load_joint_map(cfg)
+    plans = []
+    for cell in ttt.CELL_IDS:
+        task = placement(args, cell)
+        policy = ScriptedPolicy(task, arm, cfg)
+        scene = sample_scene(task, np.random.default_rng(args.seed))
+        poses = {o["id"]: o for o in scene["objects"]}
+        row = {"cell": cell, "supply_xyz": args.supply_xyz, "target_xy": ttt.geometry(task)["cells"][cell],
+               "waypoints": [], "safe": True}
+        try:
+            previous = policy.comp(policy.start_q)
+            for phase, target, dwell in policy.plan(encode_slots(task, poses)):
+                sent = policy.comp(target)
+                geometry = arm.geometry(sent)
+                clear = policy.guard.path_clear(previous, sent)
+                within_limits = bool(np.all(sent >= policy.guard.limits[:, 0]) and np.all(sent <= policy.guard.limits[:, 1]))
+                row["waypoints"].append({"phase": phase, "q": target.tolist(), "q_servo": sent.tolist(),
+                                         "owner_deg": joint_map.to_owner(sent).tolist(),
+                                         "jaw_xyz": arm.tips(target)[2].tolist(), "geometry": geometry,
+                                         "path_clear": clear, "within_limits": within_limits, "dwell_ticks": dwell})
+                row["safe"] = row["safe"] and clear and within_limits
+                previous = sent
+        except ValueError as exc:
+            row.update(safe=False, error=str(exc))
+        plans.append(row)
+        print(f"{cell}: {'CLEAR' if row['safe'] else 'BLOCKED'} target={row['target_xy']} "
+              f"approach=0.120m carry/retreat=0.100m "
+              f"min finger={min((w['geometry']['finger'] for w in row['waypoints']), default=float('nan')):.4f}m "
+              f"{row.get('error', '')}")
+    report = {"schema": "r2p_ttt_plan/1", "motion": False, "joint_map": joint_map.name,
+              "joint_map_verified": joint_map.verified, "piece_size_m": [args.piece_size, args.piece_size, args.piece_height],
+              "port": cfg.get("port"), "plans": plans, "safe": all(row["safe"] for row in plans)}
+    gemini.atomic_json(args.check_out, report)
+    print(f"No motion. Full IK, owner targets and clearance: {args.check_out}; map={joint_map.name}, verified={joint_map.verified}")
+    return 0 if report["safe"] else 1
+
+
+def mock_live(args):
+    """Mock motion with live phone viewing only; no Gemini or hardware writes."""
+    from r2p.model import Arm
+    from r2p.perception import open_camera
+    from r2p.robot import MockRobot, Session, Operator
+    from r2p.robot.config import load_config, load_joint_map, sag_gain
+    from r2p.robot.dryrun import ScriptedPolicy, make_world
+    from r2p.robot.gravity import GravitySag
+    from r2p.robot.publisher import Publisher
+    cfg, arm = load_config(args.config), Arm()
+    joint_map = load_joint_map(cfg)
+    task = placement(args, args.cell)
+    policy = ScriptedPolicy(task, arm, cfg)
+    camera = open_camera(cfg["camera"])
+    world, synthetic_camera, _ = make_world(task, arm, args.seed)
+    robot = MockRobot(arm=arm, joint_map=joint_map, q0=policy.start_q, sag=GravitySag(arm, sag_gain(cfg)))
+    class ViewingCamera:
+        frame = None
+        captured = 0
+        def read(self):
+            if self.frame is None or time.monotonic() - self.captured > .5:
+                self.frame = camera.read()
+                self.captured = time.monotonic()
+            return self.frame
+    publisher = Publisher(args.publish)
+    try:
+        result = Session(robot, policy, task, arm=arm, joint_map=joint_map, world=world, camera=ViewingCamera(),
+                         cfg=cfg, realtime=False, operator=Operator(None, keyboard=False), publisher=publisher).run(timeout_s=args.timeout)
+        board = [""] * 9
+        if result["success"]:
+            board[ttt.cell_index(args.cell)] = "O"
+        decision = {"why": "Mock placement; phone camera is read-only viewing, not placement evidence",
+                    "source": "mock", "model": None, "move": args.cell}
+        publish(args.status, board, decision, status="mock_complete", synthetic=True, physical_placement=False,
+                camera_source="real_phone_read_only", attempt=result)
+        print(json.dumps(result))
+        return 0 if result["outcome"] == "goal_reached" and result["success"] else 1
+    finally:
+        camera.close()
+        if synthetic_camera:
+            synthetic_camera.close()
+        robot.close(torque_off=False)
+
+
+def require_released_bus(cfg, released):
+    import socket
+    from urllib.parse import urlparse
+    if not released:
+        raise ValueError("--real requires --arm-released after the lead stops armd and rests the arm")
+    parsed = urlparse(cfg["daemon_url"])
+    try:
+        connection = socket.create_connection((parsed.hostname, parsed.port or 8793), timeout=.5)
+    except ConnectionRefusedError:
+        return
+    except OSError as exc:
+        raise ValueError("Cannot verify armd is stopped; refusing serial access") from exc
+    else:
+        connection.close()
+        raise ValueError("armd still owns the bench; refusing to open the serial port")
+
+
 def oracle_board(world):
     """Read labelled synthetic object poses, with the same metric cell geometry."""
     board = [""] * 9
@@ -123,16 +241,21 @@ def live_games(args):
     from r2p.perception import CameraModel, TaskPerceiver, open_camera
     from r2p.robot import Session, Operator
     from r2p.robot.config import load_config, load_joint_map, config_path
-    from r2p.robot.daemon import DaemonRobot
+    from r2p.robot.io import RealRobot
     from r2p.robot.policy import load_policy, policy_config
 
     cfg = load_config(args.config)
     joint_map = load_joint_map(cfg)
-    if not joint_map.verified:
-        raise ValueError("Live tic-tac-toe requires a verified joint map")
+    if not joint_map.verified and not getattr(args, "allow_unverified", False):
+        raise ValueError("Live tic-tac-toe requires a verified joint map or explicit --allow-unverified after bench verification")
+    require_released_bus(cfg, getattr(args, "arm_released", False))
     cam = CameraModel.load(args.camera or config_path(cfg["camera"]["calibration"]))
     camera = open_camera(cfg["camera"])
-    robot = DaemonRobot(cfg["daemon_url"], joint_map)
+    try:
+        robot = RealRobot(cfg)
+    except BaseException:
+        camera.close()
+        raise
     try:
         with Operator(cfg["control_file"], keyboard=True) as operator:
             for game in range(args.games):
@@ -154,7 +277,7 @@ def live_games(args):
                     history = {"board": board.copy()}
                     if decision["move"] is None:
                         break
-                    task = ttt.placement_task(decision["move"], args.supply_xyz, piece_size=args.piece_size, board=board)
+                    task = placement(args, decision["move"], board)
                     # Projection of the measured supply spot seeds perception without a Gemini re-detection.
                     class KnownSetup:
                         def detect(self, image, task, *, role="small"):
@@ -170,14 +293,18 @@ def live_games(args):
                     perceiver = TaskPerceiver(cam, task, detector=KnownSetup())
                     try:
                         perceiver.setup(frame)
-                        policy = load_policy(args.policy)
-                        policy_cfg = policy_config(policy, args.policy)
+                        from r2p.robot.dryrun import ScriptedPolicy
+                        from r2p.model import Arm
+                        from r2p.robot.publisher import Publisher
+                        policy = ScriptedPolicy(task, Arm(), cfg, speed=.5 if not joint_map.verified else 1) if args.policy == "stub" else load_policy(args.policy)
+                        policy_cfg = policy_config(policy, None if args.policy == "stub" else args.policy)
                         if policy_cfg.get("task") != "place_on_cell":
                             raise ValueError("Policy export must declare task place_on_cell")
                         record = Path(args.record) / f"game_{game+1}_turn_{board.count('O')+1}_{time.time_ns()}"
                         result = Session(robot, policy, task, camera=camera, perceiver=perceiver, cfg=cfg,
                                          joint_map=joint_map, operator=operator, record=record,
-                                         policy_cfg=policy_cfg).run(timeout_s=args.timeout)
+                                         policy_cfg=policy_cfg, publisher=Publisher(getattr(args, "publish", "out/robot/live")),
+                                         speed=.5 if not joint_map.verified else 1).run(timeout_s=args.timeout)
                         cam.save(record / "camera.json")
                     finally:
                         perceiver.close()
@@ -201,22 +328,36 @@ def main(argv=None):
     mode.add_argument("--oracle-only", action="store_true")
     mode.add_argument("--frame-only", metavar="IMAGE")
     mode.add_argument("--real", action="store_true")
+    mode.add_argument("--check", action="store_true", help="Print IK and clearance for every cell; no motion or requests")
+    mode.add_argument("--mock-live", action="store_true", help="MockRobot + read-only live phone viewing; no Gemini")
     parser.add_argument("--games", type=int, default=1)
-    parser.add_argument("--piece-size", type=float, default=0.032, help="piece width in metres")
+    parser.add_argument("--piece-size", type=float, default=0.025, help="piece width in metres")
+    parser.add_argument("--piece-height", type=float, default=0.014, help="piece height in metres")
     parser.add_argument("--robot-desc", default="brown cubes")
     parser.add_argument("--human-desc", default="blue discs")
     parser.add_argument("--camera", help="calibrated camera JSON")
     parser.add_argument("--history", help="JSON file containing prior confirmed moves or board")
     parser.add_argument("--status", default="out/ttt/status.json")
     parser.add_argument("--seed", type=int, default=0)
-    parser.add_argument("--policy", help="place_on_cell export for live Session")
+    parser.add_argument("--policy", default="stub", help="place_on_cell export or the scripted probe")
     parser.add_argument("--supply-xyz", nargs=3, type=float, help="measured piece centre x y z, spec metres")
     parser.add_argument("--record", default="runs/tictactoe")
     parser.add_argument("--config")
-    parser.add_argument("--timeout", type=float, default=45)
+    parser.add_argument("--timeout", type=float, default=90)
+    parser.add_argument("--check-out", default="out/ttt/check.json")
+    parser.add_argument("--publish", default="out/robot/live")
+    parser.add_argument("--cell", choices=ttt.CELL_IDS, default="r1c1")
+    parser.add_argument("--arm-released", action="store_true")
+    parser.add_argument("--allow-unverified", action="store_true")
     args = parser.parse_args(argv)
-    if args.games < 1 or not 0.01 <= args.piece_size <= 0.04:
+    if args.games < 1 or not 0.01 <= args.piece_size <= 0.04 or not .005 <= args.piece_height <= .04:
         parser.error("games must be positive; piece-size must be 0.01..0.04 metres")
+    if args.supply_xyz is None:
+        args.supply_xyz = bench_supply(args.piece_height)
+    if args.check:
+        return check_plans(args)
+    if args.mock_live:
+        return mock_live(args)
     if args.real:
         if not args.policy or args.supply_xyz is None:
             parser.error("--real requires --policy and the measured --supply-xyz")

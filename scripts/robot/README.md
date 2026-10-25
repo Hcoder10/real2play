@@ -88,3 +88,33 @@ requests release at rest, then records hand-guided motion without writing goals.
 The LeRobot connection sequence was checked against the pinned upstream
 [SOFollower implementation](https://github.com/huggingface/lerobot/blob/v0.6.1/src/lerobot/robots/so_follower/so_follower.py)
 and [motor bus API](https://github.com/huggingface/lerobot/blob/v0.6.1/src/lerobot/motors/motors_bus.py).
+
+## Agent H bench integration
+
+Use `.venv/Scripts/python.exe scripts/argon/tictactoe.py --check` to solve every
+measured cell without network or motion. The full nominal/compensated joint targets,
+owner units, swept clearance and approach/retreat heights are in `out/ttt/check.json`.
+The defaults are the task's measured supply at `(0.13, 0.13)` and 25 x 25 x 14 mm pieces.
+
+`scripts/argon/tictactoe.py --mock-live --cell r0c1` runs MockRobot against the
+synthetic contact fixture while displaying live phone frames read-only. Its status
+explicitly says that camera footage is viewing only, not physical placement evidence.
+No Gemini call or serial connection is made. `--check` and `--mock-live` accept the
+normal `--config`, `--piece-size`, `--piece-height`, and `--supply-xyz` overrides.
+
+The direct live mode requires the lead to rest the arm and stop armd first, then
+`--real --arm-released`. An active daemon is detected before opening RealRobot.
+The fitted active map is loaded, including the Windows nested robot settings.
+It is still marked unverified in the bench JSON: use `--allow-unverified` only
+after supervised bench verification; it halves motion speed. This software check
+does not certify a calibration or authorize motion during another owner's session.
+
+Scripted chunks obey the same speed/slow-zone caps as Guard, leaving margin for
+compensation and ensembling. Jaw targets stop at the piece's contact width. The
+synthetic runner additionally requires closing pad contact before admitting C2's
+rigid grasp latch. Servo-space trained exports do not receive compensation twice.
+The 4-degree commanded-q reset and all guard limits remain enforced.
+
+`run_policy.py --publish out/robot/live` publishes runner images/status for the
+read-only HTTP publisher. `scripts/demo_up.py` starts that publisher and the dashboard;
+when no fresh runner frame exists it relays the phone camera with `camera_only` status.

@@ -142,6 +142,8 @@ def test_synthbench_stub_with_sag_and_compensation(cube_task):
         assert result["outcome"] == "goal_reached", result
         assert result["truth_check"]["ok"]
         assert result["perception_check"]["ok"]
+        assert result["clipped_fraction"] < .05
+        assert result["commanded_q_resets"] == 0
     finally:
         if camera:
             camera.close()
