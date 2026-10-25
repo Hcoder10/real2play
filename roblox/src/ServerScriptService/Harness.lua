@@ -42,15 +42,15 @@ function H.release(player)
     if station.match then station.match:destroy(); station.match=nil end
     if station.active then station:finish(false,"stood_up") end
     station.owner=nil; H.byPlayer[player]=nil; station.prompt.Enabled=true; station.score=0; station.streak=0; station.label.Text="Table "..station.index.." | Sit & play"
-    station.model:SetAttribute("Score",0); station.model:SetAttribute("Streak",0)
-    station:clear(); station:sleep(true); send(player,{kind="lobby",stats=Progress.get(player),image=Config.REAL_ARM_IMAGE,preview=false})
+    station.model:SetAttribute("Score",0); station.model:SetAttribute("Streak",0); station.model:SetAttribute("Occupied",false)
+    station:clear(); station:sleep(true); station:display(); send(player,{kind="lobby",stats=Progress.get(player),image=Config.REAL_ARM_IMAGE,preview=false})
 end
 function H.sit(player,station)
     if station.owner and station.owner~=player then return false end
     if H.byPlayer[player] and H.byPlayer[player]~=station then H.release(player) end
     if station.active then station:finish(false,"player_joined") end
     H.watchers[player]=nil
-    station.owner=player; station.prompt.Enabled=false; H.byPlayer[player]=station
+    station.owner=player; station.prompt.Enabled=false; H.byPlayer[player]=station; station.model:SetAttribute("Occupied",true)
     H.tableScore(station,{points=0},false)
     H.snapshot(station,"seated",{levels=Levels.order,tutorial=G.tutorial})
     return true
@@ -110,7 +110,7 @@ function H.start()
     PhysicsService:CollisionGroupSetCollidable("R2PObject","R2PPlayer",false)
     workspace.Gravity=-Physics.config.gravity[3]*10
     local world=Instance.new("Model"); world.Name="Real2Play"; world.Parent=workspace; H.world=world
-    A.part(world,"WorkshopFloor",Vector3.new(105,.5,88),CFrame.new(25,-.25,24),Color3.fromRGB(197,217,232),true)
+    A.part(world,"WorkshopFloor",Vector3.new(105,.5,88),CFrame.new(25,-.25,24),Color3.fromRGB(35,74,82),true)
     A.part(world,"BackWall",Vector3.new(105,18,.4),CFrame.new(25,9,-19),Color3.fromRGB(229,239,247),true)
     local sign=A.part(world,"WorkshopSign",Vector3.new(31,5,.2),CFrame.new(25,12,-18.7),Color3.fromRGB(47,113,200),true)
     local face=Instance.new("SurfaceGui"); face.Face=Enum.NormalId.Back; face.CanvasSize=Vector2.new(1000,160); face.Parent=sign
@@ -191,7 +191,7 @@ function H.start()
         if idle>Config.BOT_INTERVAL then
             idle=0
             local attract=H.stations[#H.stations]
-            if not workspace:GetAttribute("R2PTest") and not attract.owner and not attract.active then attract:start("cube_in_bowl",7,"bot",{attract=true}) end
+            if not workspace:GetAttribute("R2PTest") and not attract.owner and not attract.active then attract:start("bowl_bench",7,"bot",{attract=true}) end
             if Config.BOT_IDLE and #Players:GetPlayers()==0 then
                 local s=H.stations[1]
                 if not s.active then botIndex+=1; s:start(Levels.order[(botIndex-1)%#Levels.order+1],botIndex,"bot") end
@@ -199,7 +199,7 @@ function H.start()
         end
     end)
     -- A separate unrecorded demonstration remains behind the lobby menu.
-    if not workspace:GetAttribute("R2PTest") then H.stations[#H.stations]:start("cube_in_bowl",7,"bot",{attract=true}) end
+    if not workspace:GetAttribute("R2PTest") then H.stations[#H.stations]:start("bowl_bench",7,"bot",{attract=true}) end
     task.spawn(function() while H.started do Progress.leaders(); task.wait(120) end end)
     game:BindToClose(function()
         for _,player in ipairs(Players:GetPlayers()) do H.release(player); task.spawn(Progress.save,player) end

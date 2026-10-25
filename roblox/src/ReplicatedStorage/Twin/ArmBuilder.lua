@@ -54,7 +54,7 @@ function A.new(parent,origin,q0)
             if template then
                 local mesh=template:Clone(); mesh.Name="Visual"; mesh.Anchored=false; mesh.Massless=true
                 mesh.CanCollide=false; mesh.CanTouch=false; mesh.CollisionGroup="R2PArm"
-                mesh.CFrame=cf*CFrame.new(A.vector(visual.center)); mesh.Color=if visual.dark then Color3.fromRGB(53,60,68) else Color3.fromRGB(242,206,92)
+                mesh.CFrame=cf*CFrame.new(A.vector(visual.center)); mesh.Color=if visual.dark then Color3.fromRGB(55,58,62) else Color3.fromRGB(22,24,27)
                 mesh.Material=Enum.Material.SmoothPlastic; mesh.Parent=model; weld(root,mesh)
                 mesh:SetAttribute("Body",b.name)
                 mesh:SetAttribute("Paintable",not visual.dark)

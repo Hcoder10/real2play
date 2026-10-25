@@ -12,6 +12,7 @@ local inputRemote=Twin:WaitForChild("Input")
 local stateRemote=Twin:WaitForChild("State")
 local actionRemote=Twin:WaitForChild("Action")
 local player=Players.LocalPlayer
+pcall(function() game:GetService("StarterGui"):SetCoreGuiEnabled(Enum.CoreGuiType.PlayerList,false) end)
 local camera=workspace.CurrentCamera
 local lobbyFieldOfView=camera.FieldOfView
 local gui=Instance.new("ScreenGui"); gui.Name="Real2PlayUI"; gui.ResetOnSpawn=false; gui.IgnoreGuiInset=false; gui.ZIndexBehavior=Enum.ZIndexBehavior.Sibling; gui.Parent=player:WaitForChild("PlayerGui")
@@ -77,6 +78,8 @@ for i=1,3 do local p=Instance.new("Frame"); p.Size=UDim2.fromOffset(if i==3 then
 local leaderboard=Instance.new("Frame"); leaderboard.Size=UDim2.fromOffset(320,300); leaderboard.AnchorPoint=Vector2.new(.5,.5); leaderboard.Position=UDim2.fromScale(.5,.5); leaderboard.BackgroundColor3=paper; leaderboard.Visible=false; leaderboard.Parent=gui; corner(leaderboard,18)
 label(leaderboard,"This server's top teachers",22,UDim2.fromOffset(20,16),UDim2.new(1,-40,0,40)).Font=Enum.Font.FredokaOne
 local leader=label(leaderboard,"Be the first to teach a skill.",16,UDim2.fromOffset(20,65),UDim2.new(1,-40,0,160)); leader.TextYAlignment=Enum.TextYAlignment.Top
+leader.TextScaled=true
+local leaderSize=Instance.new("UITextSizeConstraint"); leaderSize.MinTextSize=12; leaderSize.MaxTextSize=16; leaderSize.Parent=leader
 button(leaderboard,"Back",UDim2.new(0,20,1,-62),UDim2.new(1,-40,0,42),function() leaderboard.Visible=false end)
 local scoresButton=button(menu,"Scores",UDim2.new(1,-104,0,224),UDim2.fromOffset(84,30),function() leaderboard.Visible=true; actionRemote:FireServer("scores") end,navy); scoresButton.TextSize=12
 local controls=Instance.new("Frame"); controls.Name="Controls"; controls.Size=UDim2.fromScale(1,1); controls.BackgroundTransparency=1; controls.Visible=false; controls.Parent=gui
@@ -105,12 +108,29 @@ local grab
 grab=button(controls,"Grab",UDim2.new(1,-194,1,-98),UDim2.fromOffset(164,68),function() closed=not closed; grab.Text=if closed then "Drop" else "Grab" end,Color3.fromRGB(42,143,118))
 local help=label(controls,"WASD move · Q/E height · Z/X twist · Space grab · Shift slow",12,UDim2.new(.5,-240,1,-24),UDim2.fromOffset(480,22)); help.TextXAlignment=Enum.TextXAlignment.Center
 local stand=button(gui,"Stand up",UDim2.new(1,-115,0,18),UDim2.fromOffset(92,42),function() actionRemote:FireServer("stand") end,navy); stand.Visible=false; stand.TextSize=13
-local menuButton=button(gui,"Skills",UDim2.new(0,16,0,88),UDim2.fromOffset(88,40),function() menu.Visible=not menu.Visible end,navy); menuButton.Visible=false
+local menuButton=button(gui,"Skills",UDim2.new(1,-215,0,18),UDim2.fromOffset(88,42),function() menu.Visible=not menu.Visible end,navy); menuButton.Name="SkillsButton"; menuButton.Visible=false
 local coach=label(gui,"",19,UDim2.new(.5,-210,0,117),UDim2.fromOffset(420,56)); coach.TextXAlignment=Enum.TextXAlignment.Center; coach.Font=Enum.Font.GothamBold
 local tableScore=label(gui,"",15,UDim2.new(.5,-180,0,177),UDim2.fromOffset(360,26)); tableScore.Name="TableScore"; tableScore.TextXAlignment=Enum.TextXAlignment.Center
 local ghost=label(gui,"☝",46,UDim2.fromOffset(0,0),UDim2.fromOffset(60,60)); ghost.TextColor3=blue; ghost.Visible=false
 local resultPanel=Instance.new("Frame"); resultPanel.Size=UDim2.fromOffset(320,230); resultPanel.AnchorPoint=Vector2.new(.5,.5); resultPanel.Position=UDim2.fromScale(.5,.45); resultPanel.BackgroundColor3=paper; resultPanel.Visible=false; resultPanel.Parent=gui; corner(resultPanel,20)
+bar.Name="Header"; coach.Name="Goal"; timer.Name="Timer"; leaderboard.Name="Leaderboard"; resultPanel.Name="Result"
+brand.Size=UDim2.new(1,-240,0,32); counter.Size=UDim2.new(1,-240,0,22)
+for _,hud in ipairs({coach,timer,tableScore}) do hud.TextColor3=navy; hud.BackgroundColor3=paper; hud.BackgroundTransparency=.06; corner(hud,10) end
+for i,link in ipairs(links) do link.BackgroundColor3=Color3.fromRGB(22,24,27); link.Size=UDim2.fromOffset(if i==3 then 18 else 46,10) end
+links[1].Position=UDim2.fromOffset(30,62)
+-- Only one modal is presented at a time; the Skills control lives in the header.
+leaderboard:GetPropertyChangedSignal("Visible"):Connect(function()
+    if leaderboard.Visible then menu.Visible=false; resultPanel.Visible=false end
+end)
+menu:GetPropertyChangedSignal("Visible"):Connect(function()
+    if menu.Visible then leaderboard.Visible=false; resultPanel.Visible=false end
+end)
+resultPanel:GetPropertyChangedSignal("Visible"):Connect(function()
+    if resultPanel.Visible then menu.Visible=false; leaderboard.Visible=false end
+end)
 local resultTitle=label(resultPanel,"",30,UDim2.fromOffset(20,20),UDim2.new(1,-40,0,55)); resultTitle.TextXAlignment=Enum.TextXAlignment.Center; resultTitle.Font=Enum.Font.FredokaOne
+resultTitle.TextScaled=true
+local resultSize=Instance.new("UITextSizeConstraint"); resultSize.MinTextSize=20; resultSize.MaxTextSize=30; resultSize.Parent=resultTitle
 local resultBody=label(resultPanel,"",17,UDim2.fromOffset(20,80),UDim2.new(1,-40,0,65)); resultBody.TextXAlignment=Enum.TextXAlignment.Center
 button(resultPanel,"Play again",UDim2.fromOffset(20,163),UDim2.new(1,-40,0,48),function() resultPanel.Visible=false; play() end)
 local function setImage(id) photo.Image=id or ""; photo.Visible=photo.Image~=""; drawing.Visible=not photo.Visible; realCaption.Text=if photo.Visible then "The real robot you’re teaching" else "Animated preview" end
@@ -174,7 +194,7 @@ stateRemote.OnClientEvent:Connect(function(data)
         local world=workspace:FindFirstChild("Real2Play"); local tableModel=world and world:FindFirstChild("Table"..Game.tables)
         if tableModel and data.preview~=false then
             local at=tableModel:GetAttribute("Origin")
-            if at then preview=true; view=CFrame.lookAt(at+Vector3.new(5.7,5.3,5.7),at+Vector3.new(2,.4,0)); camera.CameraType=Enum.CameraType.Scriptable end
+            if at then preview=true; view=CFrame.lookAt(Vector3.new(77,61,93),Vector3.new(23,4,24)); camera.CameraType=Enum.CameraType.Scriptable end
         end
     elseif data.kind=="seated" then
         stand.Text="Stand up"
@@ -190,7 +210,7 @@ stateRemote.OnClientEvent:Connect(function(data)
         active=true; closed=false; grab.Text="Grab"; controls.Visible=true; menu.Visible=false; resultPanel.Visible=false; selectedMode=data.mode; selectedLevel=data.level
         activeInstruction=data.instruction or ""; coach.Text=activeInstruction; tutorialEnd=if data.tutorial and data.level=="place_on_cell" then os.clock()+Game.tutorial_s else 0
     elseif data.kind=="tick" then
-        timer.Text=string.format("%ds",math.ceil(data.remaining or 0)); timer.TextColor3=if (data.remaining or 0)<10 then Color3.fromRGB(210,77,79) else navy
+        timer.Text=string.format("%ds",math.ceil(data.remaining or 0)); timer.TextColor3=if (data.remaining or 0)<10 then Color3.fromRGB(190,53,44) else navy
         local second=math.ceil(data.remaining or 0)
         if second<=10 and second>0 and timer:GetAttribute("LastSecond")~=second then
             timer:SetAttribute("LastSecond",second)
@@ -215,13 +235,15 @@ stateRemote.OnClientEvent:Connect(function(data)
 end)
 local clock=0
 Run.RenderStepped:Connect(function(dt)
+    controls.Visible=active and not menu.Visible and not leaderboard.Visible and not resultPanel.Visible
+    coach.Visible=coach.Text~=""; timer.Visible=timer.Text~=""; tableScore.Visible=tableScore.Text~=""
     if (seated or preview) and view then
         shake=math.max(0,shake-dt); camera.CFrame=view*CFrame.new((math.random()-.5)*shake*Game.juice.shake,(math.random()-.5)*shake*Game.juice.shake,0)
     end
     if drawing.Visible then links[2].Rotation=10+math.sin(os.clock()*1.4)*12 end
     if active and os.clock()<tutorialEnd then
         local elapsed=Game.tutorial_s-(tutorialEnd-os.clock()); coach.Text=Game.tutorial[math.min(3,1+math.floor(elapsed/(Game.tutorial_s/3)))]
-        ghost.Visible=true; ghost.Position=UDim2.new(.5,math.sin(os.clock()*1.7)*70,0,170+math.cos(os.clock())*18)
+        ghost.Visible=true; ghost.Position=UDim2.new(.5,math.sin(os.clock()*1.7)*70,0,245+math.cos(os.clock())*18)
     else
         ghost.Visible=false
         if active and tutorialEnd>0 then tutorialEnd=0; coach.Text=activeInstruction end
@@ -245,6 +267,39 @@ local function resize()
     real.Visible=not small; help.Visible=not Input.TouchEnabled; brand.TextSize=if small then 20 else 24
     coach.Size=UDim2.fromOffset(math.min(420,size.X-40),56); coach.Position=UDim2.new(.5,-coach.Size.X.Offset/2,0,117); coach.TextSize=if small then 14 else 19
     if size.Y<520 then stick.Size=UDim2.fromOffset(120,120); menu.Position=UDim2.fromOffset(12,80); headline.TextSize=23; headline.Size=UDim2.new(1,-40,0,54); instruction.Visible=false; main.Position=UDim2.fromOffset(20,80); section.Position=UDim2.fromOffset(20,143); scoresButton.Position=UDim2.new(1,-104,0,140); list.Position=UDim2.fromOffset(20,174); list.Size=UDim2.new(1,-40,0,math.max(40,menu.Size.Y.Offset-232)) end
+    section.Size=UDim2.new(1,-140,0,25)
+    -- Reserve the menu and real-arm rails even while a round is running.
+    local left=if size.X>=1000 then 392 else 16
+    local right=if size.X>=1000 then size.X-242 else size.X-16
+    local center=(left+right)/2
+    coach.Position=UDim2.fromOffset(left,117); coach.Size=UDim2.fromOffset(right-left,56)
+    timer.Position=UDim2.fromOffset(center-40,80)
+    tableScore.Position=UDim2.fromOffset(center-180,181)
+    leaderboard.Position=UDim2.fromOffset(center,math.max(370,size.Y*.5))
+    resultPanel.Position=UDim2.fromOffset(center,math.max(350,size.Y*.48))
 end
 camera:GetPropertyChangedSignal("ViewportSize"):Connect(resize); resize()
+-- Prompt eligibility is client-specific. Server ownership still gates actions.
+local promptClock=0
+Run.RenderStepped:Connect(function(dt)
+    promptClock+=dt; if promptClock<.1 then return end; promptClock=0
+    local world=workspace:FindFirstChild("Real2Play"); if not world then return end
+    local root=player.Character and player.Character:FindFirstChild("HumanoidRootPart")
+    local nearest,distance=nil,math.huge
+    for _,model in ipairs(world:GetChildren()) do
+        local seat=model:FindFirstChild("Seat")
+        if seat and root then local d=(seat.Position-root.Position).Magnitude; if d<distance then nearest=model; distance=d end end
+    end
+    for _,model in ipairs(world:GetChildren()) do
+        local occupied=model:GetAttribute("Occupied")==true
+        for _,item in ipairs(model:GetDescendants()) do
+            if item:IsA("ProximityPrompt") then
+                item.Enabled=not seated and not (preview and stand.Visible) and model==nearest and
+                    ((item.Name=="SitPrompt" and not occupied) or (item.Name=="WatchPrompt" and occupied))
+            elseif item:IsA("BillboardGui") and item.Name=="TableLabel" then
+                item.Enabled=not seated and not preview and model==nearest
+            end
+        end
+    end
+end)
 actionRemote:FireServer("ready")

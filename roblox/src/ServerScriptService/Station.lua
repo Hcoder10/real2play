@@ -15,30 +15,40 @@ local S={}; S.__index=S
 function S.new(index,origin,parent)
     local model=Instance.new("Model"); model.Name="Table"..index; model.Parent=parent
     model:SetAttribute("Origin",origin)
+    model:SetAttribute("Occupied",false)
     local self=setmetatable({index=index,origin=origin,model=model,owner=nil,active=false,closed=false,grabs=0,history={},input={move={0,0,0},roll=0},lastInput=0},S)
-    local top=A.part(model,"Tabletop",Vector3.new(8,.35,6),CFrame.new(origin+Vector3.new(2,-.175,0)),Color3.fromRGB(225,237,246),true)
+    local top=A.part(model,"Tabletop",Vector3.new(8,.35,6),CFrame.new(origin+Vector3.new(2,-.175,0)),Color3.fromRGB(191,175,151),true)
     top.CustomPhysicalProperties=PhysicalProperties.new(1,.6,0,10,10)
-    local watch=Instance.new("ProximityPrompt"); watch.Name="WatchPrompt"; watch.ActionText="Watch table"; watch.ObjectText="Robot table "..index; watch.KeyboardKeyCode=Enum.KeyCode.F; watch.GamepadKeyCode=Enum.KeyCode.ButtonX; watch.MaxActivationDistance=10; watch.Parent=top; self.watchPrompt=watch
+    local watchAnchor=Instance.new("Attachment"); watchAnchor.Name="ViewAnchor"; watchAnchor.Position=Vector3.new(-2,1,-2.5); watchAnchor.Parent=top
+    local watch=Instance.new("ProximityPrompt"); watch.Name="WatchPrompt"; watch.ActionText="View"; watch.ObjectText="Robot table "..index; watch.KeyboardKeyCode=Enum.KeyCode.F; watch.GamepadKeyCode=Enum.KeyCode.ButtonX; watch.MaxActivationDistance=10; watch.UIOffset=Vector2.new(0,-64); watch.Exclusivity=Enum.ProximityPromptExclusivity.OneGlobally; watch.Parent=watchAnchor; self.watchPrompt=watch
     for _,dx in ipairs({-1.5,5.5}) do for _,dz in ipairs({-2.5,2.5}) do A.part(model,"Leg",Vector3.new(.3,7.2,.3),CFrame.new(origin+Vector3.new(dx,-3.8,dz)),Color3.fromRGB(62,91,120),true) end end
     local seat=Instance.new("Seat"); seat.Name="Seat"; seat.Size=Vector3.new(2,.3,2); seat.Anchored=true
     seat.CFrame=CFrame.lookAt(origin+Vector3.new(7,-2.4,3.9),origin+Vector3.new(2,-2.4,0)); seat.Color=Color3.fromRGB(47,113,200); seat.Parent=model
-    local prompt=Instance.new("ProximityPrompt"); prompt.ActionText="Sit & play"; prompt.ObjectText="Robot table "..index; prompt.HoldDuration=0; prompt.MaxActivationDistance=9; prompt.Parent=seat
+    local sitAnchor=Instance.new("Attachment"); sitAnchor.Name="SitAnchor"; sitAnchor.Position=Vector3.new(0,.6,0); sitAnchor.Parent=seat
+    local prompt=Instance.new("ProximityPrompt"); prompt.Name="SitPrompt"; prompt.ActionText="Sit & play"; prompt.ObjectText="Robot table "..index; prompt.HoldDuration=0; prompt.MaxActivationDistance=9; prompt.UIOffset=Vector2.new(0,64); prompt.Exclusivity=Enum.ProximityPromptExclusivity.OneGlobally; prompt.Parent=sitAnchor
     prompt.Triggered:Connect(function(player)
         if self.owner or seat.Occupant then return end
         local h=player.Character and player.Character:FindFirstChildOfClass("Humanoid")
         if h then seat:Sit(h) end
     end)
     self.seat=seat; self.prompt=prompt
-    local label=Instance.new("BillboardGui"); label.Size=UDim2.fromOffset(240,72); label.StudsOffset=Vector3.new(0,2.5,0); label.MaxDistance=50; label.Parent=seat
+    local label=Instance.new("BillboardGui"); label.Name="TableLabel"; label.Size=UDim2.fromOffset(220,56); label.StudsOffset=Vector3.new(0,3.8,0); label.MaxDistance=24; label.Parent=seat
     local text=Instance.new("TextLabel"); text.Size=UDim2.fromScale(1,1); text.BackgroundColor3=Color3.fromRGB(242,247,251); text.BackgroundTransparency=.12; text.Text="Table "..index.."  |  Sit & play"; text.TextSize=18; text.TextWrapped=true; text.Font=Enum.Font.GothamBold; text.TextColor3=Color3.fromRGB(29,52,82); text.Parent=label
     self.label=text
     self.arm=A.new(model,origin,Robot.home_q)
     self.grasp=ContactGrasp.new(self.arm)
     -- Idle tables keep the real twin but sleep its dynamic roots until occupied.
     self:sleep(true)
+    self:display()
     local shadow=A.part(model,"GripperShadow",Vector3.new(.13,.014,.13),CFrame.new(origin+Vector3.new(2,.015,0)),Color3.fromRGB(47,113,200),true)
     shadow.Shape=Enum.PartType.Cylinder; shadow.Size=Vector3.new(.014,.16,.16); shadow.Orientation=Vector3.new(0,0,90); shadow.CanCollide=false; shadow.CanQuery=false; self.shadow=shadow
     return self
+end
+function S:display()
+    local name=if self.index%5==0 then "bowl_bench" else "place_on_cell"
+    local task=L.tasks[name]; self.scene=L.sample(task,101); self.scene.board=task.board
+    self.objects,self.roots=Scene.build(self.model,self.origin,self.scene)
+    for _,part in ipairs(self.objects:GetDescendants()) do if part:IsA("BasePart") then part.Anchored=true end end
 end
 function S:sleep(sleeping)
     for i,root in ipairs(self.arm.roots) do if i>1 then root.Anchored=sleeping end end
@@ -82,6 +92,7 @@ function S:start(name,seed,source,options)
             end
         end
     end
+    self.scene.board=self.task.board
     self.objects,self.roots=Scene.build(self.model,self.origin,self.scene)
     self.arm:reset(Robot.home_q); self.commanded=table.clone(Robot.home_q)
     local _,_,mid=K.tips(self.commanded); self.ee=mid; self.roll=0; self.closed=false

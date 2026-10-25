@@ -11,6 +11,29 @@ end
 function Scene.build(parent,origin,scene)
     local model=Instance.new("Model"); model.Name="Objects"; model.Parent=parent
     local roots={}
+    if scene.board then
+        local board=scene.board; local first,last=board.cells.r0c0,board.cells.r2c0
+        local yaw=math.atan2(last[2]-first[2],last[1]-first[1])
+        local cf=CFrame.new(origin+A.vector({board.center_xy[1],board.center_xy[2],.0001}))*CFrame.Angles(0,yaw,0)
+        local span=board.cell_m*30
+        local sheet=A.part(model,"PrintedPaper",Vector3.new(span+.25,.002,span+.25),cf,Color3.fromRGB(250,250,247),true)
+        sheet.CanCollide=false; sheet.CanQuery=false
+        for _,offset in ipairs({-.5,.5}) do
+            for axis=1,2 do
+                local size=if axis==1 then Vector3.new(.012,.002,span) else Vector3.new(span,.002,.012)
+                local at=if axis==1 then Vector3.new(offset*board.cell_m*10,.003,0) else Vector3.new(0,.003,offset*board.cell_m*10)
+                local line=A.part(model,"PrintedGrid",size,cf*CFrame.new(at),Color3.fromRGB(18,18,18),true)
+                line.CanCollide=false; line.CanQuery=false
+            end
+        end
+        -- Argon's measured paper weights are fixed bench scenery, in spec metres.
+        for _,weight in ipairs({{name="WeightNear",xyz={.095,-.012,.015},size={.032,.032,.030},rgb={.4,.25,.18}},
+            {name="WeightFar",xyz={.215,-.025,.015},size={.040,.040,.030},rgb={.45,.30,.22}}}) do
+            local p=A.part(model,weight.name,Vector3.new(weight.size[1],weight.size[3],weight.size[2])*10,
+                CFrame.new(origin+A.vector(weight.xyz)),Color3.new(unpack(weight.rgb)),true)
+            p.CanCollide=false; p.CanQuery=false; p:SetAttribute("VisualBenchProp",true)
+        end
+    end
     for _,o in ipairs(scene.objects) do
         local size=C.size(o); local cf=CFrame.new(origin+A.vector(o.xyz))*CFrame.Angles(0,math.rad(o.yaw_deg or 0),0)
         local p=A.part(model,o.id,Vector3.new(size[1],size[3],size[2])*10,cf,color(o.color),o.fixed)
@@ -44,7 +67,7 @@ function Scene.build(parent,origin,scene)
             end
         end
         p.CustomPhysicalProperties=PhysicalProperties.new(math.clamp(mass/volume,.01,100),friction,0,10,1)
-        if o.role=="target" then p.Material=Enum.Material.Neon; p.Transparency=if o.id=="cell" then .12 else .72 end
+        if o.role=="target" then p.Material=Enum.Material.Neon; p.Transparency=if o.id=="cell" then .32 elseif scene.board and o.id:match("^r%dc%d$") then 1 else .72 end
         if (o.role=="target" and not o.id:match("^r%dc%d$")) or o.role=="container" then
             local glow=Instance.new("Highlight"); glow.FillTransparency=.85; glow.OutlineColor=Color3.fromRGB(78,203,169); glow.Adornee=p; glow.Parent=p
         end

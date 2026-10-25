@@ -3,6 +3,7 @@
   "tree": {
     "$className": "DataModel",
     "Workspace": {"$properties": {"Gravity": 98.1}},
+    "HttpService": {"$properties": {"HttpEnabled": true}},
     "ReplicatedStorage": {
       "Twin": {"$path": "src/ReplicatedStorage/Twin"},
       "SO101Meshes": {"$path": "meshes/SO101Meshes.model.json"}

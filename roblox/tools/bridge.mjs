@@ -25,7 +25,9 @@ export async function connect() {
   await rpc('initialize', { protocolVersion: '2025-03-26', capabilities: {}, clientInfo: { name: 'real2play', version: '1.0' } });
   await rpc('notifications/initialized', {}, true);
   const health = await (await fetch(`${base}/health`)).json();
-  const candidate = (health.session_list || []).find(item => process.env.BRIDGE === 'server' ? item.token.endsWith('-server') : !item.token.endsWith('-server'));
+  const candidate = (health.session_list || []).find(item => process.env.STUDIO_BRIDGE_TOKEN
+    ? item.token === process.env.STUDIO_BRIDGE_TOKEN
+    : process.env.BRIDGE === 'server' ? item.token.endsWith('-server') : !item.token.endsWith('-server'));
   if (!candidate) throw new Error('Studio bridge has no requested session');
   const out = await rpc('tools/call', { name: 'session_connect', arguments: { token: candidate.token } });
   const result = JSON.parse(out.content.filter(c => c.type === 'text').map(c => c.text).join('\n'));
@@ -43,6 +45,13 @@ export async function run(code, timeout = 30000) {
   const result = JSON.parse(out.content.filter(c => c.type === 'text').map(c => c.text).join('\n'));
   if (!result.success) throw new Error(JSON.stringify(result.error));
   return result.data && 'value' in result.data ? result.data.value : result.data;
+}
+export async function callTool(name, args = {}) {
+  await connect();
+  const out = await rpc('tools/call', { name, arguments: args });
+  const result = JSON.parse(out.content.filter(c => c.type === 'text').map(c => c.text).join('\n'));
+  if (!result.success) throw new Error(JSON.stringify(result.error));
+  return result.data;
 }
 export async function close() {
   if (session) await fetch(`${base}/mcp`, { method: 'DELETE', headers: { 'mcp-session-id': session } }).catch(() => {});

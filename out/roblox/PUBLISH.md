@@ -1,5 +1,12 @@
 # Publish Real2Play to the existing Roblox place
 
+Y2 polish build (Oct 25): deep teal floor, black SO-101 arms, printed grid,
+measured white caps and brown weights, bowl-bench displays, separated HUD and
+per-player prompts. HTTP is enabled in the generated place. Open the rebuilt
+file below, then publish to the existing destination; no cloud publish was made.
+Video evidence: `out/demo/roblox_lobby.mp4`, `roblox_cap.mp4`, and `roblox_bowl.mp4`.
+See `roblox/AGENT_Y2_ACCEPTANCE.md` for verification and limitations.
+
 Build: `out/roblox/Real2Play.rbxlx`
 
 Destination: **86276076528667** — [SquarianSquares Place 10252026-1](https://www.roblox.com/games/86276076528667/SquarianSquares-Place-10252026-1)
@@ -39,7 +46,7 @@ is claimed.
 6. Join a private published server with two clients. Each player sits at a
    different blue chair, then selects **Place a cap — Start here**. Confirm the
    highlighted cell, white cap, independent controls, score/streak, and Scores
-   leaderboard. Use **Watch table** to spectate; **Leave view** restores walking.
+   leaderboard. Use **View** to spectate; **Leave view** restores walking.
    Standing or disconnecting must free the seat.
 7. Complete one round. The UI should report the upload and increment the
    sent-to-robot count. Confirm a new canonical trace on the receiver. The
