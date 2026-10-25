@@ -25,8 +25,8 @@ harness, visual twin) are binding. The old project it describes is NOT in this r
 ## Working rules
 - Own ONLY the paths your task names. Never edit, revert or reformat other agents' files. Commit with explicit paths
   (`git add <paths>`), never `git add -A` / `git add .`, never stash, never rewrite history.
-- Python: uv. The shared venv is `.venv` (Python 3.12): run with `.venv/Scripts/python` on Windows. Add a package with
-  `uv pip install --python .venv/Scripts/python <pkg>` and list it in pyproject.toml under your component's extra.
+- Python: uv. The shared venv is `.venv` (Python 3.12): run with `.venv/Scripts/python.exe` on Windows. Add a package with
+  `uv pip install --python .venv/Scripts/python.exe <pkg>` and list it in pyproject.toml under your component's extra.
 - Cross-platform code (the robot bench is a macOS Mac mini): no Windows paths, no msvcrt-only code, pathlib everywhere.
 - No real hardware, no real Gemini requests in tests (use the fake client / cache-only). GPU only if your task says so,
   and then only under a landlord lease (ask the lead; do not start GPU work yourself).
