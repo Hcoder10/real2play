@@ -116,6 +116,7 @@ class Expert:
         open_grip = float(np.clip((width+.018-.017)/.081, .35, .95))
         for attempt in range(2):
             pos = np.asarray(self.twin.poses()[obj]["xyz"])
+            yaw = self._grasp_yaw(obj)
             low = max(.0035, pos[2]-dims[2]/2+.0035)
             safe = max(.09, pos[2]+.06)
             current = self.arm.tips(self.twin.q())[2]

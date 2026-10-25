@@ -24,7 +24,7 @@ def test_physical_grasp_lifts_and_holds_two_seconds(size):
     assert twin.d.ncon > 0
 
 
-@pytest.mark.parametrize("reach,band", [(.18, (2, 5)), (.30, (9, 12))])
+@pytest.mark.parametrize("reach,band", [(.18, (2.8, 3.6)), (.30, (9, 12))])
 def test_static_sag_emerges_from_finite_servo_stiffness(reach, band):
     ik = JawIK()
     q = ik.solve([reach, 0, .08], grip=.3, iterations=160)

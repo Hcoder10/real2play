@@ -1,21 +1,21 @@
 {
   "schema": "r2p_physics/1",
   "rig": "so101_bench",
-  "version": 1,
+  "version": 2,
   "hz": 30,
   "substeps": 32,
   "gravity": [0, 0, -9.81],
   "latency_ticks": 1,
-  "sag_gain": [0, 0.05, 0.05, 0.05, 0, 0],
+  "sag_gain": [0, 0.05, 0.03333333333333333, 0.05, 0, 0],
   "joints": {
     "shoulder_pan": {"kp": 35, "kv": 0.7, "armature": 0.005, "frictionloss": 0.002, "torque_limit": 3.35},
     "shoulder_lift": {"kp": 20, "kv": 0.8, "armature": 0.005, "frictionloss": 0.002, "torque_limit": 3.35},
-    "elbow_flex": {"kp": 20, "kv": 0.7, "armature": 0.005, "frictionloss": 0.002, "torque_limit": 3.35},
+    "elbow_flex": {"kp": 30, "kv": 0.7, "armature": 0.005, "frictionloss": 0.002, "torque_limit": 3.35},
     "wrist_flex": {"kp": 20, "kv": 0.4, "armature": 0.003, "frictionloss": 0.001, "torque_limit": 3.35},
     "wrist_roll": {"kp": 25, "kv": 0.35, "armature": 0.002, "frictionloss": 0.001, "torque_limit": 3.35},
     "gripper": {"kp": 20, "kv": 0.25, "armature": 0.002, "frictionloss": 0.001, "torque_limit": 0.8}
   },
   "object": {"mass_kg": 0.03, "friction": 0.6},
-  "contact": {"solref": [0.006, 1], "solimp": [0.95, 0.99, 0.001], "friction": [0.8, 0.005, 0.0001], "impratio": 10},
+  "contact": {"solref": [0.015, 1], "solimp": [0.95, 0.99, 0.001], "friction": [0.8, 0.005, 0.0001], "impratio": 10},
   "notes": "Provisional compliance calibration, not an identified hardware twin. Gravity acts through the official link inertias and finite position-servo stiffness; no Cartesian sag offset is injected. kp units Nm/rad, kv Nm*s/rad, armature kg*m^2, frictionloss and torque_limit Nm. See README.md for measured sag and refit protocol."
 }
