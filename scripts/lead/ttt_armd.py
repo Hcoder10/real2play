@@ -59,6 +59,12 @@ CAP_SCHEMA = {"type": "object", "properties": {"caps": {"type": "array", "items"
     "required": ["rim_center", "on_grid"]}}}, "required": ["caps"]}
 
 
+def supply_edge_y():
+    """The cap lane is whatever lies to the robot's right of the measured grid (it follows the sheet)."""
+    b = load_task("place_on_cell")["board"]
+    return min(xy[1] for xy in b["cells"].values()) - b["cell_m"] / 2 - 0.008
+
+
 def locate_caps(img, cam):
     """Argon finds the white bottle caps; returns supply caps (off the grid, robot's right) as table xy, nearest first."""
     from r2p import gemini
@@ -73,7 +79,7 @@ def locate_caps(img, cam):
             continue
         uv = [c["rim_center"][1] / 1000 * w, c["rim_center"][0] / 1000 * h]
         xy = cam.deproject(np.array([uv]), h=0.017)[0][:2]
-        if 0.09 < xy[0] < 0.23 and -0.15 < xy[1] < -0.06:        # the supply zone on the robot's right
+        if 0.09 < xy[0] < 0.25 and -0.17 < xy[1] < supply_edge_y():   # the supply lane: robot's right of the grid
             out.append(xy.round(4).tolist())
     return sorted(out, key=lambda p: (p[0] < 0.11, np.hypot(*p)))   # caps near the base tilt the fingers into the table
 

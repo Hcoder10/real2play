@@ -106,7 +106,24 @@ if __name__ == "__main__":
         print(f"[argon] cap at {np.round(xyz, 4).tolist()} before {experiment.kind}", flush=True)
         return execute(experiment, destination, **kw)
 
-    mover.execute = resurvey_then_execute
+    from measure_grid import measure
+
+    def grid_centre(frame):
+        cells, _, _ = measure(frame, cam)
+        return np.asarray(cells["r1c1"])
+
+    reference = grid_centre(mover.capture()[0])
+    print(f"[camera] sheet reference r1c1 at {np.round(reference, 4).tolist()}", flush=True)
+
+    def guarded_execute(experiment, destination, **kw):
+        result = resurvey_then_execute(experiment, destination, **kw)
+        moved = np.linalg.norm(grid_centre(mover.capture()[0]) - reference)
+        print(f"[camera] sheet moved {moved * 1000:.1f} mm after {experiment.kind}", flush=True)
+        if moved > 0.004:
+            raise RuntimeError(f"The paper moved {moved * 1000:.1f} mm during {experiment.kind}: stopping the campaign")
+        return result
+
+    mover.execute = guarded_execute
     out = ROOT / "runs" / "active_twin" / a.run
     client = gemini.Gemini(max_requests=a.request_budget, retries=1)
     result = run_campaign(mover, budget=a.budget, out_dir=out, physics=load_physics(), client=client,

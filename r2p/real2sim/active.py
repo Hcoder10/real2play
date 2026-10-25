@@ -122,7 +122,19 @@ class Safety:
     trajectory_speed_cap: float = 20
     joint_margin_deg: float = 0
     grid_margin: float = .024  # finger envelope beyond a cell edge
-    max_duration_s: float = 90
+    # Real-bench contact depths (jaw midpoint, commanded). Servo sag lowers the real jaw ~3 mm at these poses, so a
+    # commanded 8 mm push ran the fingertips ~4 mm over the paper and dragged the sheet. Grasp/place depths are the
+    # ones that picked and placed caps on the real arm today.
+    push_contact_z: float = .013
+    push_standoff: float = .030
+    grasp_z: float = .011
+    place_z: float = .013
+    closed_grip: float = -.10
+    open_grip: float = .5        # ~60 mm jaw gap with vcal_oct25b: wide for a 33 mm cap, keeps the moving jaw high
+    # Live abort: measured jaw below this outside grasp/place phases means the fingers are on the table.
+    live_min_jaw_z: float = .007
+    finish_tolerance: float = .025   # servo sag at the safe height is real (measured 12 mm) and is what we fit
+    max_duration_s: float = 150   # vertical approach/retreat at the daemon's 8 deg/s near-table cap
     clearance: dict = field(default_factory=lambda: {"link": .005, "gripper": .004, "finger": .003})
     owner_lo: list | None = None
     owner_hi: list | None = None
@@ -169,16 +181,30 @@ def scene_task(scene):
     return task
 
 
+def away_from_board(scene, obj):
+    """Pushes run toward the robot (180 deg): the pusher starts on the far side of the cap, so it never starts over
+    the grid beside the lane (pushing away from the grid would start over it) or too close to the base to reach at
+    contact height (pushing +x). The validator still checks every waypoint against the grid and clearances."""
+    return 180
+
+
+def push_length(obj, wanted):
+    """Pushes run toward the robot; fingers-down contact stops being reachable ~12.7 cm from the base, so a cap close
+    to the robot gets a shorter push (never below 8 mm) instead of an unreachable plan."""
+    return round(float(np.clip(min(wanted, obj["xyz"][0] - .127), .008, wanted)), 3)
+
+
 def experiment_menu(scene):
     obj = next(o for o in scene["objects"] if not o.get("fixed", False))
     x, y = obj["xyz"][:2]
     lane = round(y, 2)
+    away = away_from_board(scene, obj)
     return [Experiment("hold_pose", xyz=(.18, lane, .12)),
             Experiment("joint_sweep", joint=1, amplitude_deg=7, speed=12),
-            Experiment("push", obj=obj["id"], direction_deg=0, distance_m=.025, speed=12),
+            Experiment("push", obj=obj["id"], direction_deg=away, distance_m=push_length(obj, .025), speed=12),
             Experiment("hold_pose", xyz=(.25, lane, .11)),
             Experiment("joint_sweep", joint=2, amplitude_deg=8, speed=16),
-            Experiment("push", obj=obj["id"], direction_deg=180, distance_m=.018, speed=8),
+            Experiment("push", obj=obj["id"], direction_deg=180, distance_m=push_length(obj, .012), speed=8),
             Experiment("pick_lift_place", obj=obj["id"], xy=(x+.025, y), lift_m=.08)]
 
 
@@ -188,7 +214,7 @@ def heldout_menu(scene):
     lane = round(obj["xyz"][1]-.01, 2)
     return [Experiment("hold_pose", xyz=(.225, lane, .13)),
             Experiment("joint_sweep", joint=1, amplitude_deg=4, speed=10),
-            Experiment("push", obj=oid, direction_deg=0, distance_m=.035, speed=10)]
+            Experiment("push", obj=oid, direction_deg=away_from_board(scene, obj), distance_m=push_length(obj, .035), speed=10)]
 
 
 class Validator:
@@ -256,26 +282,39 @@ class Validator:
             p = np.array(obj["xyz"], float)
             if obj["shape"] != "cylinder" or not .025 <= obj["size_m"][0] <= .04:
                 raise UnsafeExperiment("Contact menu is calibrated for 25..40 mm caps only")
+            def vertical(xy, z_from, z_to, phase, n=8, grip=None):
+                # Straight down/up in Cartesian space: joint-space interpolation at low height sweeps the
+                # fingers sideways across the cap and the paper (Oct 25 bench: it dragged the sheet).
+                for z in np.linspace(z_from, z_to, n+1)[1:]:
+                    xyz([*xy, z], phase, grip=grip)
+
+            hover = .045
             if e.kind == "push":
                 direction = np.array([math.cos(math.radians(e.direction_deg)), math.sin(math.radians(e.direction_deg)), 0])
-                beside = p - direction*(obj["size_m"][0]/2 + .022)
-                beside[2] = .008
-                xyz([*beside[:2], s.safe_z], "approach", grip=.12)
-                xyz(beside, "lower")
+                # Closed jaw = compact pusher; 30 mm beyond the rim so neither finger lands on the cap.
+                beside = p - direction*(obj["size_m"][0]/2 + s.push_standoff)
+                contact_z = max(s.push_contact_z, .6*obj["size_m"][-1])
+                xyz([*beside[:2], s.safe_z], "approach", grip=s.closed_grip)
+                xyz([*beside[:2], hover], "hover")
+                vertical(beside[:2], hover, contact_z, "lower")
                 end = p + direction*e.distance_m
-                end[2] = .008
                 for alpha in np.linspace(0, 1, 13)[1:]:
-                    xyz(beside + alpha*(end-beside), "push")
+                    xyz([*(beside[:2] + alpha*(end[:2]-beside[:2])), contact_z], "push")
+                vertical(end[:2], contact_z, hover, "retreat")
                 xyz([*end[:2], s.safe_z], "retreat", dwell=e.duration_s)
             else:
-                xyz([*p[:2], s.safe_z], "approach", grip=.9)
-                xyz([*p[:2], .020], "lower")
-                xyz([*p[:2], .012], "close", grip=-.10, dwell=.5)
+                xyz([*p[:2], s.safe_z], "approach", grip=s.open_grip)
+                xyz([*p[:2], hover], "hover")
+                vertical(p[:2], hover, s.grasp_z, "lower")
+                xyz([*p[:2], s.grasp_z], "close", grip=-.10, dwell=.5)
+                vertical(p[:2], s.grasp_z, hover, "lift")
                 lift = max(s.safe_z, p[2]+e.lift_m)
                 xyz([*p[:2], lift], "lift", dwell=.4)
                 xyz([*e.xy, lift], "carry")
-                xyz([*e.xy, .012], "place")
-                xyz([*e.xy, .020], "release", grip=.9, dwell=.5)
+                xyz([*e.xy, hover], "hover")
+                vertical(e.xy, hover, s.place_z, "place")
+                xyz([*e.xy, s.place_z], "release", grip=s.open_grip, dwell=.5)
+                vertical(e.xy, s.place_z, hover, "retreat")
                 xyz([*e.xy, s.safe_z], "retreat", dwell=e.duration_s)
         last = self.arm.tips(q)[2]
         xyz([last[0], last[1], max(s.safe_z, last[2])], "safe_finish", dwell=.5)
@@ -545,11 +584,19 @@ class ArmdMover:
                 if i > HZ and (not sensors or time.monotonic()-started-sensors[-1]["t"] > .2):
                     raise UnsafeExperiment("State telemetry stalled")
                 begin = time.monotonic()
+                if sensors and plan.phases[i] not in ("close", "place", "release"):
+                    jaw = self.validator.arm.tips(sensors[-1]["q"])[2]
+                    if jaw[2] < self.validator.safety.live_min_jaw_z:
+                        raise UnsafeExperiment(f"Live abort: measured jaw {jaw[2]*1000:.1f} mm above the table during {plan.phases[i]}")
                 reply = self.request(self.url+"/cmd", {"joints": target.tolist(), "stream": True})
                 if reply.get("ok") is False or any(k in reply for k in ("refused", "abort", "error")):
                     raise UnsafeExperiment("armd refused/aborted experiment")
                 commands.append({"t": time.monotonic()-started, "q_target": reply["q_target"]})
                 stop.wait(max(0, 1/HZ-(time.monotonic()-begin)))
+            # Streaming ends where the guard-limited arm still lags: finish with one blocking move to the last target.
+            final = self.request(self.url+"/cmd", {"joints": plan.targets[-1].tolist()})
+            if any(k in final for k in ("refused", "abort", "error")):
+                raise UnsafeExperiment("armd refused the final settle")
             # Camera has 1-2 s latency: hold high while final observations arrive.
             stop.wait(3)
             if (errors or len(sensors) < 2 or np.max(np.diff([r["t"] for r in sensors])) > .15 or
@@ -557,7 +604,7 @@ class ArmdMover:
                 raise UnsafeExperiment("State sampling did not sustain >=10 Hz")
             if not captures or captures[-1][0] < commands[-1]["t"]:
                 raise UnsafeExperiment("No final camera observation after retreat")
-            if self.validator.arm.tips(sensors[-1]["q"])[2][2] < self.validator.safety.safe_z-.01:
+            if self.validator.arm.tips(sensors[-1]["q"])[2][2] < self.validator.safety.safe_z-self.validator.safety.finish_tolerance:
                 raise UnsafeExperiment("Measured finish is below the safe height")
         except BaseException:
             self.request(self.url+"/cmd", {"hold": True})
