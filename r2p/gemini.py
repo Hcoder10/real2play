@@ -97,6 +97,10 @@ def model_for(role):
     return model
 
 
+SMALL_TASK_TAGS = ("point", "vcal_tips", "ttt:caps", "active:cap_pose", "detect", "perception_boxes",
+                   "task_from_video", "labeling", "json_repair")
+
+
 def thinking_level(tag, thinking=None):
     """Translate legacy numeric budgets at the boundary; never send token budgets."""
     value = thinking if thinking is not None else os.getenv("R2P_THINKING")
@@ -112,7 +116,7 @@ def thinking_level(tag, thinking=None):
         return "low" if budget <= 1024 else "medium" if budget <= 4096 else "high"
     if any(word in tag for word in ("active_choose", "active_patch", "experiment", "patch_design", "build_game", "author_task")):
         return "high"
-    if any(word in tag for word in ("point", "vcal_tips", "ttt:caps", "detect", "perception_boxes", "task_from_video", "labeling", "json_repair")):
+    if any(word in tag for word in SMALL_TASK_TAGS):
         return "low"
     return "medium"
 
@@ -324,6 +328,8 @@ class Gemini:
             if self.clock() >= deadline:
                 raise GeminiError(f"Interaction timed out; resume id={interaction_id}")
             for attempt in range(self.retries + 1):
+                if self.clock() >= deadline:
+                    raise GeminiError(f"Interaction timed out; resume id={interaction_id}")
                 start = self.clock()
                 record = {"api": "interactions", "operation": "get", "tag": tag,
                           "interaction_id": interaction_id, "served_by": None, "cached": False}
@@ -365,6 +371,7 @@ class Gemini:
             return self._poll(client, reply, tag=tag, deadline=deadline)
 
     def _log(self, record):
+        record.setdefault("time", time.time())
         self.cache_dir.mkdir(parents=True, exist_ok=True)
         self.records.append(record)
         with (self.cache_dir / "calls.jsonl").open("a", encoding="utf-8") as stream:
@@ -373,6 +380,9 @@ class Gemini:
     def _raw(self, parts, *, role, tag, config):
         model = model_for(role)
         if model == "gemini-3.8-flash":
+            if (config["generation_config"]["thinking_level"] != "low"
+                    or not any(word in tag for word in SMALL_TASK_TAGS)):
+                raise ValueError("Approved Flash is restricted to known low-effort extraction/pointing/repair calls")
             logging.getLogger(__name__).warning("R2P_ALLOW_FLASH=1: gemini-3.8-flash call site %s", _safe(tag))
         key = hashlib.sha256(_canonical(["interactions/v1", model, config, parts]).encode()).hexdigest()
         path = self.cache_dir / (key + ".json")
@@ -427,7 +437,9 @@ class Gemini:
                     continue
                 record.update(error="QuotaError" if daily else type(exc).__name__, latency=time.monotonic() - start)
                 self._log(record)
-                if daily and role == "main" and os.getenv("R2P_ALLOW_FALLBACK") == "1" and model_for("small") != model:
+                if (daily and role == "main" and os.getenv("R2P_ALLOW_FALLBACK") == "1"
+                        and any(word in tag for word in SMALL_TASK_TAGS)
+                        and config["generation_config"]["thinking_level"] == "low" and model_for("small") != model):
                     text, fallback = self._raw(parts, role="small", tag=tag + ":fallback", config=config)
                     return text, {**fallback, "fallback_from": model}
                 if daily:

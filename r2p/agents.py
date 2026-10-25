@@ -69,6 +69,15 @@ class ManagedAgent(gemini.Gemini):
     Every create/get consumes max_requests; cache-only never constructs a client.
     """
 
+    def __init__(self, *args, source_files=None, **kwargs):
+        self.source_files = dict(source_files or {})
+        for name, content in self.source_files.items():
+            safe_path(name)
+            if not isinstance(content, str):
+                raise ValueError("Sandbox sources must be UTF-8 text")
+            assert_no_secrets(content)
+        super().__init__(*args, **kwargs)
+
     def _client(self):
         if self.transport is not None:
             return nullcontext(SimpleNamespace(interactions=self.transport))
@@ -76,8 +85,17 @@ class ManagedAgent(gemini.Gemini):
 
     def _body(self, prompt):
         assert_no_secrets(prompt)
+        environment = "remote"
+        if self.source_files:
+            for name, content in self.source_files.items():
+                safe_path(name)
+                assert_no_secrets(content)
+            # SDK 2.33 Source/Environment: avoid asking a model to retype fixtures.
+            environment = {"type": "remote", "sources": [
+                {"type": "inline", "target": "/workspace/" + name, "content": content}
+                for name, content in sorted(self.source_files.items())]}
         return {"agent": AGENT, "agent_config": {"type": "antigravity", "model": MODEL},
-                "input": prompt, "environment": "remote", "background": True}
+                "input": prompt, "environment": environment, "background": True}
 
     def _path(self, prompt):
         key = hashlib.sha256(gemini._canonical(self._body(prompt)).encode()).hexdigest()
@@ -154,7 +172,9 @@ class ManagedAgent(gemini.Gemini):
         record = {"api": "interactions", "operation": "collect", "tag": tag, "agent": AGENT,
                   "served_by": gemini.field(interaction, "model") or MODEL, "cached": self.requests_used == requests_before,
                   "latency": self.clock() - start, "usage": gemini.plain(gemini.field(interaction, "usage")),
-                  "interaction_id": gemini.field(interaction, "id"), "files": sorted(bundle["files"])}
+                  "interaction_id": gemini.field(interaction, "id"), "request_key": self._path(prompt).stem,
+                  "files": {name: hashlib.sha256(content.encode("utf-8")).hexdigest()
+                            for name, content in bundle["files"].items()}}
         self._log(record)
         return {**bundle, "record": record}
 

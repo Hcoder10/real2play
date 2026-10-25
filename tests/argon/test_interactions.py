@@ -83,6 +83,17 @@ def test_poll_timeout_names_resumable_id(monkeypatch, tmp_path):
     assert len(requests) == 1
 
 
+def test_poll_backoff_cannot_send_after_deadline(monkeypatch, tmp_path):
+    now = [0.0]
+    error = type("Busy", (RuntimeError,), {"code": 503})("busy")
+    client, requests = sdk_client(monkeypatch, tmp_path, [SimpleNamespace(id="i", status="in_progress"), error],
+                                  timeout_s=1, poll_interval_s=.1, clock=lambda: now[0])
+    client.sleep = lambda seconds: now.__setitem__(0, now[0] + seconds)
+    with pytest.raises(gemini.GeminiError, match="timed out"):
+        client.call("x", tag="deadline", background=True)
+    assert [op for op, _ in requests] == ["create", "get"]
+
+
 def test_flash_requires_approval_and_logs_site(monkeypatch, caplog):
     client = gemini.FakeGemini(["argon", "flash"])
     client.call("x", role="small", tag="perception_boxes")
@@ -102,7 +113,26 @@ def test_fallback_flag_alone_does_not_authorize_flash(monkeypatch):
     assert len(client.requests) == 1
 
 
+def test_small_role_cannot_bypass_flash_task_restriction(monkeypatch):
+    monkeypatch.setenv("R2P_ALLOW_FLASH", "1")
+    client = gemini.FakeGemini([])
+    with pytest.raises(ValueError, match="low-effort"):
+        client.call("choose an experiment", role="small", tag="active_choose")
+    assert not client.requests
+
+
+def test_flash_approval_does_not_move_main_reasoning_to_flash(monkeypatch):
+    monkeypatch.setenv("R2P_ALLOW_FALLBACK", "1")
+    monkeypatch.setenv("R2P_ALLOW_FLASH", "1")
+    error = type("Limited", (RuntimeError,), {"code": 429})("PerDay limit: 0")
+    client = gemini.FakeGemini([error])
+    with pytest.raises(gemini.QuotaError):
+        client.call("choose an experiment", tag="active_choose")
+    assert len(client.requests) == 1
+
+
 @pytest.mark.parametrize("tag,expected", [("visual:point", "low"), ("real2sim:detect", "low"),
+    ("active:cap_pose", "low"),
     ("perception_boxes", "low"), ("task_from_video:0", "low"), ("labeling:refine", "low"),
     ("ttt:decide:0", "medium"), ("real2sim:critique:1", "medium"),
     ("active_choose", "high"), ("active_patch", "high"), ("build_game", "high"), ("author_task", "high")])

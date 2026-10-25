@@ -57,7 +57,7 @@ def test_explicit_fallback_reports_actual_model(monkeypatch):
     monkeypatch.setenv("R2P_ALLOW_FALLBACK", "1")
     monkeypatch.setenv("R2P_ALLOW_FLASH", "1")
     fake = FakeGemini([Limited("PerDay"), ("ok", "flash-real-version")])
-    _, record = fake.call("x", tag="fallback")
+    _, record = fake.call("x", tag="visual:point")
     assert record["served_by"] == "flash-real-version"
     assert record["fallback_from"] == "gemini-4-argon"
     assert [request["model"] for request in fake.requests] == ["gemini-4-argon", "gemini-3.8-flash"]

@@ -18,26 +18,88 @@ The exhaustive minimax tests explore every human continuation for both possible 
 ## Gemini
 
 `r2p.gemini.call(parts, role="main", tag=..., schema=...)` returns `(text, record)`.
-MAIN defaults to `gemini-4-argon`, SMALL to `gemini-3.8-flash`; override with
-`R2P_MODEL_MAIN` / `R2P_MODEL_SMALL`. The installed `google-genai` extra is the only network client.
-The [official SDK reference](https://googleapis.github.io/python-genai/) describes its request types.
+Both roles default to `gemini-4-argon`. MAIN accepts only Argon. SMALL uses Flash only when
+`R2P_MODEL_SMALL=gemini-3.8-flash` AND owner approval `R2P_ALLOW_FLASH=1` are set; the call site is
+logged as a warning. See the complete [call-site table](../../README.md#how-gemini-4-argon-is-used).
+The network client uses google-genai 2.33.0+ Interactions, typed inline image/video content,
+`response_format` JSON schemas, `output_text`, and background create/get for long work.
 
-Set `GEMINI_API_KEY` in the environment for an authorized live run. It is never included in cache
-records or call logs. `R2P_THINKING` defaults to 2048 and must be 0..32768. `R2P_CACHE_ONLY=1` makes
-zero requests and raises `CacheMiss` for any uncached request, including JSON repair. Cache entries
-are keyed on model, config and all part bytes under `cache/gemini`; `R2P_GEMINI_CACHE` changes that
-directory. `calls.jsonl` records model, actual `served_by`, attempts, latency and cache state.
+`GEMINI_API_KEY` is loaded from the environment or gitignored `.env` and never sent in prompts.
+`R2P_THINKING` accepts low/medium/high or legacy 0..32768 budgets (mapped to levels). Defaults are
+selected by call-site tag: extraction/pointing low, board/critique medium, experiment/patch design high.
+`R2P_CACHE_ONLY=1` makes zero requests and raises `CacheMiss` on a miss, including repairs/polling.
+The request cache under `cache/gemini` hashes API, model, config and all input bytes; set
+`R2P_GEMINI_CACHE` to change it. `calls.jsonl` records served model, attempts, latency and usage.
 
-The transport timeout defaults to 45 seconds (`R2P_GEMINI_TIMEOUT_S`). Timeouts, connection errors,
-HTTP 408/5xx and RPM 429 retry at most three times with 1/2/4-second backoff. SDK retries are disabled,
-so `attempt_details` accounts for each wire attempt, including failed attempts without an answering
-model. `Gemini(max_requests=N)` bounds retries and JSON repairs as well as initial calls.
+HTTP timeout defaults to 1200 seconds (`R2P_GEMINI_TIMEOUT_S`). HTTP 408/5xx, connection errors,
+timeouts and per-minute 429s retry with 1/2/4-second backoff. SDK retries are disabled.
+`Gemini(max_requests=N)` counts creates, polls, retries and JSON repair. A failed background poll
+never retries the create; its interaction ID is logged for recovery. Daily/zero-limit quota raises
+`QuotaError`; fallback for low-effort extraction/pointing/repair requires `R2P_ALLOW_FALLBACK=1`
+as well as approved Flash. Board, critique and experiment reasoning cannot fall back to Flash.
+JSON repair always uses Argon at low thinking and reuses the cached original reply.
+`FakeGemini` exercises the same cache and validation without constructing a network client.
 
-Per-day and zero-limit 429s raise `QuotaError`. Per-minute errors use bounded retries; the word
-“billing” is never a quota classification signal. Only `R2P_ALLOW_FALLBACK=1` permits MAIN to fall
-back to SMALL. JSON repair uses SMALL on the cached original reply, never repeats the expensive
-vision prompt, and records both answering models. `FakeGemini` exercises this same client/cache
-path with scripted responses or an injected responder.
+## Managed authoring stages
+
+```powershell
+.venv/Scripts/python.exe scripts/argon/author_task.py --goal "Put the cube in the bowl" --demo-summary "The open gripper releases the cube inside the bowl" --out runs/author_demo --dry-run
+.venv/Scripts/python.exe scripts/argon/build_game.py --task place_on_cell --out runs/game_demo --dry-run
+```
+
+Dry runs use `FakeAgent`; the task checker, scene sampler, Luau tests and numerical parity still
+run locally. They need no network or credentials. The Luau binary is discovered as described in
+[roblox/README.md](../../roblox/README.md). The game gate runs trusted preset generation, all five
+pure-Luau suites, and `roblox/tools/parity.py` against MuJoCo. It does not sync or alter Studio.
+Returned files live in the reported `candidate-*` workspace, with `agent.json`, `input.json` and
+`result.json` alongside it. Failure keeps `passed: false`. Nothing is written into the canonical
+task or Roblox source directories and nothing is published. Pure optional modules are checked
+for loadability; integrating them into runtime code requires review.
+
+Remove `--dry-run` for an authorized remote Antigravity run. The agent receives only selected
+source/config files, with secret values rejected before submission. It returns a JSON file bundle,
+sandbox test results and a report; local verification decides acceptance independently. The game
+builder edits the configuration consumed by the actual workshop. Task authoring uses the existing
+closed predicate vocabulary; it supplies positive/negative single-state and stable-window vectors
+rather than replacing the shared checker. The managed API exposes no thinking-level field in
+`AntigravityAgentConfig`; the prompt requests high-effort reasoning with Argon as the model.
+
+The SDK `environment={type: "remote", sources: [...]}` mounts exact UTF-8 sources under
+`/workspace` using `type: "inline"`, `target` and `content`. The prompt also contains the source
+context and requires measured SHA-256 values before and after tests. Missing or changed
+`source_sha256` values reject the stage before candidate application. Returned hashes remain
+agent-reported evidence, so independent local tests against repository originals are mandatory.
+Generated task/physics modules use the requested twin inputs, not stale checked-in presets.
+The first live run (before source mounting) modified its sandbox oracle and was rejected despite
+passing the untouched local harness. Mounting and integrity checks are SDK-type/fake tested;
+they have not had a second live run. See [the evidence report](J_INTERACTIONS_REPORT.md).
+
+Live game generation normally requires `--verification path.json`. The receipt format is:
+
+```json
+{
+  "schema": "r2p_twin_verification/1",
+  "passed": true,
+  "input_sha256": {"task": "...", "physics": "...", "board": "...", "camera": "..."},
+  "evidence": [{"path": "runs/heldout/gate.json", "sha256": "..."}]
+}
+```
+
+Input hashes use `sha256(r2p.gemini._canonical(value).encode())`; evidence hashes use raw file bytes.
+Each evidence JSON must declare `passed: true` and `held_out: true`. Paths are resolved from the
+current directory. Inputs include the board from the selected task and the supplied `--camera`
+and `--physics`. A changed input, missing file or failed gate is rejected. For a clearly labelled
+candidate-only rehearsal, `--allow-provisional-twin` permits live generation without claiming twin
+fidelity. Even an accepted local build has `deployment_ready: false`: rendered-game review and
+Studio contact/engine parity remain required before the owner's separate publish action.
+
+`ManagedAgent.start/poll/collect/run` preserve interaction IDs and returned media artifact metadata;
+the file contents come from the required JSON bundle, not arbitrary URL downloads. Re-running the
+same prompt/output directory resumes its recorded job rather than starting another sandbox.
+Completed jobs work cache-only. The default stage limit is 20 HTTP requests including polls,
+with 60-second polling and a 20-minute deadline; start requests are not blindly retried because
+a lost response may already have created a sandbox. `calls.jsonl` records each lifecycle operation.
+
 
 ## Tic-tac-toe
 
