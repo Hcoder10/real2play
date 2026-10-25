@@ -190,7 +190,14 @@ class DashboardData:
         levels, players = {}, {}
         invalid = 0
         paths = set()
-        for directory in self.config.get("traces", ["roblox/out/traces"]):
+        loop = read_json(self.root / "runs/game_loop_latest.json", {})
+        directories = list(self.config.get("traces", ["roblox/out/traces"]))
+        if loop.get("status") == "DONE" and loop.get("input_dir"):
+            source = self.path(loop["input_dir"]).resolve()
+            if source.is_relative_to(self.root):
+                directories.append(str(source))
+        headless = {"rounds": 0, "successes": 0}
+        for directory in directories:
             paths.update(self.path(directory).rglob("*.jsonl"))
         for path in sorted(paths):
             row = self.trace(path)
@@ -206,6 +213,9 @@ class DashboardData:
             target["rounds"] += 1
             target["successes"] += meta.get("success") is True
             target["hours"] += row["duration_s"] / 3600
+            if meta.get("headless") and source == "bot":
+                headless["rounds"] += 1
+                headless["successes"] += meta.get("success") is True
             task = meta.get("task", {})
             task = task.get("name", "Unknown task") if isinstance(task, dict) else task
             level = str(meta.get("level") or meta.get("task_name") or task)
@@ -219,10 +229,15 @@ class DashboardData:
                 score["successes"] += meta.get("success") is True
         return {"url": self.config.get("game_url"), "groups": groups, "levels": sorted(levels.values(), key=lambda r: r["name"]),
                 "leaderboard": sorted(players.values(), key=lambda r: (-r["successes"], -r["rounds"], r["player"]))[:5],
-                "invalid_traces": invalid, "available": bool(paths)}
+                "invalid_traces": invalid, "available": bool(paths), "headless": headless,
+                "replay": loop.get("counts") if loop.get("status") == "DONE" else None}
 
     def policy(self):
         pinned = self.config.get("headline_eval")
+        loop = read_json(self.root / "runs/game_loop_latest.json", {})
+        loop_active = not pinned and loop.get("status") == "DONE" and bool(loop.get("selected_eval"))
+        if loop_active:
+            pinned = loop["selected_eval"]
         if not pinned and self.config.get("auto_discover"):
             candidates = [p for p in (self.root / "exports").glob("*/config.json")
                           if (read_json(p, {}) or {}).get("eval", {}).get("n", 0)]
@@ -253,6 +268,16 @@ class DashboardData:
             else:
                 result["message"] = f"Pinned evaluation unavailable: {pinned}"
         scaling = read_json(self.path(self.config.get("scaling", "runs/scaling.json")), [])
+        if loop_active:
+            scaling = loop.get("curve", [])
+            sources = loop.get("sources", {})
+            result["message"] = (f"{sources.get('headless', 0)} headless simulated, {sources.get('human', 0)} human. "
+                                 f"{loop.get('gate', {}).get('decision', 'unknown')}. "
+                                 + ("Truncated episodes." if loop.get("evaluation", {}).get("truncated") else "Full episodes."))
+            result["name"] = f"{loop.get('task', 'Game data')}: {Path(loop.get('gate', {}).get('selected', 'policy')).name}"
+            result["evidence"] = "GAME DATA / TWIN EVALUATION"
+            result["game_loop"] = {"gate": loop.get("gate"), "counts": loop.get("counts"),
+                                   "sources": sources, "manifest": loop.get("manifest")}
         if isinstance(scaling, dict):
             scaling = scaling.get("points", scaling.get("runs", []))
         for row in scaling if isinstance(scaling, list) else []:

@@ -24,7 +24,7 @@ def make_plan(task, focus, n, seed):
                          for i, scene in enumerate(scenes)]}
 
 
-def rollout(policy, task, scene, noise, seed, noise_spec):
+def rollout(policy, task, scene, noise, seed, noise_spec, *, tracker_factory=None):
     import numpy as np
     from r2p.model import Arm
     from r2p.sim import TaskTwin
@@ -43,7 +43,7 @@ def rollout(policy, task, scene, noise, seed, noise_spec):
         total = min(total, int(noise_spec["max_ticks"]))
     rng = np.random.default_rng(seed)
     initial = twin.poses()
-    tracker = CommandTracker(task, initial)
+    tracker = (tracker_factory or CommandTracker)(task, initial)
     offsets = np.r_[rng.normal(0, np.deg2rad(noise_spec["joint_offset_std_deg"]), 5), 0]
     bias = rng.normal(0, noise_spec["pose_bias_std_m"], (config["K"], 3))
     disturbances = rng.normal(0, noise_spec["pose_std_m"], (total, config["K"], 3))

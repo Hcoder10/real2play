@@ -43,11 +43,35 @@ def parser():
     status.add_argument("task", nargs="?")
     status.add_argument("--json", action="store_true")
     status.add_argument("--root", type=Path, default=Path.cwd(), help=argparse.SUPPRESS)
+    loop = subs.add_parser("loop", help="Replay game traces through the current twin, train on CPU, evaluate and gate")
+    loop.add_argument("--from-game", type=Path, required=True)
+    loop.add_argument("--task", default="place_on_cell")
+    loop.add_argument("--physics", default="so101_bench")
+    loop.add_argument("--output", type=Path)
+    loop.add_argument("--validation-game", type=Path, help="Optional disjoint held-out gameplay for action-error diagnostics")
+    loop.add_argument("--collect-headless", type=int, default=0, help="Collect explicitly simulated bot players first")
+    loop.add_argument("--experts", type=int, default=4)
+    loop.add_argument("--steps", type=int, default=1000)
+    loop.add_argument("--eval-n", type=int, default=12)
+    loop.add_argument("--seed", type=int, default=2026)
+    loop.add_argument("--max-ticks", type=int, help="Truncated smoke evaluation; omit for full episodes")
+    loop.add_argument("--root", type=Path, default=Path.cwd(), help=argparse.SUPPRESS)
     return result
 
 
 def main(argv=None):
     args = parser().parse_args(argv)
+    if args.command == "loop":
+        from .pipeline.game_loop import run_loop
+        values = vars(args).copy()
+        values.pop("command")
+        try:
+            run_loop(**values)
+            return 0
+        except (ValueError, RuntimeError, OSError) as exc:
+            from .pipeline.stages import safe_error
+            print(f"BLOCKED: {safe_error(exc)}")
+            return 2
     if args.command == "status":
         manifests = []
         for path in sorted((args.root / "runs").glob("*/manifest.json")):
