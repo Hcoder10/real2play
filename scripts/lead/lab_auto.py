@@ -103,6 +103,34 @@ if __name__ == "__main__":
         raise last
 
     agent.client.call = call
+
+    # Accept the first complete JSON object (Argon sometimes appends text after it: "Extra data", run 05).
+    _parse = _g.parse_json
+
+    def parse_json(text):
+        try:
+            return _parse(text)
+        except Exception:  # noqa: BLE001
+            t = text[text.index("{"):] if "{" in text else text
+            return json.JSONDecoder().raw_decode(t)[0]
+
+    _g.parse_json = parse_json
+
+    # A turn that errors is reported back to Argon as a tool result instead of ending the session.
+    _turn = agent.turn
+
+    def turn(number):
+        try:
+            return _turn(number)
+        except KeyboardInterrupt:
+            raise
+        except Exception as exc:  # noqa: BLE001
+            print(f"[turn {number} error fed back to Argon: {str(exc)[:160]}]", flush=True)
+            agent.results = [{"tool": "harness", "result": {"error": str(exc)[:600],
+                              "hint": "Reply with exactly ONE JSON object; re-observe before recovering."}}]
+            return {"complete": False}
+
+    agent.turn = turn
     try:
         address = agent.serve(8081)
         print(f"Argon Lab HTTP http://{address[0]}:{address[1]} | REAL | autonomous", flush=True)
