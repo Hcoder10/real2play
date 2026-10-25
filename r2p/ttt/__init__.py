@@ -294,7 +294,9 @@ def placement_task(cell, supply_xyz, *, piece_size=0.032, board=None, robot_mark
     xy = geometry(task)["cells"][CELL_IDS[cell_index(cell)]]
     manipulated = next(obj for obj in task["objects"] if obj["role"] == "manipulated")
     target = next(obj for obj in task["objects"] if obj["role"] == "target")
-    manipulated.update(size_m=[piece_size] * 3, xyz=list(supply_xyz))
+    height = manipulated["size_m"][-1]
+    manipulated.update(size_m=[piece_size, height] if manipulated["shape"] == "cylinder" else [piece_size] * 3,
+                       xyz=list(supply_xyz))
     manipulated.pop("xy", None)
     target["xyz"] = [*xy, 0.0005]
     task["randomize"] = {manipulated["id"]: {"x": [supply_xyz[0]] * 2, "y": [supply_xyz[1]] * 2},

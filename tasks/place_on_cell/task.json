@@ -51,19 +51,18 @@
   {
    "id": "piece",
    "role": "manipulated",
-   "shape": "box",
+   "shape": "cylinder",
    "size_m": [
-    0.025,
-    0.025,
-    0.014
+    0.034,
+    0.017
    ],
-   "color": "brown",
-   "mass_kg": 0.02,
-   "friction": 0.6,
+   "color": "white",
+   "mass_kg": 0.004,
+   "friction": 0.5,
    "grasp": "top",
    "xy": [
-    0.13,
-    0.13
+    0.15,
+    -0.092
    ]
   },
   {
@@ -543,11 +542,39 @@
    ],
    "p_present": 0.5
   },
-  "min_sep_m": 0
+  "min_sep_m": 0,
+  "piece": {
+   "x": [
+    0.095,
+    0.205
+   ],
+   "y": [
+    -0.104,
+    -0.084
+   ],
+   "size_m": [
+    [
+     0.03,
+     0.037
+    ],
+    [
+     0.014,
+     0.02
+    ]
+   ],
+   "mass_kg": [
+    0.002,
+    0.007
+   ],
+   "friction": [
+    0.35,
+    0.7
+   ]
+  }
  },
  "limits": {
   "episode_s": 40,
   "max_objects": 15
  },
- "bench_note": "Oct 25: cells measured by the calibrated phone camera on the printed paper grid (printed ~73 % scale: 32.8 mm cells). Robot pieces <= 25 mm. Supply spot (0.13, 0.13)."
+ "bench_note": "Oct 25: cells measured by the calibrated phone camera on the printed paper grid (printed ~73 % scale). Robot pieces = plastic bottle caps (~32 mm, ~16 mm tall) in a supply line on the robot's right, camera-measured at x 0.10/0.15/0.20, y -0.09; humans play coins."
 }

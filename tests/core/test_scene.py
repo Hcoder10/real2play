@@ -37,8 +37,11 @@ def test_board_layout_optional_pieces_and_slot_identity():
             assert obj["fixed"] and not obj["collide"]
             assert obj["size_m"][:2] == [task["board"]["cell_m"]] * 2
     by_id = {o["id"]:o for o in task["objects"]}
-    assert by_id["piece"]["size_m"][0] <= task["board"]["cell_m"] - 0.005
-    assert by_id["piece"]["xy"] == [.13,.13]
+    assert by_id["piece"]["size_m"][0] <= task["board"]["cell_m"]   # a bottle cap fits inside a printed cell
+    supply = task["randomize"]["piece"]                                  # the cap line beside the board
+    for x in supply["x"]:
+        for y in supply["y"]:
+            assert min(np.hypot(x-cx, y-cy) for cx, cy in cells.values()) > task["board"]["cell_m"]
     targets, counts = set(), set()
     for seed in range(100):
         scene = sample_scene(task, np.random.default_rng(seed))
