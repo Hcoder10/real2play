@@ -1,0 +1,20 @@
+{
+  "url": "http://127.0.0.1:8800",
+  "screenshot": "C:\\Users\\sarta\\real2play\\dashboard\\shots\\mock-mobile.png",
+  "wall_clock_wait_s": 1.0,
+  "virtual_time": false,
+  "metrics": {
+    "width": 390,
+    "height": 844,
+    "scrollWidth": 390,
+    "scrollHeight": 2267,
+    "panels": [
+      "REAL",
+      "REAL2SIM",
+      "GAME",
+      "POLICY"
+    ],
+    "mock": "true"
+  },
+  "javascript_errors": []
+}

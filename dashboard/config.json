@@ -1,0 +1,17 @@
+{
+  "host": "127.0.0.1",
+  "port": 8800,
+  "game_url": null,
+  "real2sim_live": "out/live",
+  "real2sim_run": null,
+  "headline_eval": null,
+  "scaling": "runs/scaling.json",
+  "traces": ["roblox/out/traces"],
+  "runs": "runs",
+  "deploy_runs": "runs",
+  "ttt_status": "out/ttt/status.json",
+  "camera_url": "http://127.0.0.1:8791/frame.jpg",
+  "camera_status_url": "http://127.0.0.1:8791/status.json",
+  "publisher_timeout_s": 0.6,
+  "poll_s": 2
+}

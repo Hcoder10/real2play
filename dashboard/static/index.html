@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Real2Play</title><link rel="stylesheet" href="/static/style.css">
+  <script src="/static/app.js" defer></script>
+</head>
+<body>
+<header>
+  <a class="brand" href="/" aria-label="Real2Play dashboard"><span class="brand-icon" aria-hidden="true">↗</span>Real2Play</a>
+  <p>Show the robot. Build the twin. Learn from play.</p>
+  <div class="header-end"><span id="source-label" class="badge warning">Connecting</span><a id="nav" href="/runs">Run history</a><time id="clock"></time></div>
+</header>
+<div id="connection" role="status" class="connection" hidden></div>
+<main id="dashboard">
+  <section class="panel real-panel" aria-labelledby="real-title">
+    <div class="panel-heading"><h1 id="real-title">REAL</h1><span class="subheading">The arm at the bench</span><span id="real-label" class="badge">NO REAL FEED</span></div>
+    <div class="real-content">
+      <div class="real-camera">
+        <img id="real-frame" alt="Current camera frame from the robot publisher" hidden>
+        <div id="camera-empty" class="camera-empty"><svg viewBox="0 0 100 80" aria-hidden="true"><path d="M18 22h47v38H18zM65 32l20-10v38L65 50M35 22l6-8h14l6 8"/><circle cx="42" cy="41" r="10"/></svg><strong>Waiting for the real arm</strong><span id="real-message">Connect the camera publisher to begin.</span></div>
+        <div id="real-argon" class="real-argon" hidden></div>
+        <div class="camera-foot"><span id="attempt-count">No recorded real attempts</span><span id="real-outcome">Camera offline</span></div>
+      </div>
+      <aside class="ttt" aria-label="Tic-tac-toe live board">
+        <div class="widget-heading"><h2>Tic-tac-toe</h2><span id="ttt-label" class="badge">WAITING</span></div>
+        <div id="board" class="board" aria-label="Board from the robot's perspective"></div>
+        <div class="reason"><span class="reason-label">Argon’s next move</span><p id="why">Waiting for the next board reading.</p><span id="answer-model">No model response yet</span></div>
+      </aside>
+    </div>
+  </section>
+  <section class="panel twin-panel" aria-labelledby="twin-title">
+    <div class="panel-heading"><h1 id="twin-title">REAL2SIM</h1><span class="subheading">Watch the gap close</span><span id="twin-source" class="badge">NO TWIN</span></div>
+    <div class="twin-content">
+      <div class="twin-view"><div id="twin-slides" class="slides"></div><div id="twin-empty" class="view-empty">Pin a twin run to see its evidence.</div><div class="image-caption"><span id="image-label" class="badge">SIM</span><span id="twin-caption">No pinned twin</span></div></div>
+      <div class="twin-readout"><div class="metric"><span>Visual gap <small>↓ better</small></span><strong id="gap">—</strong><span class="metric-note">1 − mean object IoU</span></div><div class="metric"><span>Motion error <small>↓ better</small></span><strong id="motion">—</strong><span class="metric-note">Replay vs recorded motion</span></div></div>
+    </div>
+    <div class="twin-charts"><div><div class="chart-heading"><span>Best accepted visual gap</span><span id="iteration-count"></span></div><svg id="gap-chart" class="chart" viewBox="0 0 430 84" role="img" aria-label="Visual gap by iteration"></svg></div><div><div class="chart-heading"><span>Motion match <small>px</small></span><span class="legend-dot">Rejected</span></div><svg id="motion-chart" class="chart" viewBox="0 0 430 84" role="img" aria-label="Motion error by iteration"></svg></div></div>
+  </section>
+  <section class="panel game-panel" aria-labelledby="game-title">
+    <div class="panel-heading"><h1 id="game-title">GAME</h1><span class="subheading">People play. The robot learns.</span><span class="badge aqua">ROBLOX</span></div>
+    <div class="game-content">
+      <div class="game-main"><div class="game-metrics"><div class="metric"><span>Human rounds</span><strong id="human-rounds">—</strong></div><div class="metric"><span>Successes</span><strong id="human-successes">—</strong></div><div class="metric"><span>Hours played</span><strong id="human-hours">—</strong></div></div><p id="bot-count" class="bot-count">Bots are counted separately.</p><div id="levels" class="levels" aria-label="Human rounds by level"></div></div>
+      <div class="join"><a id="game-link" target="_blank" rel="noopener noreferrer" hidden><img id="qr" alt="QR code to the published Roblox game"><strong>Play the twin</strong></a><div id="game-unpublished" class="qr-empty"><span aria-hidden="true">＋</span><strong>Game link pending</strong><p>The QR appears when a published game is connected.</p></div></div>
+    </div>
+    <div class="leaderboard"><span>Human leaderboard</span><ol id="leaders"></ol></div>
+  </section>
+  <section class="panel policy-panel" aria-labelledby="policy-title">
+    <div class="panel-heading"><h1 id="policy-title">POLICY</h1><span class="subheading">From play to a learned skill</span><span id="eval-label" class="badge">NO EVALUATION</span></div>
+    <div class="policy-content"><div class="policy-metrics"><div class="metric"><span>Clean simulation</span><strong id="clean">—</strong></div><div class="metric"><span>With real noise</span><strong id="real-noise">—</strong></div><p id="eval-note">Pin an evaluation to see measured results.</p></div><div class="scaling"><div class="chart-heading"><span>More play, better policy</span><span class="chart-legend">Clean <i></i> Real noise</span></div><svg id="scaling-chart" viewBox="0 0 520 220" role="img" aria-label="Policy success rate versus training episodes"></svg><div class="axis-label">Training episodes</div></div></div>
+    <div class="policy-foot"><span id="policy-name">No pinned policy</span><span>Gemini plans. The policy moves at 30 Hz.</span></div>
+  </section>
+</main>
+<main id="runs-page" hidden><div class="runs-heading"><h1>Run history</h1><p>Recorded stage results, including blocked dependencies and synthetic attempts.</p></div><div id="runs-list"></div></main>
+<footer><span id="evidence-note">Live sources • no evidence is inferred from missing data</span><span>Real2Play / Gemini 4 Argon</span></footer>
+</body>
+</html>

@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 310">
+<defs><linearGradient id="wall" x2="0" y2="1"><stop stop-color="#2b4556"/><stop offset="1" stop-color="#182c3c"/></linearGradient><linearGradient id="table" x2="0" y2="1"><stop stop-color="#677d83"/><stop offset="1" stop-color="#405966"/></linearGradient></defs>
+<path fill="url(#wall)" d="M0 0h720v310H0z"/><path d="M85 150h550l85 160H0z" fill="url(#table)"/>
+<g stroke="#98b0b5" stroke-opacity=".18"><path d="M63 195h593M35 250h650M215 150l-58 160M370 150v160M520 150l60 160"/></g>
+<ellipse cx="306" cy="250" rx="165" ry="17" fill="#101c28" opacity=".3"/>
+<g stroke="#102331" stroke-width="7" stroke-linejoin="round"><path d="M170 249h85v-27h-85z" fill="#b9c8cf"/><path d="M195 225l-17-75 27-8 20 83z" fill="#d4dfe2"/><path d="M180 154l62-91 27 22-63 88z" fill="#c4d5da"/><path d="M252 69l110 45-13 28-108-46z" fill="#d5e0e3"/><path d="M350 119l53 46-17 19-52-44z" fill="#c2d4d8"/><path d="M387 170l-9 33 18 3 12-33z" fill="#d5e0e3"/><path d="M379 200l-11 18m29-15 9 16" fill="none" stroke="#b9c8cf" stroke-width="9"/>
+<circle cx="193" cy="155" r="20" fill="#243d50"/><circle cx="251" cy="80" r="19" fill="#243d50"/><circle cx="349" cy="129" r="17" fill="#243d50"/><circle cx="395" cy="172" r="12" fill="#243d50"/></g>
+<g fill="#81d4c9"><circle cx="193" cy="155" r="7"/><circle cx="251" cy="80" r="6"/><circle cx="349" cy="129" r="5"/></g>
+<path d="M371 223l20-9 21 11-20 10z" fill="#efa56c"/><path d="M371 223v21l21 12v-21z" fill="#ba7550"/><path d="M392 235l20-10v20l-20 11z" fill="#d88e58"/>
+<ellipse cx="522" cy="238" rx="51" ry="20" fill="#172d40" stroke="#8eb8d4" stroke-width="5"/><path d="M472 240q7 42 50 42t50-42" fill="#547e9a"/><ellipse cx="522" cy="238" rx="51" ry="20" fill="#1d3b50" stroke="#a2c9df" stroke-width="5"/>
+<g fill="none" stroke="#7adbd0" stroke-width="2" opacity=".85"><path d="M363 211v-10h56v11m0 37v12h-56v-12M463 222v-12h117v12m0 52v13H463v-12"/></g>
+<rect x="18" y="15" width="188" height="28" rx="4" fill="#182c3c"/><text x="30" y="34" fill="#f2bc75" font-size="13" font-family="Segoe UI,sans-serif">ILLUSTRATION · SYNTHETIC</text>
+<text x="542" y="31" fill="#a9beca" font-size="12" font-family="Segoe UI,sans-serif">SO-101 / twin preview</text>
+</svg>
