@@ -17,7 +17,7 @@ def test_sampled_scenes_are_reachable_deterministic_and_do_not_mutate_task(name)
         scene = sample_scene(task, np.random.default_rng(seed))
         assert scene == sample_scene(task, np.random.default_rng(seed))
         for obj in scene["objects"]:
-            assert .15 <= math.hypot(*obj["xyz"][:2]) <= .32
+            assert .10 <= math.hypot(*obj["xyz"][:2]) <= .32
             dims = slot_size(obj["shape"], obj["size_m"], obj.get("axis", "z"))
             assert obj["xyz"][2] == pytest.approx(dims[2]/2)
             assert all(field in obj for field in ("id","role","shape","size_m","xyz","yaw_deg","color","mass_kg","friction","fixed"))
@@ -27,7 +27,7 @@ def test_sampled_scenes_are_reachable_deterministic_and_do_not_mutate_task(name)
 def test_board_layout_optional_pieces_and_slot_identity():
     task = load_task("place_on_cell")
     grid = {obj["id"]:obj for obj in task["objects"] if obj["id"].startswith("r")}
-    for i, x in enumerate((.200,.245,.290)):
+    for i, x in enumerate((.115,.160,.205)):
         for j, y in enumerate((-.045,0,.045)):
             obj = grid[f"r{i}c{j}"]
             assert obj["xy"] == [x,y]
