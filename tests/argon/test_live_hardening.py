@@ -38,18 +38,18 @@ def test_sdk_has_finite_timeout_and_no_hidden_retries(monkeypatch):
     class Client:
         def __init__(self, **kwargs):
             seen.update(kwargs)
-            self.models = self
+            self.interactions = self
         def __enter__(self):
             return self
         def __exit__(self, *args):
             pass
-        def generate_content(self, **kwargs):
+        def create(self, **kwargs):
             return "ok"
     monkeypatch.setenv("GEMINI_API_KEY", "fake-key-for-test")
     monkeypatch.setattr(genai, "Client", Client)
     REAL_REQUEST(gemini.Gemini(timeout_s=7), "fake", ["hi"], {})
     assert seen["http_options"].timeout == 7000
-    assert seen["http_options"].retry_options.attempts == 1
+    assert seen["http_options"].retry_options.attempts == 0
 
 
 def test_empty_board_waits_and_does_not_use_minimax():

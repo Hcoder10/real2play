@@ -12,20 +12,20 @@ class Limited(RuntimeError):
 
 
 def test_cache_content_addressed_and_roles(tmp_path, monkeypatch):
-    fake = FakeGemini([("answer", "actual-main-version"), "small answer", "different budget"], cache_dir=tmp_path)
+    fake = FakeGemini([("answer", "actual-main-version"), "different level"], cache_dir=tmp_path)
     text, first = fake.call(["question"], tag="test")
     assert text == "answer" and first["served_by"] == "actual-main-version" and not first["cached"]
     cached, record = fake.call(["question"], tag="another_tag")
     assert cached == text and record["cached"] and len(fake.requests) == 1
     fake.call(["question"], role="small", tag="test")
     fake.call(["question"], thinking=128, tag="test")
-    assert len(fake.requests) == 3
-    assert fake.requests[0]["config"]["thinking_config"]["thinking_budget"] == 2048
+    assert len(fake.requests) == 2  # same model + level shares cache across roles
+    assert fake.requests[0]["config"]["generation_config"]["thinking_level"] == "medium"
     monkeypatch.setenv("R2P_CACHE_ONLY", "1")
     fake.call(["question"], tag="cache_only")
     with pytest.raises(CacheMiss):
         fake.call(["never-seen"], tag="missing")
-    assert len(fake.requests) == 3
+    assert len(fake.requests) == 2
     assert len((tmp_path / "calls.jsonl").read_text().splitlines()) == 6
 
 
@@ -55,6 +55,7 @@ def test_rate_limit_retry_exhaustion_is_not_daily():
 
 def test_explicit_fallback_reports_actual_model(monkeypatch):
     monkeypatch.setenv("R2P_ALLOW_FALLBACK", "1")
+    monkeypatch.setenv("R2P_ALLOW_FLASH", "1")
     fake = FakeGemini([Limited("PerDay"), ("ok", "flash-real-version")])
     _, record = fake.call("x", tag="fallback")
     assert record["served_by"] == "flash-real-version"
@@ -68,7 +69,7 @@ def test_json_repair_reuses_original_cache(tmp_path, monkeypatch):
     text, record = fake.call(["label image"], tag="repair", schema=schema)
     assert json.loads(text) == {"label": "cube"}
     assert record["served_by"] == "gemini-4-argon"
-    assert record["repair"]["served_by"] == "gemini-3.8-flash"
+    assert record["repair"]["served_by"] == "gemini-4-argon"
     assert '"name":"cube"' in fake.requests[1]["parts"][0]
     monkeypatch.setenv("R2P_CACHE_ONLY", "1")
     again, cached = fake.call(["label image"], tag="repair", schema=schema)
@@ -99,12 +100,15 @@ def test_keys_never_enter_logs_or_cache(tmp_path, monkeypatch):
 
 
 def test_model_and_budget_overrides(monkeypatch):
-    monkeypatch.setenv("R2P_MODEL_MAIN", "test-main")
+    monkeypatch.setenv("R2P_MODEL_MAIN", "gemini-4-argon")
     monkeypatch.setenv("R2P_THINKING", "1024")
     fake = FakeGemini(["ok"])
     fake.call("x", tag="config")
-    assert fake.requests[0]["model"] == "test-main"
-    assert fake.requests[0]["config"]["thinking_config"]["thinking_budget"] == 1024
+    assert fake.requests[0]["model"] == "gemini-4-argon"
+    assert fake.requests[0]["config"]["generation_config"]["thinking_level"] == "low"
+    monkeypatch.setenv("R2P_MODEL_MAIN", "test-main")
+    with pytest.raises(ValueError, match="Only gemini"):
+        model_for("main")
     with pytest.raises(ValueError):
         model_for("wrong")
     with pytest.raises(ValueError):

@@ -51,7 +51,7 @@ def test_detect_fit_render_replay_with_shared_cpu_twin(tmp_path):
     fake = FakeGemini([{"objects": boxes}, {"objects": [], "why": "Looks consistent", "done": True}])
     result = run_twin(session, task=task, out_dir=tmp_path / "live", ask=fake, iterations=1)
     assert result["stop_reason"] == "critic_done"
-    assert [req["model"] for req in fake.requests] == ["gemini-3.8-flash", "gemini-4-argon"]
+    assert [req["model"] for req in fake.requests] == ["gemini-4-argon", "gemini-4-argon"]
     assert result["metrics"]["objects"]["cube"]["iou"] > .65
     assert result["metrics"]["physics"]["replayed"]
     assert cv2.imread(str(tmp_path / "live/iter_0_physics.jpg")).shape == (480, 1280, 3)
