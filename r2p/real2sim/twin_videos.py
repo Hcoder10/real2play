@@ -26,7 +26,8 @@ def _scene(recorded, candidate):
     return result
 
 
-def render_experiment(session, before_physics, after_physics, before_scene, after_scene, destination, *, fps=3, width=240):
+def render_experiment(session, before_physics, after_physics, before_scene, after_scene, destination, *, fps=3, width=240,
+                      continuous_sim=False):
     if not 1 <= fps <= 30 or width < 64:
         raise ValueError("fps must be 1..30 and width >=64")
     if not session.ticks or not session.camera:
@@ -55,24 +56,45 @@ def render_experiment(session, before_physics, after_physics, before_scene, afte
         sim_t = session.ticks[0]["t"]
         start = max(sim_t, session.times[0])
         end = min(session.ticks[-1]["t"], session.times[-1])
-        cursor, real = 0, session.frame(0)
-        for t in np.arange(start, end+1e-7, 1/fps):
-            while sim_t+1/HZ <= t+1e-7:
+        def advance(until):
+            nonlocal sim_t, command_index
+            while sim_t+1/HZ <= until+1e-7:
                 while command_index+1 < len(session.ticks) and session.ticks[command_index+1]["t"] <= sim_t+1e-7:
                     command_index += 1
                 for twin in twins:
                     twin.step(session.ticks[command_index]["q_target"])
                 sim_t += 1/HZ
+        cursor, previous_cursor, real, aligned = 0, -1, session.frame(0), None
+        # Include the final capture even when its timestamp is between output
+        # frames. Otherwise a sparse recording never shows its final outcome.
+        output_count = int(np.ceil((end-start)*fps-1e-8))+1
+        for index in range(output_count):
+            t = min(end, start+index/fps)
             while cursor+1 < len(session.times) and session.times[cursor+1] <= t+1e-7:
-                cursor += 1; real = session.frame(cursor)
-            panels = [cv2.resize(real, (width, height)), *[renderer.render()[0] for renderer in renderers]]
+                cursor += 1
+            if cursor != previous_cursor:
+                advance(max(sim_t, session.times[cursor]))
+                real = session.frame(cursor)
+                aligned = [renderer.render()[0] for renderer in renderers]
+                aligned_at = sim_t
+                previous_cursor = cursor
+            advance(t)
+            smooth = ([r.render()[0] for r in renderers] if continuous_sim and abs(sim_t-aligned_at) >= 1e-8
+                      else [a.copy() for a in aligned])
+            panels = [cv2.resize(real, (width, height)), *smooth]
             for panel, label, name in zip(panels, ("real", "sim_before", "sim_after"),
                                         ("REAL" if session.meta.get("source") == "real" else "SYNTHETIC OBSERVED",
                                          "SIM BEFORE", "SIM AFTER")):
                 cv2.rectangle(panel, (0, 0), (width, 24), (15, 15, 15), -1)
-                cv2.putText(panel, f"{name}  {t:.2f}s", (6, 17), cv2.FONT_HERSHEY_SIMPLEX, .42, (255, 255, 255), 1)
+                stamp = t if continuous_sim and label != "real" else session.times[cursor]
+                cv2.putText(panel, f"{name}  {stamp:.2f}s", (6, 17), cv2.FONT_HERSHEY_SIMPLEX, .42, (255, 255, 255), 1)
                 writers[label].write(panel)
-            writers["comparison"].write(np.concatenate(panels, axis=1)); count += 1
+            comparison = [panels[0], *[a.copy() for a in aligned]]
+            for panel, label in zip(comparison[1:], ("SIM BEFORE", "SIM AFTER")):
+                cv2.rectangle(panel, (0, 0), (width, 24), (15, 15, 15), -1)
+                cv2.putText(panel, f"{label}  {session.times[cursor]:.2f}s", (6, 17),
+                            cv2.FONT_HERSHEY_SIMPLEX, .42, (255,255,255), 1)
+            writers["comparison"].write(np.concatenate(comparison, axis=1)); count += 1
     finally:
         for writer in writers.values():
             writer.release()
@@ -91,11 +113,12 @@ def render_experiment(session, before_physics, after_physics, before_scene, afte
         finally:
             cap.release()
     return {"files": paths, "frames": count, "fps": fps, "duration_s": count/fps,
-            "alignment": "recorded timestamps; source frames held until next capture",
+            "alignment": "comparison panels share source capture time and hold together; all commands replayed at 30 Hz",
+            "standalone_sim_cadence": "continuous" if continuous_sim else "recorded camera captures",
             "source_frames": len(session.frames), "source": session.meta.get("source")}
 
 
-def build_videos(run, *, fps=3, width=240):
+def build_videos(run, *, fps=3, width=240, continuous_sim=False):
     run = Path(run)
     if not run.is_dir():
         raise FileNotFoundError(run)
@@ -118,7 +141,8 @@ def build_videos(run, *, fps=3, width=240):
         session = load_session(directory)
         recorded = session.meta.get("scene", prior)
         result = render_experiment(session, before_physics, after_physics, _scene(recorded, prior),
-                                   _scene(recorded, candidate_scene), run/"videos"/directory.name, fps=fps, width=width)
+                                   _scene(recorded, candidate_scene), run/"videos"/directory.name, fps=fps, width=width,
+                                   continuous_sim=continuous_sim)
         manifest["experiments"].append({"experiment": directory.name, **result})
         gemini.atomic_json(run/"videos/manifest.json", manifest)
     manifest["status"] = "complete"

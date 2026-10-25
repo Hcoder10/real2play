@@ -289,3 +289,46 @@ def test_wrist_selection_uses_recorded_command_times_and_rejects_holdout(tmp_pat
     observation.split = "heldout"
     with pytest.raises(ValueError, match="Held-out wrist"):
         wrapper.wrist_parts(observation)
+
+
+@pytest.mark.parametrize("continuous", [False, True])
+def test_sparse_video_comparison_holds_all_panels_and_includes_final_capture(tmp_path, monkeypatch, continuous):
+    import cv2
+    from r2p.perception import CameraModel
+    from r2p.real2sim.session import SessionData
+    from r2p.real2sim import twin_videos
+    class Twin:
+        def __init__(self, *args): self.count = 0
+        def step(self, q): self.count += 1
+        def close(self): pass
+    class Renderer:
+        def __init__(self, twin, camera): self.twin = twin
+        def render(self): return np.full((48,64,3), self.twin.count*5, np.uint8), {}
+        def close(self): pass
+    monkeypatch.setattr(twin_videos, "TaskTwin", Twin)
+    monkeypatch.setattr(twin_videos, "CalibratedRenderer", Renderer)
+    first, last = tmp_path/"first.png", tmp_path/"last.png"
+    cv2.imwrite(str(first), np.zeros((48,64,3), np.uint8))
+    cv2.imwrite(str(last), np.full((48,64,3), 100, np.uint8))
+    rows = [{"t": i/30, "q": [0]*6, "q_target": [0]*6} for i in range(24)]
+    session = SessionData(tmp_path, {"source": "real"}, rows, [first,last], [0.,23/30],
+                          CameraModel.look_at(image_size=(64,48)))
+    result = twin_videos.render_experiment(session, {}, {}, {}, {}, tmp_path/"videos", fps=5, width=64,
+                                           continuous_sim=continuous)
+    assert result["frames"] == 5  # includes the last capture at .7667, between output ticks
+    cap = cv2.VideoCapture(result["files"]["comparison"])
+    try:
+        decoded = [cap.read()[1] for _ in range(5)]
+    finally:
+        cap.release()
+    assert all(float(frame[35:,70:120].mean()) < 3 for frame in decoded[:4])
+    assert float(decoded[-1][35:,70:120].mean()) > 105
+    assert float(decoded[-1][35:,10:50].mean()) > 90
+    cap = cv2.VideoCapture(result["files"]["sim_before"])
+    try:
+        cap.set(cv2.CAP_PROP_POS_FRAMES, 2)
+        ok, middle = cap.read()
+        assert ok
+        assert (float(middle[35:,10:50].mean()) > 40) == continuous
+    finally:
+        cap.release()
