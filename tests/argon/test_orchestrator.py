@@ -129,6 +129,8 @@ def test_fail_closed_heldout_numeric_gate():
     assert not gate_metrics({**metrics, "jaw_mm": float("nan")})[0]
     assert not gate_metrics({**metrics, "rows": []})[0]
     assert not gate_metrics({**metrics, "rows": [{**row, "object_mm": 10}]})[0]
+    assert not gate_metrics({**metrics, "objects": {}})[0]
+    assert not gate_metrics({**metrics, "objects": {"cap": {"iou": .79}}})[0]
     assert not gate_metrics(metrics, {"objects": {"cap": {"iou": .99}}})[0]
 
 
@@ -243,3 +245,27 @@ def test_receipt_requires_exact_request_hash(tmp_path):
         tool.wait_receipt(path, "expected")
     gemini.atomic_json(path, {"request_sha256": "expected", "export": "x"})
     assert tool.wait_receipt(path, "expected")["export"] == "x"
+
+
+def test_owner_wait_stops_controller_without_resubmission(tmp_path):
+    from r2p.orchestrator import WaitingForOwner
+    backend = Backend()
+    calls = []
+    def execute(name, args):
+        calls.append(name)
+        raise WaitingForOwner("Persisted request is still pending")
+    backend.execute = execute
+    runner = Orchestrator(root=tmp_path, dry_run=True, backend=backend)
+    with pytest.raises(WaitingForOwner, match="still pending"):
+        runner.run()
+    assert runner.state["status"] == "BLOCKED"
+    assert calls == ["measure_scene"]
+
+
+def test_live_collection_requires_publication_receipt(tmp_path):
+    backend = Backend()
+    runner = Orchestrator(root=tmp_path, backend=backend, prompt=lambda _: "yes")
+    runner.state["results"]["build_game"] = {"ok": True, "metrics": {"passed": 1, "published": 0}}
+    with pytest.raises(ValueError, match="publication receipt"):
+        runner.execute(decision("collect_play"))
+    assert not backend.calls

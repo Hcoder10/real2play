@@ -50,6 +50,10 @@ DEPENDENCIES = {
 THRESHOLDS = {"joint_deg": 1.0, "jaw_mm": 2.0, "object_mm": 5.0, "iou": .80, "calibration_px": 5.0}
 
 
+class WaitingForOwner(RuntimeError):
+    """A persisted external request is still pending; never submit a replacement."""
+
+
 def read_json(path):
     return json.loads(Path(path).read_text(encoding="utf-8"))
 
@@ -262,6 +266,9 @@ class Orchestrator:
             previous = self.state["results"].get(dependency, {})
             if not previous.get("ok") or previous.get("metrics", {}).get("passed", 1) != 1:
                 raise ValueError(f"{name} requires passed {dependency}")
+        if name == "collect_play" and not self.dry_run:
+            if self.state["results"]["build_game"]["metrics"].get("published") != 1:
+                raise ValueError("Live play collection requires build_game(publish=true) and the owner's publication receipt")
         if name == "deploy_real" and not self.dry_run:
             m = self.state["results"]["replay_and_train"]["metrics"]
             if min(m.get("clean", 0), m.get("real", 0)) < .8 or m.get("eval_n", 0) < 12 or m.get("improved") != 1:
@@ -314,7 +321,7 @@ class Orchestrator:
                     return self.state
                 try:
                     feedback = self.execute(decision)
-                except (PermissionError, gemini.QuotaError, gemini.CacheMiss, gemini.RequestLimit):
+                except (PermissionError, WaitingForOwner, gemini.QuotaError, gemini.CacheMiss, gemini.RequestLimit):
                     raise
                 except Exception as exc:
                     feedback = {"ok": False, "error": gemini._safe(exc), "metrics": {"errors": 1}}
@@ -349,7 +356,7 @@ def main(argv=None):
     parser.add_argument("--from-game", type=Path, default=Path("roblox/out/traces"))
     parser.add_argument("--perception-setup", type=Path)
     parser.add_argument("--bench-profile", type=Path, default=Path("scripts/robot/K_STREAM_PROFILE.json"))
-    parser.add_argument("--wait-seconds", type=float, default=60)
+    parser.add_argument("--wait-seconds", type=float, default=3600)
     args = vars(parser.parse_args(argv))
     plan_only = args.pop("plan_only")
     controller_mode, mcp_url, mcp_port = (args.pop(k) for k in ("controller", "mcp_url", "mcp_port"))

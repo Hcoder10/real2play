@@ -12,7 +12,7 @@ import sys
 import time
 
 from r2p import gemini
-from r2p.orchestrator import THRESHOLDS, digest, read_json
+from r2p.orchestrator import THRESHOLDS, WaitingForOwner, digest, read_json
 
 
 def load_script(name, root):
@@ -50,6 +50,12 @@ def gate_metrics(metrics, baseline=None):
         for oid, row in baseline.get("objects", {}).items():
             if metrics.get("objects", {}).get(oid, {}).get("iou", -1) < row["iou"] - .01:
                 reasons.append("object IoU regression: " + oid)
+    if not metrics.get("objects"):
+        reasons.append("missing per-object visual evidence")
+    for oid, row in metrics.get("objects", {}).items():
+        value = row.get("iou")
+        if type(value) not in (int, float) or not math.isfinite(value) or value < THRESHOLDS["iou"]:
+            reasons.append("object IoU below threshold: " + oid)
     return not reasons, reasons
 
 
@@ -349,7 +355,7 @@ class LocalTools:
         return training_plan(self, self.folder("train_plan"))
 
     def wait_receipt(self, path, request_hash):
-        seconds = float(self.r.options.get("wait_seconds", 60))
+        seconds = float(self.r.options.get("wait_seconds", 3600))
         if not math.isfinite(seconds) or not 0 <= seconds <= 86400:
             raise ValueError("wait-seconds must be finite and within 0..86400")
         deadline = time.monotonic() + seconds
@@ -361,7 +367,7 @@ class LocalTools:
                 return receipt
             self.r.publish(stage="waiting", next=f"Owner receipt: {path}; request_sha256={request_hash}")
             if time.monotonic() >= deadline:
-                raise RuntimeError(f"Waiting for owner receipt {path}; no GPU/publish operation launched")
+                raise WaitingForOwner(f"Waiting for owner receipt {path}; no GPU/publish operation launched")
             time.sleep(min(1, max(0, deadline - time.monotonic())))
 
     def replay_and_train(self):

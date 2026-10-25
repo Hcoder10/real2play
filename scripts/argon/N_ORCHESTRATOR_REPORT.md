@@ -50,8 +50,11 @@ and runs training. `train_receipt.json` must contain the matching
 `request_sha256`, `export` and `incumbent` paths. The orchestrator independently
 loads and evaluates both exports on the same held-out clean/real-noise scenes.
 Real deployment requires improvement over incumbent, >=0.80 success in both
-conditions and >=12 scenes. `--wait-seconds` controls receipt wait duration;
-expiry leaves an explicit BLOCKED status and preserves the request.
+conditions and >=12 scenes. `--wait-seconds` controls receipt wait duration
+(default 3600 seconds); expiry leaves an explicit BLOCKED status and preserves
+the request without resubmitting it. Keep the process running while supplying
+the receipt: recovery of a terminated orchestration process is not implemented.
+Both receipt hashes use `sha256(r2p.gemini._canonical(request).encode())`.
 
 ## Managed compute
 
@@ -71,18 +74,18 @@ check counts and synthetic provenance, alongside the current decision/metrics.
 
 ## Measured dry-run evidence
 
-Run `runs/argon_orchestrator/n-dev-03` completed in **74.316 seconds** with fake
+Run `runs/argon_orchestrator/n-acceptance-01` completed in **84.090 seconds** with fake
 Argon decisions, fake managed agents, real CPU MuJoCo/SimMover, real Luau tests,
 headless game control, physical replay, tiny CPU learning and MockRobot.
 No live Gemini, GPU or hardware execution occurred in this run.
 
 ```text
 ARGON calibrate_arm: passed=1, poses=8, open_jaw_frames=8, activated=0
-ARGON active_twin: experiments=4, object_mm=0.235758, iou=1.0
+ARGON active_twin: experiments=4, object_mm=0.190132, iou=1.0
 ARGON analyze_experiments: passed=1, kept=0
-ARGON twin_gate: passed=1, joint_deg=0, jaw_mm=0, object_mm=0.235758
+ARGON twin_gate: passed=1, joint_deg=0, jaw_mm=0, object_mm=0.190132
 ARGON build_game: passed=1, local_checks=4, parity_passed=1, published=0
-HEADLESS 1/1: success=True, ticks=368
+HEADLESS 1/1: success=True, ticks=390
 ARGON collect_play: traces=1, human=0, headless=1
 ARGON replay_and_train: replayed=1, eval_n=1, clean=0, real=0, improved=0
 ARGON deploy_real: attempts=1, ticks=60, success=0
@@ -92,6 +95,9 @@ ARGON finish: gates_passed=1, stop_met=1
 The smoke policy failed; both paired scores were zero and selection was HOLD.
 DONE here means the offline workflow and its explicit smoke criteria completed.
 It is not policy qualification, human gameplay, real calibration or real transfer.
+Earlier independent CLI run `n-dev-03` took 74.316 seconds; test-isolated end-to-end
+runs also passed the three-minute limit. The accepted twin gate additionally
+requires IoU >=0.80 for every object, not only the average.
 
 ## Live Argon planning evidence
 
@@ -148,6 +154,40 @@ For another MCP client, run the tools server alone (token file stays local):
 
 Local MCP initialization, authentication, origin rejection and duplicate-request
 handling are tested. No public tunnel or live managed-controller run was made.
+
+## Final validation and commits
+
+- Primary implementation: `1439a53` (`feat(argon): orchestrate gated twin-to-play-to-policy tools`).
+- Follow-up commit containing this report: `fix(argon): stop pending owner requests and require publication evidence`.
+- Lightweight boundary checks: **25 passed, 1 deselected** in 1.03 seconds.
+- Required full command above: **995 passed, 8 failed** in 524.85 seconds. All **26 N
+  orchestrator tests passed**, including the physical offline loop. That isolated
+  end-to-end run completed in **92.576 seconds**, with DONE/synthetic status.
+
+Full acceptance is **not green**. The final shared-tree run reported these failures:
+
+| Component | Failing test | Observed result |
+|---|---|---|
+| active twin | `test_unsafe_experiments_refused[experiment3]` | Current validator accepts the high hold above the grid. |
+| active twin | `test_whole_path_bounds_and_safe_finish` | Current menu entry 2 is accepted with the fixture's extra obstacle. |
+| active twin | `test_sim_campaign_recovers_hidden_truth_without_fit_leak` | Friction remains 0.60; fixture expects 0.45 +/-0.06. |
+| active twin | `test_menu_follows_moved_supply_and_scene_freezes_grid` | Hold follows y=-0.125; fixture expects -0.12. |
+| perception | `test_synthbench_pose_accuracy[2-place_on_cell]` | Fixed-cell error 18.86 mm. |
+| perception | `test_synthbench_pose_accuracy[4-place_on_cell]` | Fixed-cell error 30.71 mm. |
+| perception | `test_synthbench_pose_accuracy[8-place_on_cell]` | Fixed-cell error 47.69 mm. |
+| simulation | `test_trace_format_commands_dart_and_determinism` | Generated expert trace reports success=false. |
+
+Other agents changed the active experiment menu and measured task geometry during
+this work. N did not edit those components or relax their tests. These failures
+need their owners' resolution before claiming repository-wide acceptance.
+
+The perception fixture samples a randomized board but supplies nominal fixed-cell
+coordinates to `TaskPerceiver`. An isolated in-memory probe supplying sampled
+fixed-cell coordinates passed all three failing cases (3 passed, 21 deselected).
+The source fix would touch C2's `r2p/synthbench/world.py`; permission was requested
+under AGENTS.md's ownership rule and had not been granted at handoff. No source
+change was applied outside N's paths. The probe is retained in
+`runs/argon_orchestrator/n-perception-probe.py`.
 
 ## Files and limitations
 

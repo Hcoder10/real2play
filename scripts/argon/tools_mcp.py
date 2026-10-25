@@ -21,7 +21,7 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 from r2p import gemini
-from r2p.orchestrator import Orchestrator, TOOLS, decision_schema, digest, object_schema
+from r2p.orchestrator import Orchestrator, TOOLS, WaitingForOwner, decision_schema, digest, object_schema
 
 
 class ToolService:
@@ -84,7 +84,7 @@ class ToolService:
                 result = self.runner.execute(decision)
             except Exception as exc:
                 result = {"ok": False, "metrics": {"errors": 1}, "error": gemini._safe(exc)}
-                if isinstance(exc, (PermissionError, gemini.QuotaError, gemini.CacheMiss, gemini.RequestLimit)):
+                if isinstance(exc, (PermissionError, WaitingForOwner, gemini.QuotaError, gemini.CacheMiss, gemini.RequestLimit)):
                     self.runner.publish(status="BLOCKED", error=gemini._safe(exc))
             self.runner.event("result", tool=name, result=result, source="mcp")
             if name == "finish" and result.get("ok"):
