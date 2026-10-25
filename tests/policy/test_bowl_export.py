@@ -4,6 +4,15 @@ import numpy as np
 from r2p.tasks import load_task, sample_scene, commands, encode_slots
 from r2p.traces import write_trace
 
+def test_numpy_gelu_preserves_training_precision():
+    import torch
+    from r2p.policy.runtime import gelu
+    x=np.linspace(-5,5,101,dtype=np.float32)
+    actual=gelu(x)
+    expected=torch.nn.functional.gelu(torch.from_numpy(x),approximate='tanh').numpy()
+    assert actual.dtype==np.float32
+    np.testing.assert_allclose(actual,expected,atol=5e-7,rtol=1e-5)
+
 def test_free_roll_export_retains_window(tmp_path):
     from r2p.policy.train import train
     from r2p.policy import load

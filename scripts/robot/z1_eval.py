@@ -32,6 +32,7 @@ def main():
     p=argparse.ArgumentParser(); p.add_argument('--export',required=True); p.add_argument('--n',type=int,default=30)
     p.add_argument('--workers',type=int,default=20); p.add_argument('--video-dir'); p.add_argument('--video-seeds',type=int,nargs='*')
     p.add_argument('--noise',choices=NOISE,default='clean'); p.add_argument('--seed',type=int,default=10000)
+    p.add_argument('--no-record',action='store_true',help='Write report only for concurrent noise evaluations')
     a=p.parse_args(); directory=Path(a.export); started=time.time()
     seeds=a.video_seeds if a.video_seeds else range(a.seed,a.seed+a.n)
     jobs=[(a.export,s,a.noise,str(Path(a.video_dir)/f'policy_{a.noise}_{s}.mp4') if a.video_dir else None) for s in seeds]
@@ -45,7 +46,7 @@ def main():
             'failures':dict(Counter(r['reason'] for r in rows if not r['success'])),
             'seconds':time.time()-started,'weights_sha256':hashlib.sha256((directory/'weights.npz').read_bytes()).hexdigest(),
             'physics_sha256':cfg['physics_sha256']}
-    if not a.video_dir:
+    if not a.video_dir and not a.no_record:
         cfg['eval'][a.noise]=report; cfg['eval']['n']=len(rows)
         temp=directory/'config.json.tmp'; temp.write_text(json.dumps(cfg,indent=2)); temp.replace(directory/'config.json')
     (directory/f'eval_{a.noise}{"_video" if a.video_dir else ""}.json').write_text(json.dumps(report,indent=2))

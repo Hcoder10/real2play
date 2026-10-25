@@ -111,7 +111,7 @@ def clamp_constants(features, obs_const):
 
 
 def gelu(x):
-    return .5*x*(1+np.tanh(np.sqrt(2/np.pi)*(x+.044715*x*x*x)))
+    return .5*x*(1+np.tanh(float(np.sqrt(2/np.pi))*(x+.044715*x*x*x)))
 
 
 class Policy:
