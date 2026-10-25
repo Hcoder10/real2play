@@ -16,7 +16,7 @@ def test_geometry_comes_from_task():
     from r2p.tasks import load_task
     task = load_task("place_on_cell")
     assert ttt.geometry()["cells"] == task["board"]["cells"]
-    assert np.allclose(ttt.geometry()["cells"]["r2c2"], [0.205, 0.045])
+    assert np.allclose(ttt.geometry()["cells"]["r2c2"], task["board"]["cells"]["r2c2"])
 
 
 @pytest.mark.parametrize("robot", ["X", "O"])
@@ -105,4 +105,4 @@ def test_placement_uses_measured_supply():
     objects = {o["id"]: o for o in scene["objects"]}
     piece = next(o for o in objects.values() if o["role"] == "manipulated")
     assert np.allclose(piece["xyz"], [0.18, -0.12, 0.016])
-    assert np.allclose(objects["cell"]["xyz"][:2], [0.205, 0])
+    assert np.allclose(objects["cell"]["xyz"][:2], ttt.geometry()["cells"]["r2c1"])

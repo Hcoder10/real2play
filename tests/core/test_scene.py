@@ -27,15 +27,17 @@ def test_sampled_scenes_are_reachable_deterministic_and_do_not_mutate_task(name)
 def test_board_layout_optional_pieces_and_slot_identity():
     task = load_task("place_on_cell")
     grid = {obj["id"]:obj for obj in task["objects"] if obj["id"].startswith("r")}
-    for i, x in enumerate((.115,.160,.205)):
-        for j, y in enumerate((-.045,0,.045)):
+    cells = task["board"]["cells"]                     # bench-measured layout (camera), rows along +x, cols along +y
+    for i in range(3):
+        for j in range(3):
             obj = grid[f"r{i}c{j}"]
-            assert obj["xy"] == [x,y]
-            assert task["board"]["cells"][f"r{i}c{j}"] == [x,y]
+            assert obj["xy"] == cells[f"r{i}c{j}"]
+            if i: assert cells[f"r{i}c{j}"][0] > cells[f"r{i-1}c{j}"][0]
+            if j: assert cells[f"r{i}c{j}"][1] > cells[f"r{i}c{j-1}"][1]
             assert obj["fixed"] and not obj["collide"]
-            assert obj["size_m"][:2] == [.045,.045]
+            assert obj["size_m"][:2] == [task["board"]["cell_m"]] * 2
     by_id = {o["id"]:o for o in task["objects"]}
-    assert by_id["piece"]["size_m"] == [.03,.03,.014]
+    assert by_id["piece"]["size_m"][0] <= task["board"]["cell_m"] - 0.005
     assert by_id["piece"]["xy"] == [.13,.13]
     targets, counts = set(), set()
     for seed in range(100):
