@@ -37,7 +37,9 @@ def trace_commands(task, ticks, meta, config):
         if i:
             previous = ticks[i-1].get("q_exec", ticks[i-1]["q_target"])
             threshold = deployment.get("gripper_open_threshold_rad", .15)
-            opened = previous[5] > threshold
+            # TaskTwin.grip_closed uses < .15; calibrated bench exports use >
+            # their declared threshold for opening, including measured q.
+            opened = previous[5] >= threshold if not deployment else previous[5] > threshold
             if deployment:
                 opened = opened and tick["q"][5] > threshold
             tracker.update({"objects": tick["poses"], "gripper_open": bool(opened)},

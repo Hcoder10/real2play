@@ -1,7 +1,8 @@
 # P2: command-consistent training removes most policy stalls
 
 The 200-trace CPU proof succeeds on **181/200 exact training scenes (90.5%)**,
-above the requested >50% gate. This is a training-scene implementation proof,
+versus **42/200 (21.0%)** for the matched control without the two input fixes.
+This passes the requested >50% gate. It is a training-scene implementation proof,
 not a held-out or real-arm qualification. The evaluator, temporal ensemble,
 gripper thresholds, physical contacts and shared success checker are unchanged.
 
@@ -35,6 +36,21 @@ the remaining 976 ticks. Its command clock then runs beyond recorded placement
 durations and the arm drifts/recloses. First-action teacher-forced MAE is only
 0.00853 rad, so that metric alone hid the closed-loop failure.
 
+Paired `diagnose` replays on the first five exact scenes found:
+
+| Trace seed | wide_v2 result / final nearest phase | Corrected CPU result |
+| --- | --- | --- |
+| 200001 | Timeout, carry after release/drift | Timeout, release; placement miss |
+| 200002 | Timeout, home (694 ticks in home command) | Success at tick 441 |
+| 200004 | Timeout, home_up (505 ticks in home command) | Success at tick 411 |
+| 200005 | Timeout, home (712 ticks in home command) | Success at tick 440 |
+| 200006 | Timeout, carry after release/drift | Timeout, release; placement miss |
+
+All five old-policy final windows fail both `at` and `gripper_open`. The two
+remaining CPU failures fail only `at`. Per-phase teacher errors and rollout
+phase counts (approach/descend/close/lift/carry/lower/release/retreat/home) are
+in `runs/P2/diagnostics.json`; full sampled states are in its individual JSONs.
+
 ## CPU proof
 
 - Data: the first 200 sorted successful traces from the rig's
@@ -45,11 +61,30 @@ durations and the arm drifts/recloses. First-action teacher-forced MAE is only
   updates at 0.0003. Observation augmentation and label smoothing disabled.
 - Initial 20-scene check: 17/20. Complete proof: 181/200, all exact saved scenes,
   clean noise, full 1,200-tick budget, unchanged shared checker.
+- The 19 remaining failures are three before pick completion, fourteen in the
+  placement command, and two after command progression completes. They remain
+  failures in the proof; no tolerance or settling-window relaxation is used.
 - Weights SHA-256:
   `9e6b313b8f45c267972c007b89f08e169b7fa4fefe27781a64d580aa839ce6b1`.
 - Local export: `runs/P2/cpu200/export`; all episode outcomes:
   `runs/P2/cpu200/proof.json`. Fit plus initial 20 episodes took 153.4 seconds;
   replaying all 200 with four CPU workers took 80.2 seconds.
+
+The matched control uses the same 200 traces, seed, architecture, batch size,
+16,000 updates, optimizer and disabled augmentation. It removes only the two
+new dataset convention markers, preserving the historical recorded inputs and
+command boundaries. Both runs use the unchanged current evaluator:
+
+| Input convention | Clean training-scene success | Final training loss |
+| --- | --- | --- |
+| Historical recorded q / command boundaries | 42/200 (21.0%) | 0.001422 |
+| Reconstructed executed q / inference command boundaries | 181/200 (90.5%) | 0.001497 |
+
+This is a **69.5 percentage-point** gain under matched training conditions.
+The control deliberately exits with a failed >50% gate, after saving all 200
+outcomes; it is not a runtime exception. Its export and evidence are under
+`runs/P2/cpu200_recorded`. The control tests the two fixes together, rather than
+separating their individual contributions.
 
 ```powershell
 $env:OPENBLAS_NUM_THREADS = '1'
@@ -57,6 +92,7 @@ $env:OMP_NUM_THREADS = '1'
 $env:R2P_CACHE_ONLY = '1'
 .venv/Scripts/python.exe -m r2p.policy.prove --traces runs/P2/traces --out runs/P2/cpu200 --steps 16000 --workers 4
 .venv/Scripts/python.exe -m r2p.policy.prove --traces runs/P2/traces --out runs/P2/cpu200 --reuse --workers 4
+.venv/Scripts/python.exe -m r2p.policy.ablate_recorded --traces runs/P2/traces --out runs/P2/cpu200_recorded --steps 16000 --workers 4
 .venv/Scripts/python.exe -m pytest -q tests/policy tests/robot
 ```
 
@@ -95,12 +131,27 @@ improvement follows from the CPU training-scene proof.
 
 ## Validation and remaining work
 
-The contact-reset and scheduler-clock regression tests pass. Full acceptance,
-phase-diagnostic summaries and rig launch status are being recorded before the
-P2 handoff. No hardware, Gemini calls, changes to the success checker, or edits
+Acceptance: `.venv/Scripts/python.exe -m pytest -q tests/policy tests/robot`:
+**74 passed in 121.26 seconds** on the final code (initial run: 121.29 seconds).
+Implementation and full CPU proof commit:
+**723e296**. No hardware, Gemini calls, changes to the success checker, or edits
 to `r2p/lab`, `scripts/lead` or `r2p/real2sim` were made.
+The final threshold-edge parity check also passed all five temporal-context
+tests: the default twin treats exactly 0.15 rad as open. This only affects that
+boundary; the cap expert uses negative squeeze targets and openings above 0.35.
+
+Exactly one rig job was launched with `setsid nohup` after the full CPU proof
+passed. Code was transferred by Git bundle into isolated worktree
+`/home/cube/real2play-p2` at 723e296; the shared rig checkout was not reset or
+changed. Process **51141**, log `/home/cube/real2play/runs/P2_wide_v3.log`,
+PID file `/home/cube/real2play/runs/P2_wide_v3.pid`. Its output destination is
+`/home/cube/real2play/exports/wide_v3`. The process was alive and building the
+dataset at the final 14:48 PT check. Landlord independently confirmed PID 51141 was registered
+to the active lease with no limit violation at 14:45 PT. The shared lease must
+remain active for S and this run.
 
 Remaining: completed wide_v3 training and held-out comparison, real-bench start
 pose/guard qualification, and hardware transfer. The CPU fit is not a deployable
-bench policy. The proof combines the input fixes with an unaugmented fit; it is
-not a matched ablation against wide_v2's different dataset size/augmentation.
+bench policy. The matched CPU control establishes the benefit of the input
+fixes on this fit; it is not a full-scale comparison against wide_v2's different
+dataset size, architecture and augmentation.

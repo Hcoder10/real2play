@@ -124,6 +124,11 @@ def test_training_command_clock_and_chunks_follow_inference_tracker(tmp_path):
     # Boundary padding belongs to the same new command as the observation.
     labels = dataset.labels.reshape(-1, 15, 6)
     np.testing.assert_allclose(labels[3], np.tile(rows[3]["q_target"], (15, 1)), atol=1e-7)
+    # The default twin regards exactly .15 rad as open; an open, elevated
+    # object must not complete pick during trace alignment either.
+    for row in rows:
+        row["q_exec"][5] = .15
+    assert trace_commands(task, rows, meta, config) == [commands(task)[0]]*len(rows)
 
 
 def test_eval_rate_limit_uses_last_sent_even_when_measured_q_resets(monkeypatch):

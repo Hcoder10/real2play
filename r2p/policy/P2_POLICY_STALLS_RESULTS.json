@@ -8825,5 +8825,2968 @@
       "seed": 200261,
       "trace": "runs\\P2\\traces\\expert_place_on_cell_00200261.jsonl"
     }
-  ]
+  ],
+  "paired_diagnostics": [
+    {
+      "export": "exports/wide_v2",
+      "trace": "runs\\P2\\traces\\expert_place_on_cell_00200001.jsonl",
+      "trace_seed": 200001,
+      "trace_success": true,
+      "trace_target_space": "servo",
+      "teacher_forced": {
+        "ticks": 665,
+        "chunk_mae_rad": 0.009977920595731164,
+        "first_mae_rad": 0.008526654114345746,
+        "first_p95_rad": 0.02196077250062871,
+        "first_per_joint_mae_rad": [
+          0.009470805586522846,
+          0.010086430876202772,
+          0.00845575631156279,
+          0.0070846008548674675,
+          0.009658122768061668,
+          0.006404208288856944
+        ],
+        "per_phase": {
+          "approach": {
+            "ticks": 88,
+            "chunk_mae_rad": 0.009459064116121546,
+            "first_mae_rad": 0.008046976296810626
+          },
+          "descend": {
+            "ticks": 78,
+            "chunk_mae_rad": 0.01122160830941421,
+            "first_mae_rad": 0.009071192547166587
+          },
+          "close": {
+            "ticks": 35,
+            "chunk_mae_rad": 0.00963668170718831,
+            "first_mae_rad": 0.010204330704649663
+          },
+          "lift": {
+            "ticks": 62,
+            "chunk_mae_rad": 0.007118380316234301,
+            "first_mae_rad": 0.0072949568861393095
+          },
+          "carry": {
+            "ticks": 93,
+            "chunk_mae_rad": 0.009589582641247015,
+            "first_mae_rad": 0.00752865773683478
+          },
+          "lower": {
+            "ticks": 106,
+            "chunk_mae_rad": 0.012115888765858066,
+            "first_mae_rad": 0.008325947578408573
+          },
+          "release": {
+            "ticks": 37,
+            "chunk_mae_rad": 0.011366442419448324,
+            "first_mae_rad": 0.014661139049804343
+          },
+          "retreat": {
+            "ticks": 62,
+            "chunk_mae_rad": 0.012931344806202125,
+            "first_mae_rad": 0.008938550334356681
+          },
+          "home_up": {
+            "ticks": 24,
+            "chunk_mae_rad": 0.010137387056894438,
+            "first_mae_rad": 0.00872134343752329
+          },
+          "home": {
+            "ticks": 80,
+            "chunk_mae_rad": 0.006341202934544855,
+            "first_mae_rad": 0.00695523788409801
+          }
+        }
+      },
+      "closed_loop": {
+        "success": false,
+        "reason": "timeout",
+        "ticks": 1200,
+        "resets": 4,
+        "commands_completed": 1,
+        "check": {
+          "ok": false,
+          "per_predicate": [
+            {
+              "pred": "at",
+              "ok": false
+            },
+            {
+              "pred": "not_moved",
+              "ok": true
+            },
+            {
+              "pred": "not_moved",
+              "ok": true
+            },
+            {
+              "pred": "not_moved",
+              "ok": true
+            },
+            {
+              "pred": "not_moved",
+              "ok": true
+            },
+            {
+              "pred": "gripper_open",
+              "ok": false
+            },
+            {
+              "pred": "settled",
+              "ok": true
+            }
+          ],
+          "ticks": 15,
+          "required_ticks": 15
+        }
+      },
+      "command_ticks": {
+        "pick(piece)": 224,
+        "place_at(piece,cell)": 976
+      },
+      "nearest_reference_phase_ticks": {
+        "approach": 100,
+        "descend": 65,
+        "close": 30,
+        "lift": 29,
+        "carry": 621,
+        "lower": 165,
+        "retreat": 190
+      },
+      "final_nearest_reference_phase": "carry"
+    },
+    {
+      "export": "exports/wide_v2",
+      "trace": "runs\\P2\\traces\\expert_place_on_cell_00200002.jsonl",
+      "trace_seed": 200002,
+      "trace_success": true,
+      "trace_target_space": "servo",
+      "teacher_forced": {
+        "ticks": 633,
+        "chunk_mae_rad": 0.0102202039486783,
+        "first_mae_rad": 0.008470766095202056,
+        "first_p95_rad": 0.022052245391549246,
+        "first_per_joint_mae_rad": [
+          0.00898914355876976,
+          0.00796761897834675,
+          0.009225390396237172,
+          0.006596016255807816,
+          0.010746349633916347,
+          0.00730007774813446
+        ],
+        "per_phase": {
+          "approach": {
+            "ticks": 57,
+            "chunk_mae_rad": 0.01081102293062589,
+            "first_mae_rad": 0.008172818357673277
+          },
+          "descend": {
+            "ticks": 77,
+            "chunk_mae_rad": 0.01055809902221787,
+            "first_mae_rad": 0.00906980464766278
+          },
+          "close": {
+            "ticks": 35,
+            "chunk_mae_rad": 0.008852807582665437,
+            "first_mae_rad": 0.010527041016631456
+          },
+          "lift": {
+            "ticks": 62,
+            "chunk_mae_rad": 0.007313545212830659,
+            "first_mae_rad": 0.007170718235207126
+          },
+          "carry": {
+            "ticks": 89,
+            "chunk_mae_rad": 0.009814431459982122,
+            "first_mae_rad": 0.007762679878285301
+          },
+          "lower": {
+            "ticks": 106,
+            "chunk_mae_rad": 0.012424242445848232,
+            "first_mae_rad": 0.008550949250406625
+          },
+          "release": {
+            "ticks": 37,
+            "chunk_mae_rad": 0.012003070055814405,
+            "first_mae_rad": 0.013008984981955532
+          },
+          "retreat": {
+            "ticks": 66,
+            "chunk_mae_rad": 0.012488521208641577,
+            "first_mae_rad": 0.00858145886750439
+          },
+          "home_up": {
+            "ticks": 24,
+            "chunk_mae_rad": 0.012735444394969661,
+            "first_mae_rad": 0.00939743763773955
+          },
+          "home": {
+            "ticks": 80,
+            "chunk_mae_rad": 0.00640547928318813,
+            "first_mae_rad": 0.006427650065458231
+          }
+        }
+      },
+      "closed_loop": {
+        "success": false,
+        "reason": "timeout",
+        "ticks": 1200,
+        "resets": 148,
+        "commands_completed": 3,
+        "check": {
+          "ok": false,
+          "per_predicate": [
+            {
+              "pred": "at",
+              "ok": false
+            },
+            {
+              "pred": "not_moved",
+              "ok": true
+            },
+            {
+              "pred": "not_moved",
+              "ok": true
+            },
+            {
+              "pred": "not_moved",
+              "ok": true
+            },
+            {
+              "pred": "not_moved",
+              "ok": true
+            },
+            {
+              "pred": "gripper_open",
+              "ok": false
+            },
+            {
+              "pred": "settled",
+              "ok": true
+            }
+          ],
+          "ticks": 15,
+          "required_ticks": 15
+        }
+      },
+      "command_ticks": {
+        "pick(piece)": 199,
+        "place_at(piece,cell)": 204,
+        "release": 103,
+        "home": 694
+      },
+      "nearest_reference_phase_ticks": {
+        "approach": 59,
+        "descend": 76,
+        "close": 25,
+        "lift": 39,
+        "carry": 57,
+        "lower": 146,
+        "retreat": 1,
+        "release": 103,
+        "home_up": 125,
+        "home": 569
+      },
+      "final_nearest_reference_phase": "home"
+    },
+    {
+      "export": "exports/wide_v2",
+      "trace": "runs\\P2\\traces\\expert_place_on_cell_00200004.jsonl",
+      "trace_seed": 200004,
+      "trace_success": true,
+      "trace_target_space": "servo",
+      "teacher_forced": {
+        "ticks": 613,
+        "chunk_mae_rad": 0.009717371497900569,
+        "first_mae_rad": 0.008347131931584897,
+        "first_p95_rad": 0.02104455088959058,
+        "first_per_joint_mae_rad": [
+          0.008275533593123673,
+          0.00925840216976696,
+          0.009372000073160067,
+          0.006803612494706824,
+          0.008820412484876779,
+          0.007552830773875097
+        ],
+        "per_phase": {
+          "approach": {
+            "ticks": 62,
+            "chunk_mae_rad": 0.009199445413213853,
+            "first_mae_rad": 0.007555037260568392
+          },
+          "descend": {
+            "ticks": 77,
+            "chunk_mae_rad": 0.010456763606893056,
+            "first_mae_rad": 0.008904983758951667
+          },
+          "close": {
+            "ticks": 35,
+            "chunk_mae_rad": 0.009754420946503868,
+            "first_mae_rad": 0.011414209872063118
+          },
+          "lift": {
+            "ticks": 62,
+            "chunk_mae_rad": 0.006869327856582353,
+            "first_mae_rad": 0.007531055025974924
+          },
+          "carry": {
+            "ticks": 70,
+            "chunk_mae_rad": 0.008891200144560038,
+            "first_mae_rad": 0.0071458667748250495
+          },
+          "lower": {
+            "ticks": 101,
+            "chunk_mae_rad": 0.013791605469155234,
+            "first_mae_rad": 0.008612739970325668
+          },
+          "release": {
+            "ticks": 37,
+            "chunk_mae_rad": 0.01365962661924205,
+            "first_mae_rad": 0.013219458661329396
+          },
+          "retreat": {
+            "ticks": 65,
+            "chunk_mae_rad": 0.00936321556437609,
+            "first_mae_rad": 0.008909672660423846
+          },
+          "home_up": {
+            "ticks": 24,
+            "chunk_mae_rad": 0.008501243271601067,
+            "first_mae_rad": 0.006971515109166516
+          },
+          "home": {
+            "ticks": 80,
+            "chunk_mae_rad": 0.0060066007126071816,
+            "first_mae_rad": 0.006132632375962359
+          }
+        }
+      },
+      "closed_loop": {
+        "success": false,
+        "reason": "timeout",
+        "ticks": 1200,
+        "resets": 22,
+        "commands_completed": 3,
+        "check": {
+          "ok": false,
+          "per_predicate": [
+            {
+              "pred": "at",
+              "ok": false
+            },
+            {
+              "pred": "not_moved",
+              "ok": true
+            },
+            {
+              "pred": "not_moved",
+              "ok": true
+            },
+            {
+              "pred": "not_moved",
+              "ok": true
+            },
+            {
+              "pred": "not_moved",
+              "ok": true
+            },
+            {
+              "pred": "gripper_open",
+              "ok": false
+            },
+            {
+              "pred": "settled",
+              "ok": true
+            }
+          ],
+          "ticks": 15,
+          "required_ticks": 15
+        }
+      },
+      "command_ticks": {
+        "pick(piece)": 428,
+        "place_at(piece,cell)": 179,
+        "release": 88,
+        "home": 505
+      },
+      "nearest_reference_phase_ticks": {
+        "approach": 67,
+        "descend": 191,
+        "close": 41,
+        "lift": 129,
+        "carry": 45,
+        "lower": 134,
+        "release": 88,
+        "home_up": 505
+      },
+      "final_nearest_reference_phase": "home_up"
+    },
+    {
+      "export": "exports/wide_v2",
+      "trace": "runs\\P2\\traces\\expert_place_on_cell_00200005.jsonl",
+      "trace_seed": 200005,
+      "trace_success": true,
+      "trace_target_space": "servo",
+      "teacher_forced": {
+        "ticks": 632,
+        "chunk_mae_rad": 0.009203852395636584,
+        "first_mae_rad": 0.00778725279499479,
+        "first_p95_rad": 0.019646740153131562,
+        "first_per_joint_mae_rad": [
+          0.007907887951834032,
+          0.00794618357103929,
+          0.007928521962667091,
+          0.007294221793519245,
+          0.009142382303683106,
+          0.006504319187225995
+        ],
+        "per_phase": {
+          "approach": {
+            "ticks": 56,
+            "chunk_mae_rad": 0.008245728007245566,
+            "first_mae_rad": 0.007143322825912376
+          },
+          "descend": {
+            "ticks": 76,
+            "chunk_mae_rad": 0.01155165116149385,
+            "first_mae_rad": 0.007316491297500431
+          },
+          "close": {
+            "ticks": 35,
+            "chunk_mae_rad": 0.008191362576777918,
+            "first_mae_rad": 0.01139358374677929
+          },
+          "lift": {
+            "ticks": 62,
+            "chunk_mae_rad": 0.0070076609475791946,
+            "first_mae_rad": 0.006883574232943989
+          },
+          "carry": {
+            "ticks": 98,
+            "chunk_mae_rad": 0.007808488222513567,
+            "first_mae_rad": 0.0073036669244620515
+          },
+          "lower": {
+            "ticks": 100,
+            "chunk_mae_rad": 0.011970714170181791,
+            "first_mae_rad": 0.007743684747213066
+          },
+          "release": {
+            "ticks": 37,
+            "chunk_mae_rad": 0.011668904591072794,
+            "first_mae_rad": 0.011613258573574748
+          },
+          "retreat": {
+            "ticks": 64,
+            "chunk_mae_rad": 0.008606290885831128,
+            "first_mae_rad": 0.007012507123754665
+          },
+          "home_up": {
+            "ticks": 24,
+            "chunk_mae_rad": 0.013003049599007062,
+            "first_mae_rad": 0.01062629011651478
+          },
+          "home": {
+            "ticks": 80,
+            "chunk_mae_rad": 0.006238090608279215,
+            "first_mae_rad": 0.006453218709228419
+          }
+        }
+      },
+      "closed_loop": {
+        "success": false,
+        "reason": "timeout",
+        "ticks": 1200,
+        "resets": 132,
+        "commands_completed": 3,
+        "check": {
+          "ok": false,
+          "per_predicate": [
+            {
+              "pred": "at",
+              "ok": false
+            },
+            {
+              "pred": "not_moved",
+              "ok": true
+            },
+            {
+              "pred": "not_moved",
+              "ok": true
+            },
+            {
+              "pred": "not_moved",
+              "ok": true
+            },
+            {
+              "pred": "not_moved",
+              "ok": true
+            },
+            {
+              "pred": "gripper_open",
+              "ok": false
+            },
+            {
+              "pred": "settled",
+              "ok": true
+            }
+          ],
+          "ticks": 15,
+          "required_ticks": 15
+        }
+      },
+      "command_ticks": {
+        "pick(piece)": 190,
+        "place_at(piece,cell)": 201,
+        "release": 97,
+        "home": 712
+      },
+      "nearest_reference_phase_ticks": {
+        "approach": 61,
+        "descend": 73,
+        "close": 18,
+        "lift": 38,
+        "carry": 99,
+        "lower": 102,
+        "release": 97,
+        "home_up": 304,
+        "home": 408
+      },
+      "final_nearest_reference_phase": "home"
+    },
+    {
+      "export": "exports/wide_v2",
+      "trace": "runs\\P2\\traces\\expert_place_on_cell_00200006.jsonl",
+      "trace_seed": 200006,
+      "trace_success": true,
+      "trace_target_space": "servo",
+      "teacher_forced": {
+        "ticks": 599,
+        "chunk_mae_rad": 0.009437180818459711,
+        "first_mae_rad": 0.008019522221548673,
+        "first_p95_rad": 0.021006195854541797,
+        "first_per_joint_mae_rad": [
+          0.008414984114285741,
+          0.007530518302663325,
+          0.009214517359004104,
+          0.008171578778346959,
+          0.008443901344023699,
+          0.006341633430968228
+        ],
+        "per_phase": {
+          "approach": {
+            "ticks": 61,
+            "chunk_mae_rad": 0.010261609375841986,
+            "first_mae_rad": 0.008250811547994622
+          },
+          "descend": {
+            "ticks": 78,
+            "chunk_mae_rad": 0.011053132620702412,
+            "first_mae_rad": 0.009366505056375147
+          },
+          "close": {
+            "ticks": 35,
+            "chunk_mae_rad": 0.008783609220900369,
+            "first_mae_rad": 0.009240939551508637
+          },
+          "lift": {
+            "ticks": 62,
+            "chunk_mae_rad": 0.006709497699828568,
+            "first_mae_rad": 0.0060638158299565785
+          },
+          "carry": {
+            "ticks": 58,
+            "chunk_mae_rad": 0.009063808998397914,
+            "first_mae_rad": 0.008768163464956662
+          },
+          "lower": {
+            "ticks": 100,
+            "chunk_mae_rad": 0.011904538537978885,
+            "first_mae_rad": 0.007046022363258292
+          },
+          "release": {
+            "ticks": 37,
+            "chunk_mae_rad": 0.011521784480614788,
+            "first_mae_rad": 0.011926338192909688
+          },
+          "retreat": {
+            "ticks": 64,
+            "chunk_mae_rad": 0.008604931843391483,
+            "first_mae_rad": 0.007077796666900044
+          },
+          "home_up": {
+            "ticks": 24,
+            "chunk_mae_rad": 0.010478122093799997,
+            "first_mae_rad": 0.009810712089753157
+          },
+          "home": {
+            "ticks": 80,
+            "chunk_mae_rad": 0.006208778050992056,
+            "first_mae_rad": 0.006594389235699494
+          }
+        }
+      },
+      "closed_loop": {
+        "success": false,
+        "reason": "timeout",
+        "ticks": 1200,
+        "resets": 6,
+        "commands_completed": 1,
+        "check": {
+          "ok": false,
+          "per_predicate": [
+            {
+              "pred": "at",
+              "ok": false
+            },
+            {
+              "pred": "not_moved",
+              "ok": true
+            },
+            {
+              "pred": "not_moved",
+              "ok": true
+            },
+            {
+              "pred": "not_moved",
+              "ok": true
+            },
+            {
+              "pred": "not_moved",
+              "ok": true
+            },
+            {
+              "pred": "gripper_open",
+              "ok": false
+            },
+            {
+              "pred": "settled",
+              "ok": true
+            }
+          ],
+          "ticks": 15,
+          "required_ticks": 15
+        }
+      },
+      "command_ticks": {
+        "pick(piece)": 201,
+        "place_at(piece,cell)": 999
+      },
+      "nearest_reference_phase_ticks": {
+        "approach": 71,
+        "descend": 46,
+        "close": 52,
+        "lift": 32,
+        "carry": 705,
+        "lower": 65,
+        "release": 21,
+        "retreat": 208
+      },
+      "final_nearest_reference_phase": "carry"
+    },
+    {
+      "export": "runs/P2/cpu200/export",
+      "trace": "runs\\P2\\traces\\expert_place_on_cell_00200001.jsonl",
+      "trace_seed": 200001,
+      "trace_success": true,
+      "trace_target_space": "servo",
+      "teacher_forced": {
+        "ticks": 665,
+        "chunk_mae_rad": 0.012401141643073271,
+        "first_mae_rad": 0.011362356954764051,
+        "first_p95_rad": 0.029587960139919125,
+        "first_per_joint_mae_rad": [
+          0.01326981019128605,
+          0.013135258597244561,
+          0.013235622491828246,
+          0.005282042435914634,
+          0.011038812795698936,
+          0.012212595216611858
+        ],
+        "per_phase": {
+          "approach": {
+            "ticks": 88,
+            "chunk_mae_rad": 0.008538195310302482,
+            "first_mae_rad": 0.00846101831018378
+          },
+          "descend": {
+            "ticks": 78,
+            "chunk_mae_rad": 0.015021868282142154,
+            "first_mae_rad": 0.012697399631240417
+          },
+          "close": {
+            "ticks": 35,
+            "chunk_mae_rad": 0.012542329262242573,
+            "first_mae_rad": 0.01570606178014953
+          },
+          "lift": {
+            "ticks": 62,
+            "chunk_mae_rad": 0.011145571022808297,
+            "first_mae_rad": 0.012309707365401885
+          },
+          "carry": {
+            "ticks": 93,
+            "chunk_mae_rad": 0.011872064891218129,
+            "first_mae_rad": 0.011131709617492188
+          },
+          "lower": {
+            "ticks": 106,
+            "chunk_mae_rad": 0.014774368049957621,
+            "first_mae_rad": 0.010812910372427313
+          },
+          "release": {
+            "ticks": 37,
+            "chunk_mae_rad": 0.02063933998421255,
+            "first_mae_rad": 0.019741088483333055
+          },
+          "retreat": {
+            "ticks": 62,
+            "chunk_mae_rad": 0.014043909843817983,
+            "first_mae_rad": 0.011248829264339311
+          },
+          "home_up": {
+            "ticks": 24,
+            "chunk_mae_rad": 0.014941196096101865,
+            "first_mae_rad": 0.013700552256895489
+          },
+          "home": {
+            "ticks": 80,
+            "chunk_mae_rad": 0.006631670093994967,
+            "first_mae_rad": 0.00712510171353871
+          }
+        }
+      },
+      "closed_loop": {
+        "success": false,
+        "reason": "timeout",
+        "ticks": 1200,
+        "resets": 246,
+        "commands_completed": 1,
+        "check": {
+          "ok": false,
+          "per_predicate": [
+            {
+              "pred": "at",
+              "ok": false
+            },
+            {
+              "pred": "not_moved",
+              "ok": true
+            },
+            {
+              "pred": "not_moved",
+              "ok": true
+            },
+            {
+              "pred": "not_moved",
+              "ok": true
+            },
+            {
+              "pred": "not_moved",
+              "ok": true
+            },
+            {
+              "pred": "gripper_open",
+              "ok": true
+            },
+            {
+              "pred": "settled",
+              "ok": true
+            }
+          ],
+          "ticks": 15,
+          "required_ticks": 15
+        }
+      },
+      "command_ticks": {
+        "pick(piece)": 233,
+        "place_at(piece,cell)": 967
+      },
+      "nearest_reference_phase_ticks": {
+        "approach": 96,
+        "descend": 72,
+        "close": 43,
+        "lift": 33,
+        "carry": 108,
+        "lower": 110,
+        "release": 738
+      },
+      "final_nearest_reference_phase": "release"
+    },
+    {
+      "export": "runs/P2/cpu200/export",
+      "trace": "runs\\P2\\traces\\expert_place_on_cell_00200002.jsonl",
+      "trace_seed": 200002,
+      "trace_success": true,
+      "trace_target_space": "servo",
+      "teacher_forced": {
+        "ticks": 633,
+        "chunk_mae_rad": 0.012470431423857897,
+        "first_mae_rad": 0.010069316352484536,
+        "first_p95_rad": 0.027076192173436715,
+        "first_per_joint_mae_rad": [
+          0.011438138560186056,
+          0.008251216516881432,
+          0.010662293456276867,
+          0.0043448549256617005,
+          0.013833772798954775,
+          0.011885621856946344
+        ],
+        "per_phase": {
+          "approach": {
+            "ticks": 57,
+            "chunk_mae_rad": 0.007890170373297867,
+            "first_mae_rad": 0.009122014964563002
+          },
+          "descend": {
+            "ticks": 77,
+            "chunk_mae_rad": 0.011406788505672102,
+            "first_mae_rad": 0.008632559577017434
+          },
+          "close": {
+            "ticks": 35,
+            "chunk_mae_rad": 0.009500229455839964,
+            "first_mae_rad": 0.012442276377531881
+          },
+          "lift": {
+            "ticks": 62,
+            "chunk_mae_rad": 0.0095357763862512,
+            "first_mae_rad": 0.008719431670600393
+          },
+          "carry": {
+            "ticks": 89,
+            "chunk_mae_rad": 0.009699690443739072,
+            "first_mae_rad": 0.00821110313463226
+          },
+          "lower": {
+            "ticks": 106,
+            "chunk_mae_rad": 0.014553371460598017,
+            "first_mae_rad": 0.00977915620283807
+          },
+          "release": {
+            "ticks": 37,
+            "chunk_mae_rad": 0.015772669086363964,
+            "first_mae_rad": 0.014668016759266524
+          },
+          "retreat": {
+            "ticks": 66,
+            "chunk_mae_rad": 0.014477356911367967,
+            "first_mae_rad": 0.009142581325759172
+          },
+          "home_up": {
+            "ticks": 24,
+            "chunk_mae_rad": 0.03324447660911829,
+            "first_mae_rad": 0.013674566544868224
+          },
+          "home": {
+            "ticks": 80,
+            "chunk_mae_rad": 0.011238786536307332,
+            "first_mae_rad": 0.012142944409606582
+          }
+        }
+      },
+      "closed_loop": {
+        "success": true,
+        "reason": "goal_reached",
+        "ticks": 441,
+        "resets": 2,
+        "commands_completed": 3,
+        "check": {
+          "ok": true,
+          "per_predicate": [
+            {
+              "pred": "at",
+              "ok": true
+            },
+            {
+              "pred": "not_moved",
+              "ok": true
+            },
+            {
+              "pred": "not_moved",
+              "ok": true
+            },
+            {
+              "pred": "not_moved",
+              "ok": true
+            },
+            {
+              "pred": "not_moved",
+              "ok": true
+            },
+            {
+              "pred": "gripper_open",
+              "ok": true
+            },
+            {
+              "pred": "settled",
+              "ok": true
+            }
+          ],
+          "ticks": 15,
+          "required_ticks": 15
+        }
+      },
+      "command_ticks": {
+        "pick(piece)": 199,
+        "place_at(piece,cell)": 231,
+        "release": 4,
+        "home": 7
+      },
+      "nearest_reference_phase_ticks": {
+        "approach": 58,
+        "descend": 75,
+        "close": 23,
+        "lift": 69,
+        "carry": 95,
+        "lower": 110,
+        "release": 11
+      },
+      "final_nearest_reference_phase": "release"
+    },
+    {
+      "export": "runs/P2/cpu200/export",
+      "trace": "runs\\P2\\traces\\expert_place_on_cell_00200004.jsonl",
+      "trace_seed": 200004,
+      "trace_success": true,
+      "trace_target_space": "servo",
+      "teacher_forced": {
+        "ticks": 613,
+        "chunk_mae_rad": 0.011333545747496504,
+        "first_mae_rad": 0.0105443048050851,
+        "first_p95_rad": 0.02625491909861115,
+        "first_per_joint_mae_rad": [
+          0.007789309482418745,
+          0.009772959028191773,
+          0.015508517817567579,
+          0.006599183957165513,
+          0.01271994052829369,
+          0.010875918016873251
+        ],
+        "per_phase": {
+          "approach": {
+            "ticks": 62,
+            "chunk_mae_rad": 0.009094982291926356,
+            "first_mae_rad": 0.009167694429544496
+          },
+          "descend": {
+            "ticks": 77,
+            "chunk_mae_rad": 0.012642547919525494,
+            "first_mae_rad": 0.009872139601538215
+          },
+          "close": {
+            "ticks": 35,
+            "chunk_mae_rad": 0.009948340097881566,
+            "first_mae_rad": 0.011662438569681521
+          },
+          "lift": {
+            "ticks": 62,
+            "chunk_mae_rad": 0.010735538175209197,
+            "first_mae_rad": 0.010865251110995145
+          },
+          "carry": {
+            "ticks": 70,
+            "chunk_mae_rad": 0.009878526821294625,
+            "first_mae_rad": 0.01071929701180044
+          },
+          "lower": {
+            "ticks": 101,
+            "chunk_mae_rad": 0.013376172086420692,
+            "first_mae_rad": 0.010484320259290535
+          },
+          "release": {
+            "ticks": 37,
+            "chunk_mae_rad": 0.017575888765542388,
+            "first_mae_rad": 0.01441660260501498
+          },
+          "retreat": {
+            "ticks": 65,
+            "chunk_mae_rad": 0.012537657029702788,
+            "first_mae_rad": 0.01236254686797183
+          },
+          "home_up": {
+            "ticks": 24,
+            "chunk_mae_rad": 0.012286924472182034,
+            "first_mae_rad": 0.009602233343564873
+          },
+          "home": {
+            "ticks": 80,
+            "chunk_mae_rad": 0.007420889302705018,
+            "first_mae_rad": 0.008457194283534468
+          }
+        }
+      },
+      "closed_loop": {
+        "success": true,
+        "reason": "goal_reached",
+        "ticks": 411,
+        "resets": 3,
+        "commands_completed": 3,
+        "check": {
+          "ok": true,
+          "per_predicate": [
+            {
+              "pred": "at",
+              "ok": true
+            },
+            {
+              "pred": "not_moved",
+              "ok": true
+            },
+            {
+              "pred": "not_moved",
+              "ok": true
+            },
+            {
+              "pred": "not_moved",
+              "ok": true
+            },
+            {
+              "pred": "not_moved",
+              "ok": true
+            },
+            {
+              "pred": "gripper_open",
+              "ok": true
+            },
+            {
+              "pred": "settled",
+              "ok": true
+            }
+          ],
+          "ticks": 15,
+          "required_ticks": 15
+        }
+      },
+      "command_ticks": {
+        "pick(piece)": 198,
+        "place_at(piece,cell)": 202,
+        "release": 4,
+        "home": 7
+      },
+      "nearest_reference_phase_ticks": {
+        "approach": 61,
+        "descend": 76,
+        "close": 37,
+        "lift": 55,
+        "carry": 49,
+        "lower": 121,
+        "release": 9,
+        "retreat": 3
+      },
+      "final_nearest_reference_phase": "release"
+    },
+    {
+      "export": "runs/P2/cpu200/export",
+      "trace": "runs\\P2\\traces\\expert_place_on_cell_00200005.jsonl",
+      "trace_seed": 200005,
+      "trace_success": true,
+      "trace_target_space": "servo",
+      "teacher_forced": {
+        "ticks": 632,
+        "chunk_mae_rad": 0.00958377948987336,
+        "first_mae_rad": 0.008616385062882577,
+        "first_p95_rad": 0.022547024415780933,
+        "first_per_joint_mae_rad": [
+          0.008782642118622074,
+          0.006657742998485453,
+          0.008863431311846704,
+          0.005914317201089497,
+          0.012504306633545896,
+          0.008975870113705818
+        ],
+        "per_phase": {
+          "approach": {
+            "ticks": 56,
+            "chunk_mae_rad": 0.0075586973710273335,
+            "first_mae_rad": 0.007343090306380314
+          },
+          "descend": {
+            "ticks": 76,
+            "chunk_mae_rad": 0.010978176789098144,
+            "first_mae_rad": 0.00864617248401783
+          },
+          "close": {
+            "ticks": 35,
+            "chunk_mae_rad": 0.007657836998788802,
+            "first_mae_rad": 0.012160370864206268
+          },
+          "lift": {
+            "ticks": 62,
+            "chunk_mae_rad": 0.00862926595284364,
+            "first_mae_rad": 0.007431873610891213
+          },
+          "carry": {
+            "ticks": 98,
+            "chunk_mae_rad": 0.009220664065460904,
+            "first_mae_rad": 0.0072230452211340885
+          },
+          "lower": {
+            "ticks": 100,
+            "chunk_mae_rad": 0.01183595998545327,
+            "first_mae_rad": 0.009392538508182037
+          },
+          "release": {
+            "ticks": 37,
+            "chunk_mae_rad": 0.013382522988153647,
+            "first_mae_rad": 0.011386963384082382
+          },
+          "retreat": {
+            "ticks": 64,
+            "chunk_mae_rad": 0.007920469940477863,
+            "first_mae_rad": 0.007490746584909685
+          },
+          "home_up": {
+            "ticks": 24,
+            "chunk_mae_rad": 0.017438483330269653,
+            "first_mae_rad": 0.011007358694144835
+          },
+          "home": {
+            "ticks": 80,
+            "chunk_mae_rad": 0.006105915764722815,
+            "first_mae_rad": 0.008485371648532176
+          }
+        }
+      },
+      "closed_loop": {
+        "success": true,
+        "reason": "goal_reached",
+        "ticks": 440,
+        "resets": 3,
+        "commands_completed": 3,
+        "check": {
+          "ok": true,
+          "per_predicate": [
+            {
+              "pred": "at",
+              "ok": true
+            },
+            {
+              "pred": "not_moved",
+              "ok": true
+            },
+            {
+              "pred": "not_moved",
+              "ok": true
+            },
+            {
+              "pred": "not_moved",
+              "ok": true
+            },
+            {
+              "pred": "not_moved",
+              "ok": true
+            },
+            {
+              "pred": "gripper_open",
+              "ok": true
+            },
+            {
+              "pred": "settled",
+              "ok": true
+            }
+          ],
+          "ticks": 15,
+          "required_ticks": 15
+        }
+      },
+      "command_ticks": {
+        "pick(piece)": 195,
+        "place_at(piece,cell)": 234,
+        "release": 4,
+        "home": 7
+      },
+      "nearest_reference_phase_ticks": {
+        "approach": 48,
+        "descend": 84,
+        "close": 33,
+        "lift": 69,
+        "carry": 103,
+        "lower": 91,
+        "release": 12
+      },
+      "final_nearest_reference_phase": "release"
+    },
+    {
+      "export": "runs/P2/cpu200/export",
+      "trace": "runs\\P2\\traces\\expert_place_on_cell_00200006.jsonl",
+      "trace_seed": 200006,
+      "trace_success": true,
+      "trace_target_space": "servo",
+      "teacher_forced": {
+        "ticks": 599,
+        "chunk_mae_rad": 0.013079784012259565,
+        "first_mae_rad": 0.013344932460791874,
+        "first_p95_rad": 0.03214444001887213,
+        "first_per_joint_mae_rad": [
+          0.010659384887900799,
+          0.010929938507596926,
+          0.015598385461446923,
+          0.006859803237479297,
+          0.014950347017441705,
+          0.021071735652885608
+        ],
+        "per_phase": {
+          "approach": {
+            "ticks": 61,
+            "chunk_mae_rad": 0.010001297871459985,
+            "first_mae_rad": 0.011203286165028229
+          },
+          "descend": {
+            "ticks": 78,
+            "chunk_mae_rad": 0.012978658554712589,
+            "first_mae_rad": 0.013911239988198001
+          },
+          "close": {
+            "ticks": 35,
+            "chunk_mae_rad": 0.010399480576719746,
+            "first_mae_rad": 0.017275556292315173
+          },
+          "lift": {
+            "ticks": 62,
+            "chunk_mae_rad": 0.014939658684049147,
+            "first_mae_rad": 0.015474947598284635
+          },
+          "carry": {
+            "ticks": 58,
+            "chunk_mae_rad": 0.012078733642644869,
+            "first_mae_rad": 0.015102904632796578
+          },
+          "lower": {
+            "ticks": 100,
+            "chunk_mae_rad": 0.015342270782687305,
+            "first_mae_rad": 0.012484669313896293
+          },
+          "release": {
+            "ticks": 37,
+            "chunk_mae_rad": 0.019389331409645952,
+            "first_mae_rad": 0.015141120954196022
+          },
+          "retreat": {
+            "ticks": 64,
+            "chunk_mae_rad": 0.010799701865145972,
+            "first_mae_rad": 0.01035080638407825
+          },
+          "home_up": {
+            "ticks": 24,
+            "chunk_mae_rad": 0.018220709613610726,
+            "first_mae_rad": 0.014649502053400067
+          },
+          "home": {
+            "ticks": 80,
+            "chunk_mae_rad": 0.010518232319069582,
+            "first_mae_rad": 0.012029370178547445
+          }
+        }
+      },
+      "closed_loop": {
+        "success": false,
+        "reason": "timeout",
+        "ticks": 1200,
+        "resets": 311,
+        "commands_completed": 1,
+        "check": {
+          "ok": false,
+          "per_predicate": [
+            {
+              "pred": "at",
+              "ok": false
+            },
+            {
+              "pred": "not_moved",
+              "ok": true
+            },
+            {
+              "pred": "not_moved",
+              "ok": true
+            },
+            {
+              "pred": "not_moved",
+              "ok": true
+            },
+            {
+              "pred": "not_moved",
+              "ok": true
+            },
+            {
+              "pred": "gripper_open",
+              "ok": true
+            },
+            {
+              "pred": "settled",
+              "ok": true
+            }
+          ],
+          "ticks": 15,
+          "required_ticks": 15
+        }
+      },
+      "command_ticks": {
+        "pick(piece)": 205,
+        "place_at(piece,cell)": 995
+      },
+      "nearest_reference_phase_ticks": {
+        "approach": 64,
+        "descend": 74,
+        "close": 44,
+        "lift": 50,
+        "carry": 73,
+        "lower": 55,
+        "release": 840
+      },
+      "final_nearest_reference_phase": "release"
+    }
+  ],
+  "acceptance": {
+    "command": ".venv/Scripts/python.exe -m pytest -q tests/policy tests/robot",
+    "passed": 74,
+    "seconds": 121.26,
+    "log": "runs/P2/acceptance_final.log"
+  },
+  "implementation_commit": "723e296",
+  "rig": {
+    "pid": 51141,
+    "lease": "apt_e05759e0",
+    "worktree": "/home/cube/real2play-p2",
+    "log": "/home/cube/real2play/runs/P2_wide_v3.log",
+    "export": "/home/cube/real2play/exports/wide_v3",
+    "status": "running_dataset_preparation_14:48_PT",
+    "landlord_pid_registered": true,
+    "lease_active_no_limit_violation_checked": "2026-10-25 14:45 PT"
+  },
+  "matched_recorded_inputs_control": {
+    "training_traces": 200,
+    "evaluated_training_scenes": 200,
+    "success": 0.21,
+    "noise": "clean",
+    "seconds": 286.1253350999905,
+    "weights_sha256": "2f70200a0aa4dafe4ffec2502a4f24262037ce3245b17f80f23eb543d847dfa0",
+    "training": {
+      "steps": 16000,
+      "device": "cpu",
+      "batch_size": 128,
+      "learning_rate": 0.0003,
+      "augmentation": {
+        "joint_offset_std": 0,
+        "position_std": 0,
+        "stale_probability": 0,
+        "stale_ticks": 6,
+        "aim_radial_m": 0,
+        "aim_lateral_m": 0,
+        "recovery_weight": 4.0,
+        "smooth_ticks": 1
+      },
+      "joint_offset_convention": "observation_and_absolute_target",
+      "samples": 127750,
+      "lease_id": null
+    },
+    "outcomes": [
+      {
+        "success": false,
+        "reason": "timeout",
+        "ticks": 1200,
+        "resets": 43,
+        "commands_completed": 4,
+        "seed": 200001
+      },
+      {
+        "success": false,
+        "reason": "timeout",
+        "ticks": 1200,
+        "resets": 2,
+        "commands_completed": 0,
+        "seed": 200002
+      },
+      {
+        "success": false,
+        "reason": "timeout",
+        "ticks": 1200,
+        "resets": 1,
+        "commands_completed": 1,
+        "seed": 200004
+      },
+      {
+        "success": false,
+        "reason": "timeout",
+        "ticks": 1200,
+        "resets": 5,
+        "commands_completed": 4,
+        "seed": 200005
+      },
+      {
+        "success": false,
+        "reason": "timeout",
+        "ticks": 1200,
+        "resets": 3,
+        "commands_completed": 1,
+        "seed": 200006
+      },
+      {
+        "success": false,
+        "reason": "timeout",
+        "ticks": 1200,
+        "resets": 43,
+        "commands_completed": 4,
+        "seed": 200007
+      },
+      {
+        "success": false,
+        "reason": "timeout",
+        "ticks": 1200,
+        "resets": 4,
+        "commands_completed": 4,
+        "seed": 200009
+      },
+      {
+        "success": false,
+        "reason": "timeout",
+        "ticks": 1200,
+        "resets": 8,
+        "commands_completed": 4,
+        "seed": 200010
+      },
+      {
+        "success": false,
+        "reason": "timeout",
+        "ticks": 1200,
+        "resets": 17,
+        "commands_completed": 1,
+        "seed": 200011
+      },
+      {
+        "success": true,
+        "reason": "goal_reached",
+        "ticks": 621,
+        "resets": 69,
+        "commands_completed": 3,
+        "seed": 200012
+      },
+      {
+        "success": true,
+        "reason": "goal_reached",
+        "ticks": 413,
+        "resets": 8,
+        "commands_completed": 3,
+        "seed": 200013
+      },
+      {
+        "success": true,
+        "reason": "goal_reached",
+        "ticks": 425,
+        "resets": 10,
+        "commands_completed": 3,
+        "seed": 200014
+      },
+      {
+        "success": true,
+        "reason": "goal_reached",
+        "ticks": 589,
+        "resets": 18,
+        "commands_completed": 3,
+        "seed": 200016
+      },
+      {
+        "success": true,
+        "reason": "goal_reached",
+        "ticks": 418,
+        "resets": 6,
+        "commands_completed": 3,
+        "seed": 200017
+      },
+      {
+        "success": false,
+        "reason": "timeout",
+        "ticks": 1200,
+        "resets": 5,
+        "commands_completed": 4,
+        "seed": 200019
+      },
+      {
+        "success": false,
+        "reason": "timeout",
+        "ticks": 1200,
+        "resets": 3,
+        "commands_completed": 4,
+        "seed": 200021
+      },
+      {
+        "success": false,
+        "reason": "timeout",
+        "ticks": 1200,
+        "resets": 7,
+        "commands_completed": 4,
+        "seed": 200022
+      },
+      {
+        "success": true,
+        "reason": "goal_reached",
+        "ticks": 388,
+        "resets": 8,
+        "commands_completed": 3,
+        "seed": 200023
+      },
+      {
+        "success": false,
+        "reason": "timeout",
+        "ticks": 1200,
+        "resets": 396,
+        "commands_completed": 4,
+        "seed": 200024
+      },
+      {
+        "success": false,
+        "reason": "timeout",
+        "ticks": 1200,
+        "resets": 2,
+        "commands_completed": 0,
+        "seed": 200025
+      },
+      {
+        "success": true,
+        "reason": "goal_reached",
+        "ticks": 436,
+        "resets": 10,
+        "commands_completed": 3,
+        "seed": 200026
+      },
+      {
+        "success": true,
+        "reason": "goal_reached",
+        "ticks": 725,
+        "resets": 21,
+        "commands_completed": 3,
+        "seed": 200027
+      },
+      {
+        "success": false,
+        "reason": "timeout",
+        "ticks": 1200,
+        "resets": 10,
+        "commands_completed": 4,
+        "seed": 200028
+      },
+      {
+        "success": false,
+        "reason": "timeout",
+        "ticks": 1200,
+        "resets": 3,
+        "commands_completed": 1,
+        "seed": 200029
+      },
+      {
+        "success": true,
+        "reason": "goal_reached",
+        "ticks": 408,
+        "resets": 15,
+        "commands_completed": 3,
+        "seed": 200030
+      },
+      {
+        "success": false,
+        "reason": "timeout",
+        "ticks": 1200,
+        "resets": 20,
+        "commands_completed": 4,
+        "seed": 200031
+      },
+      {
+        "success": true,
+        "reason": "goal_reached",
+        "ticks": 405,
+        "resets": 6,
+        "commands_completed": 3,
+        "seed": 200032
+      },
+      {
+        "success": false,
+        "reason": "timeout",
+        "ticks": 1200,
+        "resets": 3,
+        "commands_completed": 4,
+        "seed": 200033
+      },
+      {
+        "success": false,
+        "reason": "timeout",
+        "ticks": 1200,
+        "resets": 10,
+        "commands_completed": 4,
+        "seed": 200034
+      },
+      {
+        "success": true,
+        "reason": "goal_reached",
+        "ticks": 385,
+        "resets": 9,
+        "commands_completed": 3,
+        "seed": 200035
+      },
+      {
+        "success": false,
+        "reason": "timeout",
+        "ticks": 1200,
+        "resets": 4,
+        "commands_completed": 4,
+        "seed": 200036
+      },
+      {
+        "success": false,
+        "reason": "timeout",
+        "ticks": 1200,
+        "resets": 6,
+        "commands_completed": 4,
+        "seed": 200037
+      },
+      {
+        "success": true,
+        "reason": "goal_reached",
+        "ticks": 381,
+        "resets": 2,
+        "commands_completed": 3,
+        "seed": 200038
+      },
+      {
+        "success": false,
+        "reason": "timeout",
+        "ticks": 1200,
+        "resets": 12,
+        "commands_completed": 4,
+        "seed": 200040
+      },
+      {
+        "success": false,
+        "reason": "timeout",
+        "ticks": 1200,
+        "resets": 4,
+        "commands_completed": 4,
+        "seed": 200042
+      },
+      {
+        "success": false,
+        "reason": "timeout",
+        "ticks": 1200,
+        "resets": 5,
+        "commands_completed": 4,
+        "seed": 200043
+      },
+      {
+        "success": false,
+        "reason": "timeout",
+        "ticks": 1200,
+        "resets": 5,
+        "commands_completed": 4,
+        "seed": 200044
+      },
+      {
+        "success": false,
+        "reason": "timeout",
+        "ticks": 1200,
+        "resets": 8,
+        "commands_completed": 4,
+        "seed": 200045
+      },
+      {
+        "success": false,
+        "reason": "timeout",
+        "ticks": 1200,
+        "resets": 10,
+        "commands_completed": 4,
+        "seed": 200046
+      },
+      {
+        "success": false,
+        "reason": "timeout",
+        "ticks": 1200,
+        "resets": 23,
+        "commands_completed": 4,
+        "seed": 200047
+      },
+      {
+        "success": false,
+        "reason": "timeout",
+        "ticks": 1200,
+        "resets": 6,
+        "commands_completed": 3,
+        "seed": 200048
+      },
+      {
+        "success": true,
+        "reason": "goal_reached",
+        "ticks": 393,
+        "resets": 7,
+        "commands_completed": 3,
+        "seed": 200049
+      },
+      {
+        "success": false,
+        "reason": "timeout",
+        "ticks": 1200,
+        "resets": 94,
+        "commands_completed": 4,
+        "seed": 200051
+      },
+      {
+        "success": false,
+        "reason": "timeout",
+        "ticks": 1200,
+        "resets": 12,
+        "commands_completed": 4,
+        "seed": 200054
+      },
+      {
+        "success": false,
+        "reason": "timeout",
+        "ticks": 1200,
+        "resets": 16,
+        "commands_completed": 4,
+        "seed": 200056
+      },
+      {
+        "success": false,
+        "reason": "timeout",
+        "ticks": 1200,
+        "resets": 3,
+        "commands_completed": 4,
+        "seed": 200057
+      },
+      {
+        "success": false,
+        "reason": "timeout",
+        "ticks": 1200,
+        "resets": 1,
+        "commands_completed": 0,
+        "seed": 200058
+      },
+      {
+        "success": false,
+        "reason": "timeout",
+        "ticks": 1200,
+        "resets": 44,
+        "commands_completed": 4,
+        "seed": 200061
+      },
+      {
+        "success": false,
+        "reason": "timeout",
+        "ticks": 1200,
+        "resets": 10,
+        "commands_completed": 4,
+        "seed": 200062
+      },
+      {
+        "success": false,
+        "reason": "timeout",
+        "ticks": 1200,
+        "resets": 5,
+        "commands_completed": 4,
+        "seed": 200064
+      },
+      {
+        "success": false,
+        "reason": "timeout",
+        "ticks": 1200,
+        "resets": 2,
+        "commands_completed": 1,
+        "seed": 200065
+      },
+      {
+        "success": false,
+        "reason": "timeout",
+        "ticks": 1200,
+        "resets": 10,
+        "commands_completed": 4,
+        "seed": 200066
+      },
+      {
+        "success": false,
+        "reason": "timeout",
+        "ticks": 1200,
+        "resets": 5,
+        "commands_completed": 4,
+        "seed": 200069
+      },
+      {
+        "success": false,
+        "reason": "timeout",
+        "ticks": 1200,
+        "resets": 15,
+        "commands_completed": 4,
+        "seed": 200071
+      },
+      {
+        "success": false,
+        "reason": "timeout",
+        "ticks": 1200,
+        "resets": 7,
+        "commands_completed": 1,
+        "seed": 200072
+      },
+      {
+        "success": false,
+        "reason": "timeout",
+        "ticks": 1200,
+        "resets": 6,
+        "commands_completed": 4,
+        "seed": 200073
+      },
+      {
+        "success": false,
+        "reason": "timeout",
+        "ticks": 1200,
+        "resets": 8,
+        "commands_completed": 4,
+        "seed": 200074
+      },
+      {
+        "success": false,
+        "reason": "timeout",
+        "ticks": 1200,
+        "resets": 6,
+        "commands_completed": 1,
+        "seed": 200076
+      },
+      {
+        "success": false,
+        "reason": "timeout",
+        "ticks": 1200,
+        "resets": 75,
+        "commands_completed": 4,
+        "seed": 200079
+      },
+      {
+        "success": false,
+        "reason": "timeout",
+        "ticks": 1200,
+        "resets": 5,
+        "commands_completed": 4,
+        "seed": 200080
+      },
+      {
+        "success": true,
+        "reason": "goal_reached",
+        "ticks": 414,
+        "resets": 11,
+        "commands_completed": 3,
+        "seed": 200081
+      },
+      {
+        "success": false,
+        "reason": "timeout",
+        "ticks": 1200,
+        "resets": 5,
+        "commands_completed": 4,
+        "seed": 200082
+      },
+      {
+        "success": false,
+        "reason": "timeout",
+        "ticks": 1200,
+        "resets": 17,
+        "commands_completed": 4,
+        "seed": 200083
+      },
+      {
+        "success": true,
+        "reason": "goal_reached",
+        "ticks": 368,
+        "resets": 2,
+        "commands_completed": 3,
+        "seed": 200084
+      },
+      {
+        "success": false,
+        "reason": "timeout",
+        "ticks": 1200,
+        "resets": 15,
+        "commands_completed": 4,
+        "seed": 200085
+      },
+      {
+        "success": false,
+        "reason": "timeout",
+        "ticks": 1200,
+        "resets": 18,
+        "commands_completed": 4,
+        "seed": 200086
+      },
+      {
+        "success": false,
+        "reason": "timeout",
+        "ticks": 1200,
+        "resets": 738,
+        "commands_completed": 3,
+        "seed": 200087
+      },
+      {
+        "success": false,
+        "reason": "timeout",
+        "ticks": 1200,
+        "resets": 2,
+        "commands_completed": 1,
+        "seed": 200090
+      },
+      {
+        "success": false,
+        "reason": "timeout",
+        "ticks": 1200,
+        "resets": 33,
+        "commands_completed": 4,
+        "seed": 200091
+      },
+      {
+        "success": false,
+        "reason": "timeout",
+        "ticks": 1200,
+        "resets": 4,
+        "commands_completed": 4,
+        "seed": 200092
+      },
+      {
+        "success": false,
+        "reason": "timeout",
+        "ticks": 1200,
+        "resets": 19,
+        "commands_completed": 4,
+        "seed": 200093
+      },
+      {
+        "success": true,
+        "reason": "goal_reached",
+        "ticks": 733,
+        "resets": 7,
+        "commands_completed": 3,
+        "seed": 200094
+      },
+      {
+        "success": true,
+        "reason": "goal_reached",
+        "ticks": 451,
+        "resets": 11,
+        "commands_completed": 3,
+        "seed": 200095
+      },
+      {
+        "success": true,
+        "reason": "goal_reached",
+        "ticks": 384,
+        "resets": 4,
+        "commands_completed": 3,
+        "seed": 200096
+      },
+      {
+        "success": true,
+        "reason": "goal_reached",
+        "ticks": 367,
+        "resets": 4,
+        "commands_completed": 3,
+        "seed": 200097
+      },
+      {
+        "success": false,
+        "reason": "timeout",
+        "ticks": 1200,
+        "resets": 4,
+        "commands_completed": 4,
+        "seed": 200098
+      },
+      {
+        "success": false,
+        "reason": "timeout",
+        "ticks": 1200,
+        "resets": 2,
+        "commands_completed": 0,
+        "seed": 200102
+      },
+      {
+        "success": false,
+        "reason": "timeout",
+        "ticks": 1200,
+        "resets": 5,
+        "commands_completed": 4,
+        "seed": 200103
+      },
+      {
+        "success": false,
+        "reason": "timeout",
+        "ticks": 1200,
+        "resets": 4,
+        "commands_completed": 4,
+        "seed": 200104
+      },
+      {
+        "success": false,
+        "reason": "timeout",
+        "ticks": 1200,
+        "resets": 2,
+        "commands_completed": 4,
+        "seed": 200105
+      },
+      {
+        "success": true,
+        "reason": "goal_reached",
+        "ticks": 732,
+        "resets": 30,
+        "commands_completed": 3,
+        "seed": 200106
+      },
+      {
+        "success": false,
+        "reason": "timeout",
+        "ticks": 1200,
+        "resets": 20,
+        "commands_completed": 4,
+        "seed": 200107
+      },
+      {
+        "success": false,
+        "reason": "timeout",
+        "ticks": 1200,
+        "resets": 3,
+        "commands_completed": 4,
+        "seed": 200108
+      },
+      {
+        "success": false,
+        "reason": "timeout",
+        "ticks": 1200,
+        "resets": 11,
+        "commands_completed": 4,
+        "seed": 200109
+      },
+      {
+        "success": false,
+        "reason": "timeout",
+        "ticks": 1200,
+        "resets": 2,
+        "commands_completed": 1,
+        "seed": 200111
+      },
+      {
+        "success": false,
+        "reason": "timeout",
+        "ticks": 1200,
+        "resets": 10,
+        "commands_completed": 4,
+        "seed": 200112
+      },
+      {
+        "success": false,
+        "reason": "timeout",
+        "ticks": 1200,
+        "resets": 15,
+        "commands_completed": 4,
+        "seed": 200113
+      },
+      {
+        "success": false,
+        "reason": "timeout",
+        "ticks": 1200,
+        "resets": 2,
+        "commands_completed": 0,
+        "seed": 200114
+      },
+      {
+        "success": false,
+        "reason": "timeout",
+        "ticks": 1200,
+        "resets": 2,
+        "commands_completed": 4,
+        "seed": 200116
+      },
+      {
+        "success": false,
+        "reason": "timeout",
+        "ticks": 1200,
+        "resets": 13,
+        "commands_completed": 4,
+        "seed": 200117
+      },
+      {
+        "success": true,
+        "reason": "goal_reached",
+        "ticks": 425,
+        "resets": 17,
+        "commands_completed": 3,
+        "seed": 200118
+      },
+      {
+        "success": false,
+        "reason": "timeout",
+        "ticks": 1200,
+        "resets": 3,
+        "commands_completed": 4,
+        "seed": 200119
+      },
+      {
+        "success": false,
+        "reason": "timeout",
+        "ticks": 1200,
+        "resets": 24,
+        "commands_completed": 4,
+        "seed": 200120
+      },
+      {
+        "success": false,
+        "reason": "timeout",
+        "ticks": 1200,
+        "resets": 7,
+        "commands_completed": 4,
+        "seed": 200122
+      },
+      {
+        "success": false,
+        "reason": "timeout",
+        "ticks": 1200,
+        "resets": 3,
+        "commands_completed": 0,
+        "seed": 200124
+      },
+      {
+        "success": false,
+        "reason": "timeout",
+        "ticks": 1200,
+        "resets": 9,
+        "commands_completed": 4,
+        "seed": 200125
+      },
+      {
+        "success": false,
+        "reason": "timeout",
+        "ticks": 1200,
+        "resets": 5,
+        "commands_completed": 4,
+        "seed": 200126
+      },
+      {
+        "success": false,
+        "reason": "timeout",
+        "ticks": 1200,
+        "resets": 19,
+        "commands_completed": 4,
+        "seed": 200127
+      },
+      {
+        "success": false,
+        "reason": "timeout",
+        "ticks": 1200,
+        "resets": 15,
+        "commands_completed": 4,
+        "seed": 200128
+      },
+      {
+        "success": true,
+        "reason": "goal_reached",
+        "ticks": 393,
+        "resets": 12,
+        "commands_completed": 3,
+        "seed": 200129
+      },
+      {
+        "success": false,
+        "reason": "timeout",
+        "ticks": 1200,
+        "resets": 2,
+        "commands_completed": 4,
+        "seed": 200130
+      },
+      {
+        "success": true,
+        "reason": "goal_reached",
+        "ticks": 412,
+        "resets": 7,
+        "commands_completed": 3,
+        "seed": 200132
+      },
+      {
+        "success": false,
+        "reason": "timeout",
+        "ticks": 1200,
+        "resets": 3,
+        "commands_completed": 4,
+        "seed": 200133
+      },
+      {
+        "success": false,
+        "reason": "timeout",
+        "ticks": 1200,
+        "resets": 4,
+        "commands_completed": 3,
+        "seed": 200134
+      },
+      {
+        "success": false,
+        "reason": "timeout",
+        "ticks": 1200,
+        "resets": 4,
+        "commands_completed": 4,
+        "seed": 200135
+      },
+      {
+        "success": false,
+        "reason": "timeout",
+        "ticks": 1200,
+        "resets": 103,
+        "commands_completed": 4,
+        "seed": 200136
+      },
+      {
+        "success": true,
+        "reason": "goal_reached",
+        "ticks": 368,
+        "resets": 3,
+        "commands_completed": 3,
+        "seed": 200137
+      },
+      {
+        "success": false,
+        "reason": "timeout",
+        "ticks": 1200,
+        "resets": 5,
+        "commands_completed": 4,
+        "seed": 200138
+      },
+      {
+        "success": false,
+        "reason": "timeout",
+        "ticks": 1200,
+        "resets": 4,
+        "commands_completed": 4,
+        "seed": 200139
+      },
+      {
+        "success": false,
+        "reason": "timeout",
+        "ticks": 1200,
+        "resets": 6,
+        "commands_completed": 4,
+        "seed": 200140
+      },
+      {
+        "success": false,
+        "reason": "timeout",
+        "ticks": 1200,
+        "resets": 2,
+        "commands_completed": 1,
+        "seed": 200141
+      },
+      {
+        "success": false,
+        "reason": "timeout",
+        "ticks": 1200,
+        "resets": 37,
+        "commands_completed": 4,
+        "seed": 200142
+      },
+      {
+        "success": false,
+        "reason": "timeout",
+        "ticks": 1200,
+        "resets": 4,
+        "commands_completed": 4,
+        "seed": 200144
+      },
+      {
+        "success": false,
+        "reason": "timeout",
+        "ticks": 1200,
+        "resets": 45,
+        "commands_completed": 4,
+        "seed": 200145
+      },
+      {
+        "success": false,
+        "reason": "timeout",
+        "ticks": 1200,
+        "resets": 3,
+        "commands_completed": 1,
+        "seed": 200146
+      },
+      {
+        "success": false,
+        "reason": "timeout",
+        "ticks": 1200,
+        "resets": 2,
+        "commands_completed": 0,
+        "seed": 200149
+      },
+      {
+        "success": false,
+        "reason": "timeout",
+        "ticks": 1200,
+        "resets": 62,
+        "commands_completed": 4,
+        "seed": 200151
+      },
+      {
+        "success": false,
+        "reason": "timeout",
+        "ticks": 1200,
+        "resets": 30,
+        "commands_completed": 4,
+        "seed": 200152
+      },
+      {
+        "success": false,
+        "reason": "timeout",
+        "ticks": 1200,
+        "resets": 35,
+        "commands_completed": 4,
+        "seed": 200154
+      },
+      {
+        "success": false,
+        "reason": "timeout",
+        "ticks": 1200,
+        "resets": 5,
+        "commands_completed": 4,
+        "seed": 200155
+      },
+      {
+        "success": false,
+        "reason": "timeout",
+        "ticks": 1200,
+        "resets": 7,
+        "commands_completed": 4,
+        "seed": 200157
+      },
+      {
+        "success": false,
+        "reason": "timeout",
+        "ticks": 1200,
+        "resets": 3,
+        "commands_completed": 4,
+        "seed": 200158
+      },
+      {
+        "success": false,
+        "reason": "timeout",
+        "ticks": 1200,
+        "resets": 20,
+        "commands_completed": 4,
+        "seed": 200161
+      },
+      {
+        "success": false,
+        "reason": "timeout",
+        "ticks": 1200,
+        "resets": 4,
+        "commands_completed": 4,
+        "seed": 200162
+      },
+      {
+        "success": false,
+        "reason": "timeout",
+        "ticks": 1200,
+        "resets": 3,
+        "commands_completed": 4,
+        "seed": 200163
+      },
+      {
+        "success": true,
+        "reason": "goal_reached",
+        "ticks": 395,
+        "resets": 5,
+        "commands_completed": 3,
+        "seed": 200165
+      },
+      {
+        "success": true,
+        "reason": "goal_reached",
+        "ticks": 367,
+        "resets": 8,
+        "commands_completed": 3,
+        "seed": 200166
+      },
+      {
+        "success": false,
+        "reason": "timeout",
+        "ticks": 1200,
+        "resets": 3,
+        "commands_completed": 4,
+        "seed": 200167
+      },
+      {
+        "success": false,
+        "reason": "timeout",
+        "ticks": 1200,
+        "resets": 15,
+        "commands_completed": 4,
+        "seed": 200168
+      },
+      {
+        "success": false,
+        "reason": "timeout",
+        "ticks": 1200,
+        "resets": 8,
+        "commands_completed": 4,
+        "seed": 200170
+      },
+      {
+        "success": false,
+        "reason": "timeout",
+        "ticks": 1200,
+        "resets": 3,
+        "commands_completed": 4,
+        "seed": 200172
+      },
+      {
+        "success": false,
+        "reason": "timeout",
+        "ticks": 1200,
+        "resets": 540,
+        "commands_completed": 3,
+        "seed": 200173
+      },
+      {
+        "success": false,
+        "reason": "timeout",
+        "ticks": 1200,
+        "resets": 11,
+        "commands_completed": 4,
+        "seed": 200174
+      },
+      {
+        "success": false,
+        "reason": "timeout",
+        "ticks": 1200,
+        "resets": 43,
+        "commands_completed": 4,
+        "seed": 200175
+      },
+      {
+        "success": true,
+        "reason": "goal_reached",
+        "ticks": 417,
+        "resets": 7,
+        "commands_completed": 3,
+        "seed": 200176
+      },
+      {
+        "success": false,
+        "reason": "timeout",
+        "ticks": 1200,
+        "resets": 13,
+        "commands_completed": 4,
+        "seed": 200177
+      },
+      {
+        "success": false,
+        "reason": "timeout",
+        "ticks": 1200,
+        "resets": 5,
+        "commands_completed": 4,
+        "seed": 200178
+      },
+      {
+        "success": false,
+        "reason": "timeout",
+        "ticks": 1200,
+        "resets": 3,
+        "commands_completed": 1,
+        "seed": 200179
+      },
+      {
+        "success": false,
+        "reason": "timeout",
+        "ticks": 1200,
+        "resets": 3,
+        "commands_completed": 1,
+        "seed": 200180
+      },
+      {
+        "success": false,
+        "reason": "timeout",
+        "ticks": 1200,
+        "resets": 6,
+        "commands_completed": 4,
+        "seed": 200181
+      },
+      {
+        "success": false,
+        "reason": "timeout",
+        "ticks": 1200,
+        "resets": 10,
+        "commands_completed": 4,
+        "seed": 200182
+      },
+      {
+        "success": false,
+        "reason": "timeout",
+        "ticks": 1200,
+        "resets": 7,
+        "commands_completed": 4,
+        "seed": 200183
+      },
+      {
+        "success": false,
+        "reason": "timeout",
+        "ticks": 1200,
+        "resets": 646,
+        "commands_completed": 3,
+        "seed": 200185
+      },
+      {
+        "success": true,
+        "reason": "goal_reached",
+        "ticks": 630,
+        "resets": 64,
+        "commands_completed": 3,
+        "seed": 200188
+      },
+      {
+        "success": false,
+        "reason": "timeout",
+        "ticks": 1200,
+        "resets": 4,
+        "commands_completed": 4,
+        "seed": 200190
+      },
+      {
+        "success": false,
+        "reason": "timeout",
+        "ticks": 1200,
+        "resets": 3,
+        "commands_completed": 1,
+        "seed": 200191
+      },
+      {
+        "success": false,
+        "reason": "timeout",
+        "ticks": 1200,
+        "resets": 6,
+        "commands_completed": 1,
+        "seed": 200192
+      },
+      {
+        "success": false,
+        "reason": "timeout",
+        "ticks": 1200,
+        "resets": 2,
+        "commands_completed": 0,
+        "seed": 200193
+      },
+      {
+        "success": false,
+        "reason": "timeout",
+        "ticks": 1200,
+        "resets": 6,
+        "commands_completed": 4,
+        "seed": 200194
+      },
+      {
+        "success": false,
+        "reason": "timeout",
+        "ticks": 1200,
+        "resets": 5,
+        "commands_completed": 4,
+        "seed": 200195
+      },
+      {
+        "success": false,
+        "reason": "timeout",
+        "ticks": 1200,
+        "resets": 45,
+        "commands_completed": 4,
+        "seed": 200196
+      },
+      {
+        "success": false,
+        "reason": "timeout",
+        "ticks": 1200,
+        "resets": 13,
+        "commands_completed": 4,
+        "seed": 200197
+      },
+      {
+        "success": true,
+        "reason": "goal_reached",
+        "ticks": 479,
+        "resets": 12,
+        "commands_completed": 3,
+        "seed": 200198
+      },
+      {
+        "success": false,
+        "reason": "timeout",
+        "ticks": 1200,
+        "resets": 3,
+        "commands_completed": 1,
+        "seed": 200199
+      },
+      {
+        "success": false,
+        "reason": "timeout",
+        "ticks": 1200,
+        "resets": 4,
+        "commands_completed": 4,
+        "seed": 200200
+      },
+      {
+        "success": false,
+        "reason": "timeout",
+        "ticks": 1200,
+        "resets": 10,
+        "commands_completed": 4,
+        "seed": 200201
+      },
+      {
+        "success": true,
+        "reason": "goal_reached",
+        "ticks": 390,
+        "resets": 5,
+        "commands_completed": 3,
+        "seed": 200202
+      },
+      {
+        "success": false,
+        "reason": "timeout",
+        "ticks": 1200,
+        "resets": 6,
+        "commands_completed": 4,
+        "seed": 200204
+      },
+      {
+        "success": false,
+        "reason": "timeout",
+        "ticks": 1200,
+        "resets": 21,
+        "commands_completed": 4,
+        "seed": 200205
+      },
+      {
+        "success": false,
+        "reason": "timeout",
+        "ticks": 1200,
+        "resets": 5,
+        "commands_completed": 4,
+        "seed": 200207
+      },
+      {
+        "success": false,
+        "reason": "timeout",
+        "ticks": 1200,
+        "resets": 4,
+        "commands_completed": 4,
+        "seed": 200208
+      },
+      {
+        "success": false,
+        "reason": "timeout",
+        "ticks": 1200,
+        "resets": 27,
+        "commands_completed": 4,
+        "seed": 200210
+      },
+      {
+        "success": false,
+        "reason": "timeout",
+        "ticks": 1200,
+        "resets": 13,
+        "commands_completed": 4,
+        "seed": 200212
+      },
+      {
+        "success": false,
+        "reason": "timeout",
+        "ticks": 1200,
+        "resets": 14,
+        "commands_completed": 4,
+        "seed": 200213
+      },
+      {
+        "success": false,
+        "reason": "timeout",
+        "ticks": 1200,
+        "resets": 4,
+        "commands_completed": 4,
+        "seed": 200214
+      },
+      {
+        "success": false,
+        "reason": "timeout",
+        "ticks": 1200,
+        "resets": 26,
+        "commands_completed": 4,
+        "seed": 200215
+      },
+      {
+        "success": false,
+        "reason": "timeout",
+        "ticks": 1200,
+        "resets": 4,
+        "commands_completed": 4,
+        "seed": 200216
+      },
+      {
+        "success": true,
+        "reason": "goal_reached",
+        "ticks": 753,
+        "resets": 6,
+        "commands_completed": 3,
+        "seed": 200217
+      },
+      {
+        "success": false,
+        "reason": "timeout",
+        "ticks": 1200,
+        "resets": 15,
+        "commands_completed": 4,
+        "seed": 200219
+      },
+      {
+        "success": false,
+        "reason": "timeout",
+        "ticks": 1200,
+        "resets": 7,
+        "commands_completed": 4,
+        "seed": 200220
+      },
+      {
+        "success": false,
+        "reason": "timeout",
+        "ticks": 1200,
+        "resets": 11,
+        "commands_completed": 4,
+        "seed": 200221
+      },
+      {
+        "success": false,
+        "reason": "timeout",
+        "ticks": 1200,
+        "resets": 14,
+        "commands_completed": 4,
+        "seed": 200223
+      },
+      {
+        "success": false,
+        "reason": "timeout",
+        "ticks": 1200,
+        "resets": 10,
+        "commands_completed": 4,
+        "seed": 200224
+      },
+      {
+        "success": true,
+        "reason": "goal_reached",
+        "ticks": 387,
+        "resets": 8,
+        "commands_completed": 3,
+        "seed": 200225
+      },
+      {
+        "success": true,
+        "reason": "goal_reached",
+        "ticks": 377,
+        "resets": 5,
+        "commands_completed": 3,
+        "seed": 200227
+      },
+      {
+        "success": false,
+        "reason": "timeout",
+        "ticks": 1200,
+        "resets": 12,
+        "commands_completed": 4,
+        "seed": 200229
+      },
+      {
+        "success": false,
+        "reason": "timeout",
+        "ticks": 1200,
+        "resets": 49,
+        "commands_completed": 4,
+        "seed": 200230
+      },
+      {
+        "success": true,
+        "reason": "goal_reached",
+        "ticks": 416,
+        "resets": 7,
+        "commands_completed": 3,
+        "seed": 200231
+      },
+      {
+        "success": false,
+        "reason": "timeout",
+        "ticks": 1200,
+        "resets": 18,
+        "commands_completed": 4,
+        "seed": 200232
+      },
+      {
+        "success": false,
+        "reason": "timeout",
+        "ticks": 1200,
+        "resets": 8,
+        "commands_completed": 4,
+        "seed": 200234
+      },
+      {
+        "success": false,
+        "reason": "timeout",
+        "ticks": 1200,
+        "resets": 5,
+        "commands_completed": 4,
+        "seed": 200235
+      },
+      {
+        "success": false,
+        "reason": "timeout",
+        "ticks": 1200,
+        "resets": 2,
+        "commands_completed": 0,
+        "seed": 200236
+      },
+      {
+        "success": true,
+        "reason": "goal_reached",
+        "ticks": 395,
+        "resets": 6,
+        "commands_completed": 3,
+        "seed": 200237
+      },
+      {
+        "success": true,
+        "reason": "goal_reached",
+        "ticks": 395,
+        "resets": 11,
+        "commands_completed": 3,
+        "seed": 200238
+      },
+      {
+        "success": false,
+        "reason": "timeout",
+        "ticks": 1200,
+        "resets": 3,
+        "commands_completed": 4,
+        "seed": 200240
+      },
+      {
+        "success": true,
+        "reason": "goal_reached",
+        "ticks": 403,
+        "resets": 4,
+        "commands_completed": 3,
+        "seed": 200241
+      },
+      {
+        "success": true,
+        "reason": "goal_reached",
+        "ticks": 406,
+        "resets": 7,
+        "commands_completed": 3,
+        "seed": 200242
+      },
+      {
+        "success": false,
+        "reason": "timeout",
+        "ticks": 1200,
+        "resets": 10,
+        "commands_completed": 4,
+        "seed": 200244
+      },
+      {
+        "success": false,
+        "reason": "timeout",
+        "ticks": 1200,
+        "resets": 11,
+        "commands_completed": 4,
+        "seed": 200245
+      },
+      {
+        "success": false,
+        "reason": "timeout",
+        "ticks": 1200,
+        "resets": 5,
+        "commands_completed": 4,
+        "seed": 200246
+      },
+      {
+        "success": false,
+        "reason": "timeout",
+        "ticks": 1200,
+        "resets": 16,
+        "commands_completed": 4,
+        "seed": 200247
+      },
+      {
+        "success": true,
+        "reason": "goal_reached",
+        "ticks": 408,
+        "resets": 4,
+        "commands_completed": 3,
+        "seed": 200248
+      },
+      {
+        "success": true,
+        "reason": "goal_reached",
+        "ticks": 386,
+        "resets": 2,
+        "commands_completed": 3,
+        "seed": 200251
+      },
+      {
+        "success": false,
+        "reason": "timeout",
+        "ticks": 1200,
+        "resets": 9,
+        "commands_completed": 4,
+        "seed": 200252
+      },
+      {
+        "success": false,
+        "reason": "timeout",
+        "ticks": 1200,
+        "resets": 7,
+        "commands_completed": 4,
+        "seed": 200253
+      },
+      {
+        "success": false,
+        "reason": "timeout",
+        "ticks": 1200,
+        "resets": 5,
+        "commands_completed": 4,
+        "seed": 200255
+      },
+      {
+        "success": false,
+        "reason": "timeout",
+        "ticks": 1200,
+        "resets": 31,
+        "commands_completed": 4,
+        "seed": 200256
+      },
+      {
+        "success": false,
+        "reason": "timeout",
+        "ticks": 1200,
+        "resets": 4,
+        "commands_completed": 4,
+        "seed": 200258
+      },
+      {
+        "success": true,
+        "reason": "goal_reached",
+        "ticks": 408,
+        "resets": 7,
+        "commands_completed": 3,
+        "seed": 200259
+      },
+      {
+        "success": true,
+        "reason": "goal_reached",
+        "ticks": 628,
+        "resets": 9,
+        "commands_completed": 3,
+        "seed": 200261
+      }
+    ]
+  },
+  "matched_success_gain_percentage_points": 69.5,
+  "followup_temporal_context_tests": {
+    "passed": 5,
+    "seconds": 1.61
+  }
 }

@@ -83,10 +83,14 @@ saved scenes with contact physics and the unchanged success checker:
 ```sh
 python -m r2p.policy.prove --traces runs/P2/traces --out runs/P2/cpu200 --steps 16000 --workers 4
 python -m r2p.policy.prove --traces runs/P2/traces --out runs/P2/cpu200 --reuse --workers 4
+python -m r2p.policy.ablate_recorded --traces runs/P2/traces --out runs/P2/cpu200_recorded --steps 16000 --workers 4
 ```
 
 It exits unsuccessfully unless more than half of the evaluated scenes succeed.
 The default evaluates all 200; `--eval-scenes` is only a preliminary subset check.
+`ablate_recorded` is the matched control: it removes only the two P2 training
+convention markers, using a separate output directory. A failed gate is an
+expected control result, not an evaluator exception.
 `diagnose` reports teacher-forced errors per expert phase and the nearest recorded
 phase during rollout. The latter is an audit estimate, never a policy input.
 
