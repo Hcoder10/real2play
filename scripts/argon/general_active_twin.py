@@ -1,5 +1,4 @@
 """Task-derived active twin campaign. Defaults to CPU sim and zero live requests."""
-from copy import deepcopy
 import argparse
 import json
 from pathlib import Path
@@ -25,7 +24,7 @@ def main(argv=None):
     parser.add_argument("--seed", type=int, default=4)
     parser.add_argument("--run", default="general-"+time.strftime("%Y%m%d-%H%M%S"))
     parser.add_argument("--budget", type=int, default=5)
-    parser.add_argument("--max-nfev", type=int, default=4)
+    parser.add_argument("--max-nfev", type=int, default=7)
     parser.add_argument("--mover", choices=("sim", "armd"), default="sim")
     parser.add_argument("--argon", choices=("fake", "live"), default="fake")
     parser.add_argument("--request-budget", type=int, default=15)

@@ -45,6 +45,9 @@ def test_scene_change_moves_menu_geometry(bowl):
     changed = deepcopy(scene); changed["objects"][0]["xyz"][1] += .015
     e = experiment_menu(task, changed)[0]
     assert resolve(task, changed, e)[3][1] == pytest.approx(scene["objects"][0]["xyz"][1]+.015)
+    changed["experiment_origins"] = {"cube": list(scene["objects"][0]["xyz"][:2])}
+    returning = TaskExperiment("pick_lift_place", 1, "return")
+    np.testing.assert_allclose(resolve(task, changed, returning)[3], scene["objects"][0]["xyz"][:2])
 
 
 def test_success_predicates_change_the_experiment_dwell():
@@ -262,3 +265,27 @@ def test_video_replay_writes_decodable_aligned_mp4s(tmp_path, bowl):
             assert cap.get(cv2.CAP_PROP_FRAME_COUNT) == 2
         finally:
             cap.release()
+
+
+def test_wrist_selection_uses_recorded_command_times_and_rejects_holdout(tmp_path, monkeypatch):
+    import cv2
+    session_path = tmp_path/"train_01"
+    session_path.mkdir()
+    camera_path = tmp_path/"train_01_cameras"
+    camera_path.mkdir()
+    rows = []
+    for i in range(4):
+        name = f"{i}.png"
+        cv2.imwrite(str(camera_path/name), np.full((8,8,3), i, np.uint8))
+        rows.append({"file": name, "captured_at": 100.+i})
+    (camera_path/"cameras.json").write_text(json.dumps({"frames": {"wrist": rows}}))
+    session = SimpleNamespace(path=session_path, meta={"dual_camera_path": "../train_01_cameras",
+        "command_event_monotonic_estimates": {"close": 101.1, "lift": 101.9, "release": 103.}})
+    wrapper = SurveyedMover(SimpleNamespace(scene={"objects": []}), survey=None, sheet_geometry=None)
+    monkeypatch.setattr(gemini, "image_part", lambda frame: int(frame[0,0,0]))
+    observation = SimpleNamespace(split="train", session=session)
+    parts = wrapper.wrist_parts(observation)
+    assert [p for p in parts if isinstance(p, int)] == [1,2,3]
+    observation.split = "heldout"
+    with pytest.raises(ValueError, match="Held-out wrist"):
+        wrapper.wrist_parts(observation)

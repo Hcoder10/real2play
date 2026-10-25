@@ -8,6 +8,7 @@ from __future__ import annotations
 from copy import deepcopy
 import json
 from pathlib import Path
+import re
 import threading
 import time
 from urllib.request import urlopen
@@ -197,7 +198,8 @@ class SurveyedMover:
         self.sheet_geometry = sheet_geometry
         self.wrist_capture = wrist_capture or http_capture()
         self.final_observe = final_observe
-        self.reference = None
+        cells = {o["id"]: list(o["xyz"][:2]) for o in mover.scene["objects"] if re.fullmatch(r"r[0-2]c[0-2]", o["id"])}
+        self.reference = (deepcopy(mover.scene.get("board", {}).get("cells")) or cells) or None
 
     def __getattr__(self, name):
         return getattr(self.mover, name)
@@ -228,7 +230,7 @@ class SurveyedMover:
         poses = self.survey(frame, self.mover.measured_q(state))
         proposed = deepcopy(self.mover.scene)
         for obj in proposed["objects"]:
-            if obj.get("fixed"):
+            if obj.get("fixed") and not obj.get("collide", True):
                 continue
             pose = poses.get(obj["id"], {})
             xyz = np.asarray(pose.get("xyz", []), float)
@@ -315,7 +317,7 @@ class SurveyedMover:
                             index = min(indices[len(indices)//2], len(commands)-1)
                             events[phase] = command_origin+commands[index]["t"]
                 meta = {"task": deepcopy(self.validator.task), "task_name": self.validator.task["name"],
-                        "dual_camera_path": str(recorder.path.resolve()), "trace_origin_monotonic_estimate": origin,
+                        "dual_camera_path": "../"+recorder.path.name, "trace_origin_monotonic_estimate": origin,
                         "command_event_monotonic_estimates": events}
                 gemini.atomic_json(Path(destination)/"meta.json", meta)
                 observation.session.meta.update(meta)
@@ -324,6 +326,8 @@ class SurveyedMover:
         if observation.split != "train":
             raise ValueError("Held-out wrist images cannot enter MAIN prompts")
         root = Path(observation.session.meta["dual_camera_path"])
+        if not root.is_absolute():
+            root = observation.session.path/root
         manifest = json.loads((root/"cameras.json").read_text())
         rows = manifest["frames"]["wrist"]
         if not rows:

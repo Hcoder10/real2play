@@ -117,7 +117,7 @@ def require_contact_evidence(observation):
         raise ValueError("Final contact observation is missing the manipulated object; cannot identify/gate contact")
 
 
-def fit_parameters(training, task, physics, scene, current, *, max_nfev=5):
+def fit_parameters(training, task, physics, scene, current, *, max_nfev=7):
     if not training or any(o.split != "train" for o in training):
         raise ValueError("Fitting requires training experiments only")
     for observation in training:
@@ -147,7 +147,7 @@ def fit_parameters(training, task, physics, scene, current, *, max_nfev=5):
     jac = np.column_stack(probes)
     active = np.flatnonzero(np.linalg.norm(jac, axis=0) > 1e-5)
     fitted = dict(current)
-    rank, final_cost = 0, float(initial@initial)
+    rank, final_cost, optimizer = 0, float(initial@initial), {"status": None, "message": "No sensitive parameters"}
     if len(active):
         def reduced(x):
             full = x0.copy(); full[active] = x
@@ -162,9 +162,12 @@ def fit_parameters(training, task, physics, scene, current, *, max_nfev=5):
             uncertainty[keys[j]].update(std=std if rank == len(active) else None,
                 identified=bool(rank == len(active) and std < scale[j]/2))
         final_cost = float(result.fun@result.fun)
+        optimizer = {"status": int(result.status), "message": result.message, "nfev": result.nfev,
+                     "optimality": float(result.optimality)}
     return fitted, uncertainty, {"eligible": keys, "sensitive": [keys[j] for j in active],
                                 "jacobian_rank": rank, "evaluations": len(cache),
-                                "cost_before": float(initial@initial), "cost_after": final_cost}
+                                "cost_before": float(initial@initial), "cost_after": final_cost,
+                                "optimizer": optimizer}
 
 
 def score(observations, physics, scene):
@@ -253,11 +256,13 @@ class SimMover(BenchSimMover):
                 "synthetic_task_check": outcome})
 
 
-def run_campaign(mover, task, *, out_dir, budget=6, physics="so101_bench", client=None, max_nfev=5, videos=True):
+def run_campaign(mover, task, *, out_dir, budget=6, physics="so101_bench", client=None, max_nfev=7, videos=True):
     if type(budget) is not int or not 4 <= budget <= 30:
         raise ValueError("budget must be 4..30, including two complete held-out experiments")
     out = Path(out_dir)
     out.mkdir(parents=True, exist_ok=False)
+    mover.scene.setdefault("experiment_origins", {o["id"]: list(o["xyz"][:2])
+                                                  for o in mover.scene["objects"] if o.get("role") == "manipulated"})
     task = freeze_task(task, mover.scene)
     physics, scene = load_physics(physics), deepcopy(mover.scene)
     values, bounds = parameter_space(task, scene, physics)
@@ -283,7 +288,8 @@ def run_campaign(mover, task, *, out_dir, budget=6, physics="so101_bench", clien
         if not holds or not contacts:
             raise ValueError("No safe hold AND task-contact experiment; cannot claim a task twin")
         # Distinct whole command sequences; no holdout result enters a prompt.
-        held_menu = [replace(holds[-1], duration_s=1.3), replace(contacts[0], duration_s=1.3)]
+        held_menu = [replace(holds[-1], height_m=min(.14, holds[-1].height_m+.01), duration_s=1.3),
+                     replace(contacts[0], height_m=min(.14, contacts[0].height_m+.01), speed=7.5, duration_s=1.3)]
         for e in held_menu:
             mover.validator.plan(e, scene, q0)
         heldout, training, tried, history = [], [], {e.key for e in held_menu}, []

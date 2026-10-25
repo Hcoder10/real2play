@@ -10,7 +10,6 @@ import numpy as np
 
 from r2p import gemini
 from r2p.frames import HZ
-from r2p.perception import CameraModel
 from r2p.sim import TaskTwin
 from .evaluate import CalibratedRenderer
 from .session import load_session
@@ -27,7 +26,7 @@ def _scene(recorded, candidate):
     return result
 
 
-def render_experiment(session, before_physics, after_physics, before_scene, after_scene, destination, *, fps=5, width=320):
+def render_experiment(session, before_physics, after_physics, before_scene, after_scene, destination, *, fps=3, width=240):
     if not 1 <= fps <= 30 or width < 64:
         raise ValueError("fps must be 1..30 and width >=64")
     if not session.ticks or not session.camera:
@@ -96,7 +95,7 @@ def render_experiment(session, before_physics, after_physics, before_scene, afte
             "source_frames": len(session.frames), "source": session.meta.get("source")}
 
 
-def build_videos(run, *, fps=5, width=320):
+def build_videos(run, *, fps=3, width=240):
     run = Path(run)
     if not run.is_dir():
         raise FileNotFoundError(run)

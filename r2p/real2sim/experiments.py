@@ -107,8 +107,10 @@ def resolve(task, scene, e):
     if isinstance(ref, str) and target is None:
         raise UnsafeExperiment("Task target absent from survey")
     xy = np.array(target["xyz"][:2] if target else ref if ref is not None else obj["xyz"][:2], float)
-    if e.location in ("source", "return"):
+    if e.location == "source":
         xy = np.array(obj["xyz"][:2], float)
+    elif e.location == "return":
+        xy = np.array(scene.get("experiment_origins", {}).get(obj["id"], obj["xyz"][:2]), float)
     offset = np.asarray(e.offset_xy, float)
     if not np.isfinite(offset).all():
         raise UnsafeExperiment("Nonfinite offset")

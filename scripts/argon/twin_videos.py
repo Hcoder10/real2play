@@ -9,8 +9,8 @@ from r2p.real2sim.twin_videos import build_videos
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("run")
-    parser.add_argument("--fps", type=int, default=5)
-    parser.add_argument("--width", type=int, default=320)
+    parser.add_argument("--fps", type=int, default=3)
+    parser.add_argument("--width", type=int, default=240)
     args = parser.parse_args(argv)
     result = build_videos(args.run, fps=args.fps, width=args.width)
     print(json.dumps(result, indent=2))
