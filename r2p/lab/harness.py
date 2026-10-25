@@ -511,7 +511,9 @@ class Harness:
                         result["error"] = "; ".join(recorder.errors)
                     hz = result["recording"]["state_hz"]
                     if not hasattr(self.backend, "on_tick") and (hz is None or hz < 25 or result["recording"]["max_state_gap_s"] > .15):
-                        result.update(status="refused", error="Telemetry did not sustain 30 Hz (minimum accepted 25 Hz)")
+                        # Keep the underlying failure: a plan that stopped early also reads as low telemetry.
+                        result.update(status="refused", cause=result.get("error"),
+                                      error="Telemetry did not sustain 30 Hz (minimum accepted 25 Hz)")
                 except Exception as exc:
                     result.update(status="refused", error="Recording finalization failed: "+gemini._safe(str(exc)))
             self.last_episode = result
