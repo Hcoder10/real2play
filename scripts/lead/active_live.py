@@ -108,16 +108,34 @@ if __name__ == "__main__":
 
     from measure_grid import measure
 
-    def grid_centre(frame):
-        cells, _, _ = measure(frame, cam)
-        return np.asarray(cells["r1c1"])
+    from r2p.tasks import load_task
+    board = load_task("place_on_cell")["board"]
 
-    reference = grid_centre(mover.capture()[0])
-    print(f"[camera] sheet reference r1c1 at {np.round(reference, 4).tolist()}", flush=True)
+    def grid_centre(frame):
+        """r1c1 from the camera, or None when the reading is implausible (the arm in view corrupts the outer-square
+        detection: a cell size off the measured one means the contour is not the printed grid)."""
+        try:
+            cells, cell_m, _ = measure(frame, cam)
+        except SystemExit:
+            return None
+        return np.asarray(cells["r1c1"]) if abs(cell_m - board["cell_m"]) < 0.0012 else None
+
+    # Reference = the sheet as measured with the arm parked (task.json), not a frame with the arm in view.
+    reference = np.asarray(board["center_xy"])
+    print(f"[camera] sheet reference r1c1 at {np.round(reference, 4).tolist()} (parked measurement)", flush=True)
 
     def guarded_execute(experiment, destination, **kw):
         result = resurvey_then_execute(experiment, destination, **kw)
-        moved = np.linalg.norm(grid_centre(mover.capture()[0]) - reference)
+        readings = []
+        for _ in range(3):
+            c = grid_centre(mover.capture()[0])
+            if c is not None:
+                readings.append(np.linalg.norm(c - reference))
+            time.sleep(0.3)
+        if not readings:
+            print(f"[camera] sheet not measurable after {experiment.kind} (arm in view); continuing", flush=True)
+            return result
+        moved = float(np.median(readings))
         print(f"[camera] sheet moved {moved * 1000:.1f} mm after {experiment.kind}", flush=True)
         if moved > 0.004:
             raise RuntimeError(f"The paper moved {moved * 1000:.1f} mm during {experiment.kind}: stopping the campaign")

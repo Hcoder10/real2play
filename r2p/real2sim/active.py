@@ -485,6 +485,12 @@ class ArmdMover:
         self.reset_timeout_s = reset_timeout_s
         self.initial_state = self.request(self.url+"/state")
         self.modern = "owner_deg" in self.initial_state and "q_target" in self.initial_state
+        if self.modern and "rest_q" in self.initial_state:
+            # The repo daemon refuses wrist roll more than roll_excursion_deg (100) from its boot pose
+            # ("roll_excursion"); plan inside +-85 deg of it so the guard never stops an experiment midway.
+            roll0 = float(self.initial_state["rest_q"][4])
+            rng = self.validator.arm.range
+            rng[4] = [max(rng[4][0], roll0 - np.deg2rad(85)), min(rng[4][1], roll0 + np.deg2rad(85))]
         if self.modern and validator is None:
             # The repository daemon reserves two degrees at joint limits and
             # caps near-table motion at 8 deg/s. Plan within both limits rather
