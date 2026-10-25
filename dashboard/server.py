@@ -61,7 +61,7 @@ def make_server(data, host="127.0.0.1", port=8800):
             self.end_headers()
             try:
                 self.wfile.write(body)
-            except (BrokenPipeError, ConnectionResetError):
+            except (BrokenPipeError, ConnectionResetError, ConnectionAbortedError):
                 pass
 
         def video(self, file):
@@ -106,7 +106,7 @@ def make_server(data, host="127.0.0.1", port=8800):
                             break
                         self.wfile.write(block)
                         remaining -= len(block)
-            except (BrokenPipeError, ConnectionResetError):
+            except (BrokenPipeError, ConnectionResetError, ConnectionAbortedError):
                 pass
 
         def do_GET(self):
@@ -166,6 +166,8 @@ def make_server(data, host="127.0.0.1", port=8800):
                     self.send(qr_png(url), "image/png")
                 else:
                     self.send(b"Not found", "text/plain", 404)
+            except (BrokenPipeError, ConnectionResetError, ConnectionAbortedError):
+                pass  # A display tab may close during header or video transmission.
             except (OSError, ValueError, KeyError, TypeError):
                 self.send(b'{"error":"Source unavailable; retry after its publisher updates"}', status=503)
 
