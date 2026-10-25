@@ -36,6 +36,37 @@ if __name__ == "__main__":
         print("[auto-approved under owner authorization]", flush=True)
         return "y"
 
+    # Videos reach Argon as H.264: OpenCV writes mp4v (MPEG-4 Part 2), which the API rejects with
+    # "Request contains an invalid argument" (run 04). Fallback: a strip of frames as one image.
+    import subprocess
+    import cv2
+    import numpy as np
+    from r2p import gemini as _g
+    FFMPEG = r"C:/Users/sarta/AppData/Local/Microsoft/WinGet/Packages/Gyan.FFmpeg_Microsoft.Winget.Source_8wekyb3d8bbwe/ffmpeg-8.1-full_build/bin/ffmpeg.exe"
+    _video_part = _g.video_part
+
+    def video_part(path):
+        path = Path(path)
+        out = path.with_name(path.stem + ".argon.mp4")   # H.264, >= 2 s (1-2 frame clips are rejected)
+        try:
+            if not out.exists() or out.stat().st_mtime < path.stat().st_mtime:
+                subprocess.run([FFMPEG, "-y", "-loglevel", "error", "-i", str(path), "-c:v", "libx264", "-pix_fmt",
+                                "yuv420p", "-vf", "tpad=stop_mode=clone:stop_duration=2,fps=10,scale='min(640,iw)':-2", "-an", str(out)], check=True, timeout=120)
+            return _video_part(out)
+        except Exception:  # noqa: BLE001
+            cap, frames = cv2.VideoCapture(str(path)), []
+            while True:
+                ok, f = cap.read()
+                if not ok:
+                    break
+                frames.append(f)
+            cap.release()
+            picks = [frames[i] for i in np.linspace(0, len(frames) - 1, min(6, len(frames))).astype(int)] if frames else []
+            h = 240
+            strip = np.hstack([cv2.resize(f, (int(f.shape[1] * h / f.shape[0]), h)) for f in picks])
+            return _g.image_part(strip)
+
+    _g.video_part = video_part
     # Stateless client: every turn already carries goal, history, files and results; chaining turns through
     # previous_interaction_id made every turn 2 fail with malformed_tool_call (Oct 25, runs 02/03).
     from r2p import gemini
