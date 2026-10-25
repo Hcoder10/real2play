@@ -1,4 +1,4 @@
-"""Trace windows and observation-only DART/pose augmentations.
+"""Trace windows, calibration-coordinate and observation-only pose augmentations.
 
 Labels always come from q_target. A chunk stops at a command boundary and pads
 with that command's final target. Gripper transitions are never chatter-smoothed.
@@ -33,7 +33,8 @@ class TraceDataset:
     def __init__(self, task, directory, config, augmentation=None):
         self.task, self.config = task, config
         self.aug = augmentation or Augmentation()
-        files = sorted(Path(directory).rglob("*.jsonl"))
+        directory = Path(directory)
+        files = [directory] if directory.is_file() else sorted(directory.rglob("*.jsonl"))
         if not files:
             raise ValueError(f"No .jsonl traces in {directory}")
         raw, labels, weights, previous, pick, starts = [], [], [], [], [], []
@@ -68,6 +69,7 @@ class TraceDataset:
                            if ticks[j]["command"] == tick["command"] and ticks[j]["phase"] == tick["phase"]]
                 smoothed[i, :5] = targets[indices, :5].mean(axis=0)
             base = len(raw)
+            command_start = 0
             for i, tick in enumerate(ticks):
                 command = tick.get("command")
                 if not command:
@@ -76,7 +78,12 @@ class TraceDataset:
                 measured = np.asarray(tick["q"], float)
                 if np.max(np.abs(q-measured)) > np.deg2rad(4):
                     q = measured.copy()
-                raw.append(np.r_[q, encode_slots(task, tick["poses"]).ravel(), command_onehot(task, command)])
+                if i == 0 or command != ticks[i-1]["command"]:
+                    command_start = i
+                row = np.r_[q, encode_slots(task, tick["poses"]).ravel(), command_onehot(task, command)]
+                if config.get("temporal_context") == "command_age_s":
+                    row = np.r_[row, tick["t"]-ticks[command_start]["t"]]
+                raw.append(row)
                 end = i
                 while end+1 < min(len(ticks), i+HORIZON) and ticks[end+1]["command"] == command:
                     end += 1
@@ -106,11 +113,17 @@ class TraceDataset:
             self._cdf /= self._cdf[-1]
         index = np.minimum(np.searchsorted(self._cdf, rng.random(batch_size), side="right"), len(self._cdf) - 1)
         x = self.raw[index].copy()
+        y = self.labels[index].copy()
         k = self.config["K"]
         slots = x[:, 6:6+9*k].reshape(-1, k, 9)
         if augment:
             a = self.aug
-            x[:, :5] += rng.normal(0, a.joint_offset_std, (len(x), 5))
+            # Calibration changes the coordinate chart of both observations and
+            # absolute actions. Perturbing only q teaches a denoiser that erases
+            # small commanded motions (the old delta-action convention).
+            offset = rng.normal(0, a.joint_offset_std, (len(x), 5))
+            x[:, :5] += offset
+            y.reshape(-1, HORIZON, 6)[:, :, :5] += offset[:, None, :]
             stale = rng.random(len(x)) < a.stale_probability
             old = self.raw[self.previous[index], 6:6+9*k].reshape(-1, k, 9)
             for j, obj in enumerate(self.task["objects"]):
@@ -124,7 +137,7 @@ class TraceDataset:
                     shift += lateral*rng.normal(0, a.aim_lateral_m, (len(x), 1))
                     slots[active, j, :2] += shift[active]
             slots[:, :, :3] += rng.normal(0, a.position_std, slots[:, :, :3].shape)*slots[:, :, 8:9]
-        return expand_features(x, self.config).astype(np.float32), self.labels[index]
+        return expand_features(x, self.config).astype(np.float32), y
 
     def normalization(self):
         mean = self.features.mean(axis=0, dtype=np.float64)

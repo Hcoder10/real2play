@@ -69,6 +69,9 @@ def command_encoding(config, command):
 
 def expand_features(raw, config):
     raw = np.asarray(raw, float)
+    age = raw[..., -1:] if config.get("temporal_context") == "command_age_s" else raw[..., :0]
+    if age.shape[-1]:
+        raw = raw[..., :-1]
     k = config["K"]
     slots = raw[..., 6:6+9*k].reshape(raw.shape[:-1]+(k, 9))
     yaw = np.arctan2(slots[..., 3], slots[..., 4])
@@ -79,7 +82,7 @@ def expand_features(raw, config):
                              np.sin((yaw-bearing)*sym), np.cos((yaw-bearing)*sym)], axis=-1)
     yaw_features *= present[..., None]
     return np.concatenate([raw, fk_features(raw[..., :6], config["fk"]),
-                           yaw_features.reshape(raw.shape[:-1]+(4*k,))], axis=-1)
+                           yaw_features.reshape(raw.shape[:-1]+(4*k,)), age], axis=-1)
 
 
 def observation(obs, config):
@@ -90,6 +93,11 @@ def observation(obs, config):
         raise ValueError("Observation must contain finite values")
     command = obs.get("command", config["commands"][0])
     raw = np.concatenate([q, slots.ravel(), command_encoding(config, command)])
+    if config.get("temporal_context") == "command_age_s":
+        age = float(obs.get("command_age_s", 0.))
+        if not np.isfinite(age) or age < 0:
+            raise ValueError("command_age_s must be finite and nonnegative")
+        raw = np.r_[raw, age]
     return expand_features(raw, config)
 
 
@@ -114,6 +122,32 @@ class Policy:
         self.start_q = np.asarray(config["start_q"], float)
         self.horizon = config["horizon"]
         self._members = int(config.get("ensemble_size", 1))
+        self.reset()
+
+    def reset(self):
+        """Begin an episode. Command changes reset age; q divergence does not.
+
+        act() is called at 30 Hz unless obs supplies an integer control tick or
+        explicit command_age_s. Teacher-forced diagnostics supply the latter.
+        """
+        self._tick = 0
+        self._command = None
+        self._command_start = 0
+        self._last_tick = -1
+
+    def _timed_observation(self, obs):
+        if self.config.get("temporal_context") != "command_age_s" or "command_age_s" in obs:
+            return obs
+        tick = obs.get("tick", self._tick)
+        if not isinstance(tick, (int, np.integer)) or tick < 0:
+            raise ValueError("tick must be a nonnegative integer control tick")
+        if tick < self._last_tick:
+            self.reset()
+        command = obs.get("command", self.config["commands"][0])
+        if command != self._command:
+            self._command, self._command_start = command, tick
+        self._last_tick, self._tick = tick, tick+1
+        return dict(obs, command_age_s=(tick-self._command_start)/self.config["hz"])
 
     @classmethod
     def load(cls, directory):
@@ -148,7 +182,7 @@ class Policy:
         return np.stack(outputs) if ensemble else np.mean(outputs, axis=0)
 
     def act(self, obs):
-        return self.predict_features(self.features(obs))
+        return self.predict_features(self.features(self._timed_observation(obs)))
 
     def act_ensemble(self, obs):
-        return self.predict_features(self.features(obs), ensemble=True)
+        return self.predict_features(self.features(self._timed_observation(obs)), ensemble=True)

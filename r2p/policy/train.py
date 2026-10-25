@@ -94,6 +94,7 @@ def train(task, traces, name, steps=1000, device="cpu", *, seeds=(0,), batch_siz
     directory.mkdir(parents=True, exist_ok=True)
     config["training"] = {"steps": steps, "device": device, "batch_size": batch_size,
                           "learning_rate": learning_rate, "augmentation": asdict(augmentation),
+                          "joint_offset_convention": "observation_and_absolute_target",
                           "traces": dataset.provenance, "samples": len(dataset.raw), "losses": losses,
                           "lease_id": os.environ.get("LANDLORD_LEASE_ID") if device.startswith("cuda") else None}
     np.savez_compressed(directory/"weights.npz", **weights)

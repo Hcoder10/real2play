@@ -75,11 +75,13 @@ class CommandTracker:
             self.age, self.stable = 0, 0
 
 
-def rollout(policy, scene, *, seed=0, noise="clean", max_ticks=None):
+def rollout(policy, scene, *, seed=0, noise="clean", max_ticks=None, on_step=None):
     if noise not in NOISE:
         raise ValueError(f"noise must be one of {tuple(NOISE)}")
     scale = NOISE[noise]
     task = policy.config["task_spec"]
+    if callable(getattr(policy, "reset", None)):
+        policy.reset()
     rng = np.random.default_rng(seed)
     arm = Arm()
     states, chunks = deque(maxlen=15), deque(maxlen=15)
@@ -97,6 +99,7 @@ def rollout(policy, scene, *, seed=0, noise="clean", max_ticks=None):
         initial = twin.poses()
         tracker = CommandTracker(task, initial, pick_lift_m=policy.config.get("pick_lift_m", .04))
         commanded = start_q.copy()
+        last_sent = start_q.copy()
         divergences = 0
         for tick in range(budget):
             measured = twin.q()+offset
@@ -113,7 +116,9 @@ def rollout(policy, scene, *, seed=0, noise="clean", max_ticks=None):
                     if obj["role"] == "manipulated":
                         slots[j, :5] = old[j, :5]
             slots[:, :3] += (pose_bias+rng.normal(0, .0015*scale, pose_bias.shape))*slots[:, 8:9]
-            chunk = np.asarray(policy.act({"q": commanded, "slots": slots, "command": tracker.command}))
+            q_input = commanded.copy()
+            chunk = np.asarray(policy.act({"q": q_input, "slots": slots, "command": tracker.command,
+                                           "tick": tick}))
             if chunk.shape != (15, 6) or not np.isfinite(chunk).all():
                 return {"success": False, "reason": "invalid_action", "ticks": tick, "resets": divergences}
             chunks.append((tick, chunk))
@@ -121,8 +126,11 @@ def rollout(policy, scene, *, seed=0, noise="clean", max_ticks=None):
             weights = np.exp(-.1*np.arange(len(predictions)))  # oldest predictions weighted most
             target = np.average(predictions, axis=0, weights=weights)
             # Match the runner's bounded absolute-command execution.
-            target = commanded+np.clip(target-commanded, -.10, .10)
+            # Observation resets must not reset the actuator's rate-limit origin.
+            # The real Session likewise projects from last_sent, not q_obs.
+            target = last_sent+np.clip(target-last_sent, -.10, .10)
             target = np.clip(target, *arm.range.T)
+            last_sent = target.copy()
             pending.append(target.copy())
             executed = pending.popleft()
             twin.step(executed-offset)
@@ -132,6 +140,10 @@ def rollout(policy, scene, *, seed=0, noise="clean", max_ticks=None):
                       bool(twin.q()[5] > threshold and twin.commanded_q[5] > threshold))
             state = {"objects": twin.poses(), "initial": initial, "gripper_open": opened,
                      "site_xyz": arm.tips(twin.q())[2].tolist()}
+            if on_step is not None:
+                on_step({"tick": tick, "command": tracker.command, "q": measured.copy(),
+                         "q_input": q_input, "target": target.copy(),
+                         "chunk": chunk.copy(), "state": state, "resets": divergences})
             states.append(state)
             old_command = tracker.command
             tracker.update(state, twin.q(), start_q)

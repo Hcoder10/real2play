@@ -7,6 +7,14 @@ has three residual blocks and tanh-approximate GELUs. It predicts 15 × 6
 **absolute** targets at 30 Hz. There is no addition of the observed joints to
 the model output.
 
+New exports also include `command_age_s`: elapsed control time since the current
+command began. The timed expert can hold an almost identical contact pose before
+lifting or releasing, so instantaneous joints/slots alone cannot identify its
+next action. Training derives this clock from trace timestamps and command
+boundaries; runtime resets it on command changes, not on measured-q resets.
+Old exports without `temporal_context` retain their original input layout and
+need retraining to use this feature.
+
 From the repository root (use `.venv/Scripts/python.exe` on Windows):
 
 ```sh
@@ -21,9 +29,11 @@ python -m r2p.policy.eval --export cell --n 100 --noise realx0.5
 It preserves unsuccessful attempts with their failure reason. DART perturbs
 execution only; q_target remains the clean expert label. Training smooths arm
 chatter within a phase, preserves gripper edges, pads action chunks at command
-boundaries, and upweights recovery. Observation augmentations include joint
+boundaries, and upweights recovery. Augmentations include joint
 calibration offsets, stale/noisy manipulated-object poses and radial/lateral
 aim bias paired with the true target. All augmentation settings are recorded.
+Calibration offsets transform both observed joints and every absolute target in
+the chunk; pose noise and DART still leave the clean action labels unchanged.
 
 CUDA requires a current landlord lease, its environment, and the returned
 PyTorch memory fraction (`--memory-fraction`). Agent B's checks use CPU only.
@@ -36,6 +46,26 @@ The config declares start pose, frame, command vocabulary, constant-feature
 clamps, model/augmentation details, weights hash and actual evaluation results.
 Never-varied features are clamped only when more than five training standard
 deviations away (1e-3 floor). `act_ensemble` exposes individual seed predictions.
+
+Call `policy.reset()` before a new episode. `act` and `act_ensemble` advance the
+clock by one control tick per call by default (the real runner's default
+`replan_every=1`). Callers that replan less often must supply `obs["tick"]`, the
+integer 30 Hz episode tick; repeated queries at the same tick do not advance time.
+For teacher forcing or externally tracked commands, pass `command_age_s`
+explicitly. `features` and `predict_features` are stateless diagnostic methods.
+
+Diagnose an existing export using recorded observations and the exact saved scene:
+
+```sh
+python -m r2p.policy.diagnose --export wide_v1 --trace runs/train/expert_place_on_cell_00200000.jsonl --out runs/policy_diagnostic.json
+python -m pytest -q tests/policy tests/robot
+```
+
+The twenty-trace CPU regression fits clean observation windows, measures both
+chunk and first-action error, then requires at least one physical closed-loop
+success on five fixed training scenes. This is an overfit implementation check,
+not a deployment qualification. See `P_POLICY_ZERO_REPORT.md` for the ablations,
+remaining failures and the rig retraining command.
 
 The evaluator uses the shared task checker over the final half second and
 state-based subtask completion. All noise modes use identical seeded scenes.

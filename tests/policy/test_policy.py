@@ -42,7 +42,11 @@ def test_chunk_labels_augmentations_constants(traces):
     plain, target = ds.sample(32, np.random.default_rng(23), augment=False)
     augmented, target_aug = ds.sample(32, np.random.default_rng(23), augment=True)
     assert np.max(np.abs(augmented-plain)) > .01
-    np.testing.assert_array_equal(target, target_aug)
+    offset = augmented[:, :5]-plain[:, :5]
+    np.testing.assert_allclose((target_aug-target).reshape(-1, 15, 6)[:, :, :5],
+                               np.broadcast_to(offset[:, None, :], (32, 15, 5)), atol=3e-7)
+    np.testing.assert_array_equal(target_aug.reshape(-1, 15, 6)[:, :, 5],
+                                  target.reshape(-1, 15, 6)[:, :, 5])
     assert target.shape == (32, 90)
     assert ds.labels[:, 5].min() < 0
     norm, constants = ds.normalization()
@@ -72,7 +76,7 @@ def test_tiny_cpu_training_standalone_export_parity_and_eval(traces):
     np.testing.assert_allclose(config["start_q"], HOME_Q)
     scene = sample_scene(config["task_spec"], np.random.default_rng(12))
     poses = {o["id"]: o for o in scene["objects"]}
-    obs = {"q": HOME_Q, "slots": encode_slots(config["task_spec"], poses), "command": config["commands"][0]}
+    obs = {"q": HOME_Q, "slots": encode_slots(config["task_spec"], poses), "command": config["commands"][0], "tick": 0}
     outputs = policy.act_ensemble(obs)
     assert outputs.shape == (2, 15, 6)
     features = policy.features(obs)
