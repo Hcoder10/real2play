@@ -2,7 +2,7 @@ local A=require(script.Parent.ArmBuilder)
 local C=require(script.Parent.TaskCheck)
 local Physics=require(script.Parent.Generated.Physics)
 local Scene={}
-local colors={brown=Color3.fromRGB(172,116,76),blue=Color3.fromRGB(67,134,211),green=Color3.fromRGB(78,203,169),gray=Color3.fromRGB(153,174,192),red=Color3.fromRGB(231,96,99),yellow=Color3.fromRGB(242,206,92)}
+local colors={white=Color3.fromRGB(242,242,242),brown=Color3.fromRGB(172,116,76),blue=Color3.fromRGB(67,134,211),green=Color3.fromRGB(78,203,169),gray=Color3.fromRGB(153,174,192),red=Color3.fromRGB(231,96,99),yellow=Color3.fromRGB(242,206,92)}
 local function color(value)
     if type(value)=="table" then return Color3.new(value[1],value[2],value[3]) end
     if type(value)=="string" and value:sub(1,1)=="#" then return Color3.fromHex(value:sub(2)) end
@@ -44,8 +44,8 @@ function Scene.build(parent,origin,scene)
             end
         end
         p.CustomPhysicalProperties=PhysicalProperties.new(math.clamp(mass/volume,.01,100),friction,0,10,1)
-        if o.role=="target" then p.Material=Enum.Material.Neon; p.Transparency=.45 end
-        if o.role=="target" or o.role=="container" then
+        if o.role=="target" then p.Material=Enum.Material.Neon; p.Transparency=if o.id=="cell" then .12 else .72 end
+        if (o.role=="target" and not o.id:match("^r%dc%d$")) or o.role=="container" then
             local glow=Instance.new("Highlight"); glow.FillTransparency=.85; glow.OutlineColor=Color3.fromRGB(78,203,169); glow.Adornee=p; glow.Parent=p
         end
     end

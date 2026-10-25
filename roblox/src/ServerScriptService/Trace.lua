@@ -1,6 +1,6 @@
 local H=game:GetService("HttpService")
 local Config=require(game:GetService("ServerStorage").TwinConfig)
-local Trace={}; Trace.__index=Trace
+local Trace={pending=0}; Trace.__index=Trace
 function Trace.new(meta,enabled)
     meta.schema="r2p_trace/1"; meta.commands={}
     return setmetatable({meta=meta,ticks={},enabled=enabled~=false,id=(meta.source or "human").."_"..H:GenerateGUID(false),segments={},active=nil},Trace)
@@ -24,12 +24,19 @@ function Trace:finish(success,reason,extra)
     for k,v in pairs(extra or {}) do self.meta[k]=v end
 end
 function Trace:upload(callback)
-    if not self.enabled or #self.ticks==0 then if callback then callback(false,"not_recorded") end return end
+    local counted=false
+    local function done(ok,detail)
+        self.uploadComplete=ok; self.uploadDetail=detail
+        if counted then Trace.pending-=1; counted=false end
+        if callback then callback(ok,detail) end
+    end
+    if not self.enabled or #self.ticks==0 then done(false,"not_recorded"); return end
     assert(self.finished,"finish trace before uploading")
     if Config.TRACE_URL=="" or Config.TRACE_KEY=="" then
-        if callback then callback(false,"trace endpoint not configured") end
+        done(false,"trace endpoint not configured")
         return
     end
+    Trace.pending+=1; counted=true
     task.spawn(function()
         local parts=math.ceil(#self.ticks/600)
         for part=0,parts-1 do
@@ -49,11 +56,11 @@ function Trace:upload(callback)
                 if ok and response.StatusCode>=400 and response.StatusCode<500 and response.StatusCode~=429 then break end
                 task.wait(math.min(8,2^(attempt-1))+.1*math.random())
             end
-            if not delivered then if callback then callback(false,"upload_failed") end return end
+            if not delivered then done(false,"upload_failed"); return end
             -- Stay below HttpService's shared 500 requests/minute budget.
             if part<parts-1 then task.wait(.2) end
         end
-        if callback then callback(true,self.id) end
+        done(true,self.id)
     end)
 end
 return Trace

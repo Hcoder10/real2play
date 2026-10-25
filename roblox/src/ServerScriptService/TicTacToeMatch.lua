@@ -20,7 +20,8 @@ function Match:mark(cell,player)
     local p=A.part(self.marks,if player==1 then "X" else "O",Vector3.new(size[1],size[3],size[2])*10,CFrame.new(self.station.origin+A.vector({xy[1],xy[2],size[3]/2})),
         if player==1 then Color3.fromRGB(172,116,76) else Color3.fromRGB(47,113,200),true)
     p.CanCollide=false
-    local surface=Instance.new("SurfaceGui"); surface.Face=Enum.NormalId.Top; surface.CanvasSize=Vector2.new(100,100); surface.Parent=p
+    p.Shape=Enum.PartType.Cylinder; p.Size=Vector3.new(size[3],size[1],size[2])*10; p.CFrame*=CFrame.Angles(0,0,math.pi/2)
+    local surface=Instance.new("SurfaceGui"); surface.Face=Enum.NormalId.Right; surface.CanvasSize=Vector2.new(100,100); surface.Parent=p
     local label=Instance.new("TextLabel"); label.Size=UDim2.fromScale(1,1); label.BackgroundTransparency=1; label.Text=if player==1 then "X" else "O"; label.TextScaled=true; label.Font=Enum.Font.GothamBold; label.TextColor3=Color3.new(1,1,1); label.Parent=surface
 end
 function Match:accepted(success,reason,extra)

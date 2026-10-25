@@ -33,6 +33,12 @@ local target,command=release:step({objects={},site_xyz=mid,q=release.q},1/30)
 local after=K.tips(release.q)
 assert(command=="release" and target[6]>.15,"release must open the jaw")
 for axis=1,3 do assert(math.abs(after[axis]-fixed[axis])<1e-10,"opening must not translate the fixed finger into the placed piece"); n+=1 end
+local pinch=Skill.new(L.tasks.place_on_cell)
+pinch.stage=3; pinch.q={-.4,-.2,.7,1.0,.8,.55}
+local beforePinch,_,pinchSite=K.tips(pinch.q)
+pinch:step({objects={piece={xyz={.218,-.075,.0085},size_m={.033,.017},yaw_deg=0}},site_xyz=pinchSite,q=table.clone(pinch.q)},1/30)
+local afterPinch=K.tips(pinch.q)
+for axis=1,3 do assert(math.abs(afterPinch[axis]-beforePinch[axis])<1e-10,"closing must not chase the changing jaw midpoint and shove the cap"); n+=1 end
 local stats=S.new()
 local result=S.round(stats,"a",true,10,40,1)
 assert(result.stars==3 and stats.stars==3 and stats.combo==1)

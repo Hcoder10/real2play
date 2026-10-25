@@ -7,6 +7,9 @@ local J=require(if script then script.Parent.JointSim else "./JointSim")
 local Robot=require(if script then script.Parent.Generated.Robot else "./Generated/Robot")
 local Physics=require(if script then script.Parent.Generated.Physics else "./Generated/Physics")
 local S={}; S.__index=S
+local function lowPiece(def,size)
+    return size[3]<.02 and (def.shape=="box" or (def.shape=="cylinder" and (def.axis or "z")=="z"))
+end
 function S.new(task,q)
     return setmetatable({task=task,index=1,stage=1,age=0,total=0,q=table.clone(q or Robot.home_q),commands=L.commands(task),done=false},S)
 end
@@ -22,7 +25,7 @@ function S:advance()
     self.stage+=1; self.age=0
 end
 function S:next()
-    self.index+=1; self.stage=1; self.age=0; self.retry=0; self.pickYaw=nil; self.placeOffset=nil
+    self.index+=1; self.stage=1; self.age=0; self.retry=0; self.pickYaw=nil; self.pickAnchor=nil; self.placeOffset=nil
     if self.index>#self.task.skeleton then self.done=true end
 end
 function S:step(state,dt)
@@ -36,18 +39,33 @@ function S:step(state,dt)
     if (skill=="pick" or skill:sub(1,5)=="place" or skill=="push_to") and not p then self:next(); return self.q,command,"absent",false end
     if skill=="pick" then
         local size=C.size(def,p.size_m); local xyz=p.xyz
+        if self.stage==1 then self.squeezeQ=nil end
         if not self.pickYaw then
             local bearing=math.atan2(xyz[2],xyz[1]); local yaw=math.rad(p.yaw_deg or 0)+(if size[1]>size[2]+1e-6 then math.pi/2 else 0)
             local period=if math.abs(size[1]-size[2])<1e-6 then math.pi/2 else math.pi
             self.pickYaw=bearing+(yaw-bearing+period/2)%period-period/2; self.yaw=self.pickYaw
         end
-        local clearance=if def.shape=="box" and size[3]<.02 then .0015 else .0035
+        local thin=lowPiece(def,size)
+        local clearance=if thin and def.shape=="box" then .0015 else .0035
         local z=math.max(clearance,xyz[3]-size[3]/2+clearance)
-        local thin=def.shape=="box" and size[3]<.02
         if thin then self.yaw=nil end -- allow the fifth arm axis to keep thin pieces level
         target={xyz[1],xyz[2],if self.stage==1 then (if thin then .09 else .10) elseif self.stage==4 then (if thin then .07 else .10) else z}
-        grip=if self.stage<3 then math.clamp((math.min(size[1],size[2])+.018-.017)/.081,.35,.95) else -.16
+        grip=if self.stage<3 then math.clamp((math.min(size[1],size[2])+.018-.017)/.081,.35,.95) else self.squeezeQ or -.16
         if thin and self.stage<3 then grip=math.max(grip,.55) end
+        if thin and self.stage==3 then
+            if def.shape=="cylinder" and not self.squeezeQ and self.age>.4 and state.q then
+                -- Retain a little closing pressure at the measured stall,
+                -- instead of storing a large full-close error in a light cap.
+                self.squeezeQ=math.max(-.16,state.q[6]-.025); grip=self.squeezeQ
+            end
+            -- Closing moves the jaw midpoint toward the fixed finger. Holding
+            -- the old midpoint with IK pushes the cap sideways on every tick.
+            -- Keep the arm joints fixed during closure, then lift from the
+            -- measured closed-jaw position rather than chasing a sliding cap.
+            target=nil; self.q[6]=grip; self.pickAnchor=table.clone(state.site_xyz); self.goal=table.clone(state.site_xyz)
+        elseif thin and self.stage==4 and self.pickAnchor then
+            target[1]=self.pickAnchor[1]; target[2]=self.pickAnchor[2]
+        end
         if self.stage==1 and (M.norm(M.sub(state.site_xyz,target))<.008 or self.age>6) then self:advance()
         elseif self.stage==2 and (M.norm(M.sub(state.site_xyz,target))<.005 or self.age>4) then self:advance()
         elseif self.stage==3 and self.age>(if thin then 1.15 else .85) then self:advance()
@@ -80,7 +98,7 @@ function S:step(state,dt)
         local centre=self.placeOffset
         if skill=="place_at" and centre then height=math.max(.003,C.size(def,p.size_m)[3]/2+.003-centre[3]) end
         target={d.xyz[1]-(if centre then centre[1] else 0),d.xyz[2]+offset-(if centre then centre[2] else 0),if self.stage==1 then (if skill=="place_at" then .09 else .14) else height}
-        grip=-.16
+        grip=self.squeezeQ or -.16
         if self.stage==1 and (M.norm(M.sub(state.site_xyz,target))<.008 or self.age>6) then self:advance()
         elseif self.stage==2 and (M.norm(M.sub(state.site_xyz,target))<.006 or self.age>4) then self:next() end
     elseif skill=="push_to" then
@@ -135,7 +153,7 @@ function S:step(state,dt)
     if target then
         self.goal=self.goal or table.clone(state.site_xyz)
         local delta=M.sub(target,self.goal); local length=M.norm(delta)
-        local speed=if def and def.shape=="box" and C.size(def,p and p.size_m)[3]<.02 then .045 else .075
+        local speed=if def and lowPiece(def,C.size(def,p and p.size_m)) then .045 else .075
         if length>speed*dt then delta=M.scale(delta,speed*dt/length) end
         self.goal=M.add(self.goal,delta)
         local actualGrip=if state.q then state.q[6] else self.q[6]
@@ -148,11 +166,12 @@ function S:step(state,dt)
         end
         local previous=self.q
         self.q=K.ik(self.goal,self.q,roll,12)
-        if def and def.shape=="box" and C.size(def,p and p.size_m)[3]<.02 then
+        if def and lowPiece(def,C.size(def,p and p.size_m)) then
             for joint=1,5 do self.q[joint]=previous[joint]+math.clamp(self.q[joint]-previous[joint],-math.rad(3),math.rad(3)) end
         end
     end
     local targetQ=S.compensate(self.q); targetQ[6]=grip
+    self.gripClosed=grip<.15 or (self.squeezeQ~=nil and grip==self.squeezeQ and skill~="release" and skill~="home")
     return targetQ,command,phase,self.done
 end
 return S

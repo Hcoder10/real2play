@@ -6,8 +6,10 @@ Run from any directory; --check fails if committed generated data is stale.
 from __future__ import annotations
 
 import argparse
+import copy
 import hashlib
 import json
+import math
 from pathlib import Path
 import sys
 
@@ -19,6 +21,52 @@ from scipy.ndimage import binary_fill_holes
 from r2p.frames import BASE_ORIGIN_MJCF, FIXED_TIP, MOVING_TIP, HOME_Q, JOINTS, MJCF
 
 OUT = ROOT / "roblox/src/ReplicatedStorage/Twin/Generated"
+
+
+def workshop():
+    return json.loads((ROOT / "roblox/presets/game/workshop.json").read_text(encoding="utf-8"))
+
+
+def workshop_physics(rig=None):
+    path = (ROOT / "config/physics" / f"{rig}.json") if rig else ROOT / workshop()["physics_preset"]
+    return json.loads(path.read_text(encoding="utf-8"))
+
+
+def apply_bench(task, bench):
+    """Freeze the judge's placement level to the measured bench, in spec metres.
+
+    The arm observations describe a held-cap offset, not a new world frame.
+    Keep them in the task/trace provenance; physical contacts determine the
+    actual offset during play and SkillOperator measures it before placement.
+    """
+    task = copy.deepcopy(task)
+    task["board"] = copy.deepcopy(bench["board"])
+    task["bench_calibration"] = copy.deepcopy(bench["arm"])
+    task["bench_source"] = bench["source"]
+    task["instruction"] = "Place the cap on the highlighted cell; the robot learns from your play."
+    cells = task["board"]["cells"]
+    first, last = cells["r0c0"], cells["r2c0"]
+    yaw = math.degrees(math.atan2(last[1]-first[1], last[0]-first[0]))
+    choices = list(cells.values())
+    rnd = task["randomize"]
+    rnd.pop("board_pose", None)
+    rnd["piece"] = {"xy_choice": copy.deepcopy(bench["supply_xy"])}
+    for obj in task["objects"]:
+        if obj["id"] == "piece" or obj["id"].startswith("other"):
+            obj.update(shape="cylinder", size_m=bench["cap_size_m"].copy(),
+                       mass_kg=bench["cap_mass_kg"], friction=bench["cap_friction"], color="white")
+        if obj["id"] == "piece":
+            obj["xy"] = bench["supply_xy"][0].copy()
+            obj.pop("xyz", None)
+        if obj["id"] in cells or obj["id"] == "cell":
+            obj["size_m"] = [task["board"]["cell_m"]]*2 + [.001]
+            obj["yaw_deg"] = yaw
+            if obj["id"] in cells:
+                obj["xy"] = cells[obj["id"]].copy()
+        if obj["id"] == "cell" or obj["id"].startswith("other"):
+            rnd[obj["id"]]["xy_choice"] = copy.deepcopy(choices)
+    task["bench_note"] = bench["notes"]
+    return task
 
 
 def lua(value):
@@ -134,22 +182,22 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--check", action="store_true")
     parser.add_argument("--robot", action="store_true", help="regenerate expensive collision voxels")
-    parser.add_argument("--rig", default="so101_bench")
+    parser.add_argument("--rig", help="override the workshop physics with config/physics/<rig>.json")
     args = parser.parse_args()
     if args.robot or args.check or not (OUT / "Robot.lua").exists():
         write("Robot", robot_data(), args.check)
     task_paths = sorted((ROOT / "tasks").glob("*/task.json"))
     tasks = {p.parent.name: json.loads(p.read_text(encoding="utf-8")) for p in task_paths}
+    game = workshop()
+    bench = json.loads((ROOT / game["bench_preset"]).read_text(encoding="utf-8"))
+    tasks["place_on_cell"] = apply_bench(tasks["place_on_cell"], bench)
     order = sorted(tasks, key=lambda n: (tasks[n].get("game", {}).get("order", 100), n))
     write("Tasks", {"tasks": tasks, "order": order}, args.check)
-    physics = ROOT / "config/physics" / f"{args.rig}.json"
-    if not physics.exists():
-        raise SystemExit(f"canonical physics preset missing: {physics}; ask agent B")
-    data = json.loads(physics.read_text(encoding="utf-8"))
+    data = workshop_physics(args.rig)
     # Match r2p.sim expert / policy fingerprints, independent of JSON whitespace
     # and Windows checkout line endings.
-    write("Physics", {"rig": args.rig, "sha256": hashlib.sha256(json.dumps(data, sort_keys=True).encode()).hexdigest(), "config": data}, args.check)
-    write("Game", json.loads((ROOT / "roblox/presets/game/workshop.json").read_text(encoding="utf-8")), args.check)
+    write("Physics", {"rig": data["rig"], "sha256": hashlib.sha256(json.dumps(data, sort_keys=True).encode()).hexdigest(), "config": data}, args.check)
+    write("Game", game, args.check)
     vectors = ROOT / "r2p/tasks/vectors.json"
     if vectors.exists():
         path = ROOT / "tests/roblox/taskcheck_vectors.luau"
@@ -160,7 +208,7 @@ def main():
         else:
             path.parent.mkdir(parents=True, exist_ok=True)
             path.write_text(source, encoding="utf-8", newline="\n")
-    print(f"Generated {len(tasks)} task presets; physics {args.rig}")
+    print(f"Generated {len(tasks)} task presets; physics {data['rig']} (workshop selection)")
 
 
 if __name__ == "__main__":

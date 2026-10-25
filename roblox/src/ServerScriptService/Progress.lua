@@ -22,6 +22,16 @@ function P.load(player)
     return stats
 end
 function P.get(player) return P.profiles[player.UserId] or P.load(player) end
+function P.sessionLeaders()
+    local entries={}
+    for _,player in ipairs(game:GetService("Players"):GetPlayers()) do
+        local profile=P.profiles[player.UserId]
+        if profile then table.insert(entries,{key=tostring(player.UserId),name=player.DisplayName,value=profile.points}) end
+    end
+    table.sort(entries,function(a,b) return if a.value==b.value then a.key<b.key else a.value>b.value end)
+    while #entries>5 do table.remove(entries) end
+    return entries
+end
 function P.save(player)
     local stats=P.profiles[player.UserId]; if not stats or not P.enabled then return end
     local snapshot=table.clone(stats)

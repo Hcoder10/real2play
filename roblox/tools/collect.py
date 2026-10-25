@@ -28,7 +28,7 @@ def main():
         try:
             result=subprocess.run(["node",str(ROOT/"roblox/tools/runmode.mjs"),str(ROOT/"roblox/tools/collect.luau"),"@"+str(path),str(timeout),str(args.out.resolve()/"result.json")],cwd=ROOT,capture_output=True,text=True,timeout=timeout+30)
             if result.returncode:print(result.stderr or result.stdout);return 1
-            data=json.loads((args.out/"result.json").read_text())
+            data=json.loads((args.out/"result.json").read_text(encoding="utf-8"))
             complete=True
             for item in data["value"]["results"]:
                 item["trace_received"]=(args.out/"traces"/(item["trace_id"]+".jsonl")).exists()

@@ -31,7 +31,7 @@ end
 function A.new(parent,origin,q0)
     local model=Instance.new("Model"); model.Name="Arm"; model.Parent=parent
     local q=q0 or Robot.home_q; local f=K.fk(q)
-    local self=setmetatable({model=model,origin=origin,roots={},hinges={},sim=JointSim.new(Physics,q),last=table.clone(q)},A)
+    local self=setmetatable({model=model,origin=origin,roots={},hinges={},fingerSides={},sim=JointSim.new(Physics,q),last=table.clone(q)},A)
     local templates=game:GetService("ReplicatedStorage"):WaitForChild("SO101Meshes")
     for i,b in ipairs(Robot.bodies) do
         local cf=A.frame(f[i].p,f[i].r,origin)
@@ -46,6 +46,8 @@ function A.new(parent,origin,q0)
             local p=A.part(model,"Collision",Vector3.new(box.size[1],box.size[3],box.size[2])*10,cf*CFrame.new(A.vector(box.pos)))
             p.Transparency=1; p.Massless=true; p.CollisionGroup="R2PArm"; p.CanTouch=false
             p.CustomPhysicalProperties=PhysicalProperties.new(.01,1.2,0,100,1); weld(root,p)
+            if b.name=="gripper" and box.pos[3]<-.078 then self.fingerSides[p]="fixed"
+            elseif b.name=="moving_jaw_so101_v1" and M.norm(box.pos)>.065 then self.fingerSides[p]="moving" end
         end
         for _,visual in ipairs(b.visuals) do
             local template=templates:FindFirstChild(visual.asset)

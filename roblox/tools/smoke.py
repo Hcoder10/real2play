@@ -25,7 +25,7 @@ def main():
             proc=subprocess.run(["node",str(ROOT/"roblox/tools/runmode.mjs"),str(ROOT/"tests/roblox/play_smoke.luau"),"@"+str(args),"180",str(result)],cwd=ROOT,env=env,capture_output=True,text=True,timeout=210)
             if proc.returncode:
                 print(proc.stderr or proc.stdout);return 1
-            data=json.loads(result.read_text())
+            data=json.loads(result.read_text(encoding="utf-8"))
             ids=data["value"]["trace_ids"]
             for trace_id in ids:
                 meta,ticks=read_trace(out/"traces"/(trace_id+".jsonl"))

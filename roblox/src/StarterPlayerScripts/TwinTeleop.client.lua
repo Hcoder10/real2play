@@ -36,8 +36,8 @@ local headline=label(menu,"Your hands.\nA robot’s next skill.",31,UDim2.fromOf
 local instruction=label(menu,"Pick up a piece, play a round, and help a real robot learn.",15,UDim2.fromOffset(20,100),UDim2.new(1,-40,0,45))
 local seated,active,preview=false,false,false
 local stationId,origin,view=nil,nil,nil
-local selectedLevel=Levels.order[1]; local selectedMode="solo"
-local closed=false; local stats={rounds=0,sent=0,stars=0,points=0}; local tutorialEnd=0; local shake=0
+local selectedLevel=Game.default_level or Levels.order[1]; local selectedMode="solo"
+local closed=false; local stats={rounds=0,sent=0,stars=0,points=0}; local tutorialEnd=0; local activeInstruction=""; local shake=0
 local function restoreCamera()
     preview=false; camera.CameraType=Enum.CameraType.Custom; camera.FieldOfView=lobbyFieldOfView
     local h=player.Character and player.Character:FindFirstChildOfClass("Humanoid"); if h then camera.CameraSubject=h end
@@ -47,12 +47,13 @@ local function play(level,mode)
     selectedLevel=level or selectedLevel; selectedMode=mode or selectedMode
     actionRemote:FireServer("play",{level=selectedLevel,mode=selectedMode})
 end
-local main=button(menu,"Play the robot",UDim2.fromOffset(20,156),UDim2.new(1,-40,0,58),function() play("place_on_cell","tic_tac_toe") end)
+local main=button(menu,"Place a cap • Start here",UDim2.fromOffset(20,156),UDim2.new(1,-40,0,58),function() play("place_on_cell","solo") end)
 local section=label(menu,"Or teach a skill",16,UDim2.fromOffset(20,227),UDim2.new(1,-40,0,25)); section.Font=Enum.Font.GothamBold
-local list=Instance.new("ScrollingFrame"); list.Position=UDim2.fromOffset(20,260); list.Size=UDim2.new(1,-40,0,148); list.BackgroundTransparency=1; list.BorderSizePixel=0; list.ScrollBarThickness=4; list.CanvasSize=UDim2.fromOffset(0,#Levels.order*48); list.Parent=menu
+local list=Instance.new("ScrollingFrame"); list.Position=UDim2.fromOffset(20,260); list.Size=UDim2.new(1,-40,0,148); list.BackgroundTransparency=1; list.BorderSizePixel=0; list.ScrollBarThickness=4; list.CanvasSize=UDim2.fromOffset(0,(#Levels.order+1)*48); list.Parent=menu
+button(list,"Tic-tac-toe vs robot",UDim2.fromOffset(0,0),UDim2.new(1,-8,0,42),function() play("place_on_cell","tic_tac_toe") end,navy)
 for i,name in ipairs(Levels.order) do
     local title=name:gsub("_"," "); title=title:sub(1,1):upper()..title:sub(2)
-    local b=button(list,title,UDim2.fromOffset(0,(i-1)*48),UDim2.new(1,-8,0,42),function() play(name,selectedMode) end,Color3.fromRGB(220,232,242)); b.TextColor3=navy; b.TextSize=14
+    local b=button(list,title,UDim2.fromOffset(0,i*48),UDim2.new(1,-8,0,42),function() play(name,if selectedMode=="tic_tac_toe" then "solo" else selectedMode) end,Color3.fromRGB(220,232,242)); b.TextColor3=navy; b.TextSize=14
 end
 local modes={"solo","vs_bot","timed","daily"}; local modeNames={"Solo","Race bot","Timed","Daily"}
 local modeIndex=1
@@ -74,10 +75,10 @@ local drawing=Instance.new("Frame"); drawing.Position=photo.Position; drawing.Si
 local links={}
 for i=1,3 do local p=Instance.new("Frame"); p.Size=UDim2.fromOffset(if i==3 then 22 else 62,12); p.AnchorPoint=Vector2.new(0,.5); p.Position=UDim2.fromOffset(30+(i-1)*45,if i==1 then 75 elseif i==2 then 28 else 14); p.Rotation=if i==1 then -65 elseif i==2 then 10 else 60; p.BackgroundColor3=yellow; p.Parent=drawing; corner(p,6); links[i]=p end
 local leaderboard=Instance.new("Frame"); leaderboard.Size=UDim2.fromOffset(320,300); leaderboard.AnchorPoint=Vector2.new(.5,.5); leaderboard.Position=UDim2.fromScale(.5,.5); leaderboard.BackgroundColor3=paper; leaderboard.Visible=false; leaderboard.Parent=gui; corner(leaderboard,18)
-label(leaderboard,"Top teachers",26,UDim2.fromOffset(20,16),UDim2.new(1,-40,0,40)).Font=Enum.Font.FredokaOne
+label(leaderboard,"This server's top teachers",22,UDim2.fromOffset(20,16),UDim2.new(1,-40,0,40)).Font=Enum.Font.FredokaOne
 local leader=label(leaderboard,"Be the first to teach a skill.",16,UDim2.fromOffset(20,65),UDim2.new(1,-40,0,160)); leader.TextYAlignment=Enum.TextYAlignment.Top
 button(leaderboard,"Back",UDim2.new(0,20,1,-62),UDim2.new(1,-40,0,42),function() leaderboard.Visible=false end)
-local scoresButton=button(menu,"Scores",UDim2.new(1,-104,0,224),UDim2.fromOffset(84,30),function() leaderboard.Visible=true end,navy); scoresButton.TextSize=12
+local scoresButton=button(menu,"Scores",UDim2.new(1,-104,0,224),UDim2.fromOffset(84,30),function() leaderboard.Visible=true; actionRemote:FireServer("scores") end,navy); scoresButton.TextSize=12
 local controls=Instance.new("Frame"); controls.Name="Controls"; controls.Size=UDim2.fromScale(1,1); controls.BackgroundTransparency=1; controls.Visible=false; controls.Parent=gui
 local stick=Instance.new("Frame"); stick.Name="MoveStick"; stick.AnchorPoint=Vector2.new(0,1); stick.Position=UDim2.new(0,28,1,-30); stick.Size=UDim2.fromOffset(150,150); stick.BackgroundColor3=paper; stick.BackgroundTransparency=.12; stick.Active=true; stick.Parent=controls; corner(stick,75)
 local knob=Instance.new("Frame"); knob.AnchorPoint=Vector2.new(.5,.5); knob.Position=UDim2.fromScale(.5,.5); knob.Size=UDim2.fromOffset(58,58); knob.BackgroundColor3=blue; knob.Parent=stick; corner(knob,29)
@@ -106,6 +107,7 @@ local help=label(controls,"WASD move · Q/E height · Z/X twist · Space grab ·
 local stand=button(gui,"Stand up",UDim2.new(1,-115,0,18),UDim2.fromOffset(92,42),function() actionRemote:FireServer("stand") end,navy); stand.Visible=false; stand.TextSize=13
 local menuButton=button(gui,"Skills",UDim2.new(0,16,0,88),UDim2.fromOffset(88,40),function() menu.Visible=not menu.Visible end,navy); menuButton.Visible=false
 local coach=label(gui,"",19,UDim2.new(.5,-210,0,117),UDim2.fromOffset(420,56)); coach.TextXAlignment=Enum.TextXAlignment.Center; coach.Font=Enum.Font.GothamBold
+local tableScore=label(gui,"",15,UDim2.new(.5,-180,0,177),UDim2.fromOffset(360,26)); tableScore.Name="TableScore"; tableScore.TextXAlignment=Enum.TextXAlignment.Center
 local ghost=label(gui,"☝",46,UDim2.fromOffset(0,0),UDim2.fromOffset(60,60)); ghost.TextColor3=blue; ghost.Visible=false
 local resultPanel=Instance.new("Frame"); resultPanel.Size=UDim2.fromOffset(320,230); resultPanel.AnchorPoint=Vector2.new(.5,.5); resultPanel.Position=UDim2.fromScale(.5,.45); resultPanel.BackgroundColor3=paper; resultPanel.Visible=false; resultPanel.Parent=gui; corner(resultPanel,20)
 local resultTitle=label(resultPanel,"",30,UDim2.fromOffset(20,20),UDim2.new(1,-40,0,55)); resultTitle.TextXAlignment=Enum.TextXAlignment.Center; resultTitle.Font=Enum.Font.FredokaOne
@@ -157,6 +159,7 @@ end,false,3000,unpack(bindings))
 stateRemote.OnClientEvent:Connect(function(data)
     if data.stats then stats=data.stats end
     if data.image~=nil then setImage(data.image) end
+    if data.table_score~=nil then tableScore.Text=string.format("Table %d  •  %d points  •  Streak %d",data.table or stationId or 0,data.table_score,data.table_streak or 0) end
     if data.leaders then
         local rows={}
         for i,entry in ipairs(data.leaders) do table.insert(rows,string.format("%d. %s    %d",i,entry.name or ("Teacher "..entry.key),entry.value)) end
@@ -164,6 +167,7 @@ stateRemote.OnClientEvent:Connect(function(data)
     end
     counter.Text=string.format("%d rounds today, you’ve sent %d to the robot   •   %d stars",stats.rounds or 0,stats.sent or 0,stats.stars or 0)
     if data.kind=="lobby" then
+        tableScore.Text=""; stand.Text="Stand up"
         resetAxes()
         seated=false; active=false; controls.Visible=false; stand.Visible=false; menu.Visible=true; menuButton.Visible=false; resultPanel.Visible=false; leaderboard.Visible=false; coach.Text="Walk up and sit at a table to start."; timer.Text=""
         restoreCamera()
@@ -173,12 +177,18 @@ stateRemote.OnClientEvent:Connect(function(data)
             if at then preview=true; view=CFrame.lookAt(at+Vector3.new(5.7,5.3,5.7),at+Vector3.new(2,.4,0)); camera.CameraType=Enum.CameraType.Scriptable end
         end
     elseif data.kind=="seated" then
+        stand.Text="Stand up"
         seated=true; active=false; preview=false; stationId=data.table; origin=Vector3.new(unpack(data.origin)); view=CFrame.lookAt(origin+Vector3.new(5.7,5.3,5.7),origin+Vector3.new(2.0,.4,0))
         camera.CameraType=Enum.CameraType.Scriptable; camera.FieldOfView=48; camera.CFrame=view; stand.Visible=true; menu.Visible=true; menuButton.Visible=true; instruction.Text="Choose a game. Your robot is ready."; coach.Text=""
+    elseif data.kind=="spectate" then
+        resetAxes(); seated=false; active=false; preview=true; stationId=data.table; origin=Vector3.new(unpack(data.origin)); view=CFrame.lookAt(origin+Vector3.new(5.7,5.3,5.7),origin+Vector3.new(2,.4,0))
+        camera.CameraType=Enum.CameraType.Scriptable; camera.FieldOfView=48; controls.Visible=false; menu.Visible=false; resultPanel.Visible=false; menuButton.Visible=false; stand.Visible=true; stand.Text="Leave view"; timer.Text=""; coach.Text="Watching table "..data.table.." • Your friends teach the robot."
+    elseif data.kind=="watch_tick" then
+        coach.Text="Watching table "..data.table.." • "..data.teacher
     elseif data.kind=="start" then
         resetAxes()
         active=true; closed=false; grab.Text="Grab"; controls.Visible=true; menu.Visible=false; resultPanel.Visible=false; selectedMode=data.mode; selectedLevel=data.level
-        coach.Text=data.instruction or ""; tutorialEnd=if data.tutorial then os.clock()+Game.tutorial_s else 0
+        activeInstruction=data.instruction or ""; coach.Text=activeInstruction; tutorialEnd=if data.tutorial and data.level=="place_on_cell" then os.clock()+Game.tutorial_s else 0
     elseif data.kind=="tick" then
         timer.Text=string.format("%ds",math.ceil(data.remaining or 0)); timer.TextColor3=if (data.remaining or 0)<10 then Color3.fromRGB(210,77,79) else navy
         local second=math.ceil(data.remaining or 0)
@@ -195,6 +205,10 @@ stateRemote.OnClientEvent:Connect(function(data)
             resultBody.Text..="\n"..(if data.beat_bot then "You finished before the robot." else "The robot finished first. Race again!")
         end
         if data.success then juice("win") end
+    elseif data.kind=="upload" then
+        if not active then
+            if data.uploaded then coach.Text="Play sent to the robot. Thank you for teaching it!" else coach.Text="Upload unavailable; this round has not reached the robot." end
+        end
     elseif data.kind=="juice" then juice(data.effect)
     elseif data.kind=="notice" then coach.Text=data.text
     end
@@ -208,7 +222,10 @@ Run.RenderStepped:Connect(function(dt)
     if active and os.clock()<tutorialEnd then
         local elapsed=Game.tutorial_s-(tutorialEnd-os.clock()); coach.Text=Game.tutorial[math.min(3,1+math.floor(elapsed/(Game.tutorial_s/3)))]
         ghost.Visible=true; ghost.Position=UDim2.new(.5,math.sin(os.clock()*1.7)*70,0,170+math.cos(os.clock())*18)
-    else ghost.Visible=false end
+    else
+        ghost.Visible=false
+        if active and tutorialEnd>0 then tutorialEnd=0; coach.Text=activeInstruction end
+    end
     clock+=dt
     if active and clock>=1/30 then
         clock%=1/30

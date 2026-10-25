@@ -1,6 +1,7 @@
 local Tasks=require(if script then script.Parent.Generated.Tasks else "./Generated/Tasks")
 local Layout=Tasks.tasks.place_on_cell.board
-local T={tolerance=.018,pieceSize=Tasks.tasks.place_on_cell.objects[1].size_m}
+local Check=require(if script then script.Parent.TaskCheck else "./TaskCheck")
+local T={tolerance=.018,pieceSize=Check.size(Tasks.tasks.place_on_cell.objects[1])}
 T.lines={{1,2,3},{4,5,6},{7,8,9},{1,4,7},{2,5,8},{3,6,9},{1,5,9},{3,5,7}}
 function T.new() return table.create(9,0) end
 function T.result(board)

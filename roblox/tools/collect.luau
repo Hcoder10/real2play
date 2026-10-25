@@ -18,7 +18,9 @@ for _,name in ipairs(names) do for round=1,args.rounds or 1 do
     end
     if station.active then station:finish(false,"watchdog") end
     local trace=station.trace
-    table.insert(results,{task=name,seed=station.seed,success=trace.meta.success,reason=trace.meta.fail_reason,ticks=#trace.ticks,trace_id=trace.id,phases=phases,final=station:state().objects})
+    local uploadDeadline=os.clock()+40
+    while trace.uploadComplete==nil and os.clock()<uploadDeadline do task.wait(.1) end
+    table.insert(results,{task=name,seed=station.seed,success=trace.meta.success,reason=trace.meta.fail_reason,ticks=#trace.ticks,trace_id=trace.id,uploaded=trace.uploadComplete,upload_detail=trace.uploadDetail,phases=phases,final=station:state().objects})
     station:sleep(true)
 end end
 task.wait(1)

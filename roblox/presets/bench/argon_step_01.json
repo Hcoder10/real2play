@@ -1,0 +1,73 @@
+{
+  "source": "runs/argon_step/step_01/sim.json",
+  "board": {
+    "center_xy": [
+      0.1525,
+      0.0068
+    ],
+    "cell_m": 0.0368,
+    "cells": {
+      "r0c0": [
+        0.1084,
+        -0.0209
+      ],
+      "r0c1": [
+        0.116,
+        0.0146
+      ],
+      "r0c2": [
+        0.1237,
+        0.0502
+      ],
+      "r1c0": [
+        0.1448,
+        -0.0288
+      ],
+      "r1c1": [
+        0.1525,
+        0.0068
+      ],
+      "r1c2": [
+        0.1602,
+        0.0423
+      ],
+      "r2c0": [
+        0.1813,
+        -0.0367
+      ],
+      "r2c1": [
+        0.189,
+        -0.0011
+      ],
+      "r2c2": [
+        0.1967,
+        0.0344
+      ]
+    }
+  },
+  "arm": {
+    "z_offset_mm": -1.5,
+    "xy_offset_mm": [
+      10.0,
+      11.0
+    ],
+    "notes": "Successfully picked cap2 and placed it in center cell r1c1. Closing gripper from 19.7 to ~11.0 (squeezing 33mm cap at load ~284) shifts jaw_xyz_m by [-7.6mm, +3.3mm] toward the fixed (+y) jaw; placing at closed-jaw [0.165, 0.020, 0.019] lands squarely in r1c1."
+  },
+  "cap_size_m": [
+    0.033,
+    0.017
+  ],
+  "cap_mass_kg": 0.003,
+  "cap_friction": 0.6,
+  "supply_xy": [
+    [
+      0.142,
+      -0.068
+    ],
+    [
+      0.218,
+      -0.075
+    ]
+  ],
+  "notes": "Argon step_01 measured board and off-board cap supply positions. Task cylinder dimensions are full diameter/height; caps are 33 x 17 mm. The source sim stores radius/half-height. Arm xy observations are held-cap placement corrections, not a second frame transform. Physical grasp contact and measured held offset govern the game."
+}

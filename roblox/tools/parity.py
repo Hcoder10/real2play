@@ -18,7 +18,7 @@ sys.path.insert(0,str(ROOT))
 from r2p.frames import HOME_Q
 from r2p.model import Arm
 from r2p.sim import TaskTwin
-from gen_presets import lua
+from gen_presets import lua, workshop_physics
 from test import runner
 
 
@@ -75,7 +75,7 @@ def main():
         objects=[dict(id="cube",role="manipulated",shape="box",size_m=[.03]*3,xyz=[.15,.20,.04],yaw_deg=15,mass_kg=.03)] if args.studio else []
         payload={"scene":{"objects":objects,"table":{"size_m":[.8,.6],"center_xy":[.2,0]}},"q0":HOME_Q.tolist(),"commands":commands}
     arm=Arm(); reference={"q":[],"jaw":[]}
-    with TaskTwin(payload["scene"],q0=payload["q0"]) as twin:
+    with TaskTwin(payload["scene"],q0=payload["q0"],physics=workshop_physics()) as twin:
         for command in payload["commands"]:
             q=twin.step(command); reference["q"].append(q.tolist()); reference["jaw"].append(arm.tips(q)[2].tolist())
         reference["poses"]=twin.poses()

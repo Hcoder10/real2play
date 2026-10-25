@@ -1,7 +1,12 @@
 # Real2Play workshop
 
-Twenty tables, one SO-101 twin per table. Sit at a blue chair, choose a skill or
-play tic-tac-toe against the robot, and stand to return to the lobby. Phones use
+Twenty tables, one SO-101 twin per table. Sit at a blue chair and choose
+**Place a cap — Start here**, or play tic-tac-toe against the robot. Each table
+shows points and streak; Scores shows the current server's top teachers.
+The first solo cap tutorial uses the preset's repeatable `intro_seed`; later
+rounds sample the measured supply positions and cells.
+Use **Watch table** (F / gamepad X / touch prompt) to spectate without taking
+the seat, and **Leave view** to return to the lobby. Stand to free your seat. Phones use
 Move, Up/Down, Twist and Grab/Drop. Keyboard: WASD, Q/E, Z/X, Space, Shift for
 fine movement, R to retry. Gamepad: left stick, triggers, shoulder buttons, A,
 X for fine movement, Y to retry.
@@ -20,10 +25,11 @@ The tests use the **pure Luau runner**, never lune.
 .venv/Scripts/python.exe roblox/tools/gen_presets.py --robot
 .venv/Scripts/python.exe roblox/tools/test.py
 .venv/Scripts/python.exe -m pytest tests/roblox -q
-rojo build roblox/default.project.json -o roblox/real2play.rbxl
+.venv/Scripts/python.exe roblox/tools/build.py
 ```
 
-Equivalent Rojo command from `roblox/`: `rojo build -o real2play.rbxl`.
+The gated build writes `out/roblox/Real2Play.rbxlx`. After passing the gate,
+the equivalent direct command is `rojo build roblox/default.project.json -o out/roblox/Real2Play.rbxlx`.
 `LUAU_BIN` selects a runner; otherwise the test script checks PATH and the
 existing `~/g4studio/backend/bin/luau.exe` installation.
 
@@ -54,11 +60,23 @@ or proof of manipulation quality. They live under `roblox/out/smoke/`.
 ## Configuration and physics
 
 `tools/gen_presets.py` imports the official MJCF, the canonical task JSON files,
-and `config/physics/so101_bench.json`. It generates `Twin/Generated/{Robot,Tasks,
+and the physics/bench files selected by `presets/game/workshop.json`. It generates `Twin/Generated/{Robot,Tasks,
 Physics,Game}.lua` and the shared task-check vectors. Edit the source JSON, then
 regenerate. `--check` rejects stale modules. The game JSON is
 `presets/game/workshop.json`: modes, scoring, stars, tutorials, sounds, unlocks,
 table count and leaderboard keys are all there.
+
+The current workshop selects `presets/physics/so101_bench.argon_step_01.json`
+and `presets/bench/argon_step_01.json`, copied from Argon's verified candidate
+inputs. The generated placement task overlays the canonical task with the
+36.8 mm rotated board, measured cell centres, 33 mm diameter × 17 mm caps,
+and the two off-board supply positions measured in step_01. This keeps the
+judge's level repeatable without editing another component's canonical tasks.
+The arm observations (+10/+11 mm held-cap correction, −1.5 mm vertical residual)
+travel in task/trace metadata. They do not translate the world or robot base:
+the bench runner identifies them as grasp corrections, and the game's physical
+contacts and measured cap-to-jaw offset determine placement. The managed
+`Managed/PlaceOnCell.lua` camera/board helper is included in the build.
 
 JointSim uses a fresh recursive Newton–Euler implementation of the official
 SO-101 kinematics/inertias. It solves the full six-joint mass matrix plus
@@ -71,8 +89,14 @@ Roblox HingeConstraint actuators follow JointSim in servo mode. Collision-free
 mass proxies condition Roblox's articulated solver; they do not replace the
 identified dynamics. Contact geometry is generated from 4 mm mesh voxels and
 merged into transparent boxes. The thirteen supplied MeshParts provide the
-appearance. Grasping is physical finger/object contact: no proximity attachment,
-object teleport or success shortcut exists in gameplay. The server owns all
+appearance. The measured cap level uses **bilateral-contact rigid grasps**:
+both physical finger colliders must overlap the same cap for two control ticks
+before a weld preserves its existing transform in the fixed gripper frame.
+The measured jaw opening becomes a closure floor; opening releases the weld.
+Other levels retain physical contact grasps. Acquisition and release preserve
+object poses, and every success still requires the shared settled checker.
+Traces declare `grasp_model` so replay/evaluation can distinguish these models.
+The server owns all
 unanchored twin assemblies. Idle arms sleep with anchored roots.
 Active airborne objects are kept awake through an unused touch-event property,
 following Roblox's [documented sleep behavior](https://create.roblox.com/docs/physics/sleep-system).
@@ -145,7 +169,8 @@ The empty-server bot cycles all six tasks; the lobby demonstration sets
 `attract=true` and cannot record or upload. Collection uses no hardware, Gemini
 requests, training process or GPU.
 
-The local acceptance record is in [ACCEPTANCE.md](ACCEPTANCE.md). It distinguishes
+The current acceptance record is in [AGENT_Y_ACCEPTANCE.md](AGENT_Y_ACCEPTANCE.md);
+the earlier baseline is in [ACCEPTANCE.md](ACCEPTANCE.md). These distinguish
 physical bot attempts from the placement fixtures used to test the match loop.
 
 `ServerStorage/TwinConfig.lua` is the safe server-only default. For deployment,
@@ -167,7 +192,7 @@ clearly labeled animated preview with a photo. The key is never accepted in chat
    the generated place (or sync the existing window), then File → Publish to
    Roblox. This project does not publish automatically.
 4. In Game Settings, enable HTTP requests, select Phone/Tablet/Computer/Console,
-   and set maximum players to at least 8 (20 tables are provided). Enable Studio
+   and set maximum players to at least 30 (20 tables plus spectators). Enable Studio
    API access only if you deliberately want to test persistent stores; the
    default `STUDIO_DATASTORES=false` avoids accidental writes during tests.
 5. Test a published private session with multiple clients. Verify the seated
@@ -180,6 +205,6 @@ clearly labeled animated preview with a photo. The key is never accepted in chat
    retention on the receiver. Publish the settings, make the experience public
    when ready, and give the experience URL to the dashboard owner.
 
-The physics preset is currently provisional; only the owner/bench workflow can
+The physics preset and cap grasp approximation remain provisional; only the owner/bench workflow can
 identify it against real hardware. Publishing, hardware calibration and large
 multi-seed contact/grasp validation are separate from this local acceptance run.
