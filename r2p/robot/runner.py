@@ -16,7 +16,9 @@ from .record import TraceWriter
 def observation_q(commanded, measured, threshold_deg=4):
     """One divergent joint resets the entire observation to the measured pose."""
     commanded, measured = vector(commanded), vector(measured)
-    reset = bool(np.any(np.abs(commanded - measured) > np.deg2rad(threshold_deg)))
+    # Arm joints only: a gripper squeezing a cap always sits >threshold from its squeeze target (contact, not
+    # divergence); resetting on it cleared the action ensemble every tick at contact (policies scored 0%).
+    reset = bool(np.any(np.abs(commanded[:5] - measured[:5]) > np.deg2rad(threshold_deg)))
     return (measured if reset else commanded).copy(), reset
 
 

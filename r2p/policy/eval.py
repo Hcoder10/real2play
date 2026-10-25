@@ -103,7 +103,8 @@ def rollout(policy, scene, *, seed=0, noise="clean", max_ticks=None, on_step=Non
         divergences = 0
         for tick in range(budget):
             measured = twin.q()+offset
-            if np.max(np.abs(commanded-measured)) > np.deg2rad(4):
+            # Arm joints only: a gripper squeezing a cap always sits >4 deg from its squeeze target.
+            if np.max(np.abs(commanded[:5]-measured[:5])) > np.deg2rad(4):
                 commanded = measured.copy()
                 chunks.clear()
                 divergences += 1

@@ -99,6 +99,7 @@ def test_eval_rate_limit_uses_last_sent_even_when_measured_q_resets(monkeypatch)
     monkeypatch.setattr(evaluation, "TaskTwin", BlockedTwin)
     rows = []
     result = evaluation.rollout(policy, scene, max_ticks=4, on_step=rows.append)
-    assert result["resets"] == 3
+    # A squeezing (blocked) gripper is contact, not divergence: no observation resets (arm joints only), and the
+    # gripper target is still rate-limited from the last SENT target.
+    assert result["resets"] == 0
     np.testing.assert_allclose([row["target"][5] for row in rows], [.8, .7, .6, .5])
-    np.testing.assert_allclose([row["q_input"][5] for row in rows], [.9]*4)

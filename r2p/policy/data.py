@@ -76,7 +76,8 @@ class TraceDataset:
                     raise ValueError(f"Unsegmented trace {path}: every tick needs a command")
                 q = np.asarray(tick.get("q_commanded", targets[i-1] if i else starts[-1]), float).copy()
                 measured = np.asarray(tick["q"], float)
-                if np.max(np.abs(q-measured)) > np.deg2rad(4):
+                # Arm joints only: a gripper squeezing a cap always sits >4 deg from its squeeze target.
+                if np.max(np.abs(q[:5]-measured[:5])) > np.deg2rad(4):
                     q = measured.copy()
                 if i == 0 or command != ticks[i-1]["command"]:
                     command_start = i
