@@ -71,7 +71,8 @@ def plan(xyz, grip, q_owner, arm, jm, physics, lo=None, hi=None):
     # calibration was suspect; the open-jaw Argon fit (vcal_oct25b, 6.5 px) fixed it, and the lock made most of the
     # workspace unreachable (Argon Lab's first plans refused with IK errors). The repo daemon refuses >100 deg excursion.
     roll = jm.to_model(np.r_[0, 0, 0, 0, ROLL_OWNER, 0])[4]
-    arm.range[4] = [max(arm.range[4][0] + .10, roll - np.deg2rad(85)), min(arm.range[4][1] - .10, roll + np.deg2rad(85))]   # roll sat at the edge (-154.5 vs -155.2 limit) and the next step crossed it
+    model_roll = Arm().range[4]   # the model/daemon roll range; the owner limits (+-179) map to a far wider band
+    arm.range[4] = [max(model_roll[0] + .10, roll - np.deg2rad(85)), min(model_roll[1] - .10, roll + np.deg2rad(85))]   # roll sat at the edge (-154.5 vs -155.2 limit) and the next step crossed it
     q0[4] = float(np.clip(q0[4], *arm.range[4]))
     g = jm.to_model(np.r_[q_owner[:5], grip])[5]
     best = None
