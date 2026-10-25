@@ -30,7 +30,7 @@ from tictactoe import publish  # noqa: E402
 # live loop asks Argon every turn; refresh with --find-caps if the caps move).
 SUPPLY = [[0.1748, -0.1245], [0.1274, -0.1272], [0.2205, -0.1248]]
 OPEN, SQUEEZE = 20, 6                 # gripper owner values: ~51 mm jaw gap, squeeze a ~33 mm cap
-GRASP_Z, PLACE_Z, SAFE_Z = 0.009, 0.012, 0.05
+GRASP_Z, PLACE_Z, SAFE_Z = 0.016, 0.019, 0.05   # Argon's working grasp/place heights (10 mm dragged the paper)
 MIN_FINGER = 0.002
 VID = ROOT / "runs" / "bench" / "video"
 
@@ -113,6 +113,12 @@ def park():
     return armd("/cmd", {"cmd": "rest"})
 
 
+# Measured by gemini-4-argon in its real step-loop experiments (runs/argon_step/step_01/sim.json, Oct 25 15:55): to
+# land a held cap on a cell, the closed-jaw midpoint must sit (+10, +11) mm from the cell centre (the grasp shifts the
+# cap toward the fixed jaw). This is the systematic error behind the morning's 14 mm placement miss.
+HELD_OFFSET = (0.010, 0.011)
+
+
 def place(cap_xy, cell_xy, label):
     mark(f"pick {label} from {cap_xy}")
     gripper(OPEN)
@@ -123,6 +129,7 @@ def place(cap_xy, cell_xy, label):
     held = r.get("q", [0] * 6)[5]
     goto([*cap_xy, za], SQUEEZE, min_finger=MIN_FINGER, iters=1)
     mark(f"carry {label}")
+    cell_xy = [cell_xy[0] + HELD_OFFSET[0], cell_xy[1] + HELD_OFFSET[1]]
     goto([*cell_xy, zb], SQUEEZE, min_finger=MIN_FINGER)
     goto([*cell_xy, PLACE_Z], SQUEEZE, min_finger=MIN_FINGER)
     gripper(OPEN)
