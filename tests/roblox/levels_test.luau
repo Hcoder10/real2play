@@ -13,6 +13,11 @@ for _,name in ipairs(L.order) do
         assert(#scene.objects==#again.objects)
         for i,o in ipairs(scene.objects) do
             assert(o.xyz[1]==again.objects[i].xyz[1]); poses[o.id]={xyz=o.xyz,yaw_deg=o.yaw_deg,size_m=o.size_m}; n+=1
+            if name=="pick_place_stick" and o.id=="stick" then
+                local original=task.objects[1].size_m
+                assert(math.abs(o.size_m[1]/original[1]-o.size_m[2]/original[2])<1e-10,"size_scale must preserve aspect ratio")
+                n+=1
+            end
         end
         local slots=L.slots(task,poses); assert(#slots==task.limits.max_objects)
         for _,slot in ipairs(slots) do assert(#slot==9); n+=1 end

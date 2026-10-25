@@ -1,4 +1,5 @@
 local T=require("../../roblox/src/ReplicatedStorage/Twin/TicTacToe")
+local Layout=require("../../roblox/src/ReplicatedStorage/Twin/Generated/Tasks").tasks.place_on_cell.board
 local n=0
 local function check(x,msg) n+=1; assert(x,msg) end
 local board=T.new(); check(T.place(board,1,1)); check(not T.place(board,1,2)); check(not T.place(board,3,1)); check(T.place(board,5,2))
@@ -27,6 +28,12 @@ local function exhaustive(b,turn)
     for _,c in ipairs(T.legal(b)) do local copy=table.clone(b); check(T.place(copy,c,turn)); exhaustive(copy,3-turn) end
 end
 exhaustive(T.new(),1)
-for i=1,9 do local p=T.xy(i); check(T.cell({p[1],p[2],.007},T.new())==i) end
+for i=1,9 do
+    local p=T.xy(i); local expected=Layout.cells["r"..math.floor((i-1)/3).."c"..((i-1)%3)]
+    check(p[1]==expected[1] and p[2]==expected[2],"rules diverged from canonical board layout")
+    check(T.cell({p[1],p[2],.007},T.new())==i)
+    check(T.cell({p[1],p[2]+.01799,.007},T.new())==i)
+    check(T.cell({p[1],p[2]+.01801,.007},T.new())==nil)
+end
 check(T.cell({.1,.1,0},T.new())==nil)
 print("tic-tac-toe: "..n.." checks; exhaustive reachable game tree and perfect-play defense passed")

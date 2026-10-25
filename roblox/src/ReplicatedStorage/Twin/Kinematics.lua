@@ -28,29 +28,40 @@ end
 function K.ik(target,q,roll,iterations)
     local out=table.clone(q)
     if roll then out[5]=math.clamp(roll,Robot.range[5][1],Robot.range[5][2]) end
-    for _=1,iterations or 8 do
-        local _,_,p,f=K.tips(out)
+    local count=if roll then 4 else 5
+    for _=1,iterations or 12 do
+        local tipA,tipB,p,f=K.tips(out)
         local error=M.sub(target,p)
-        if M.norm(error)<0.0003 then break end
-        local cols={}
-        -- Differential midpoint Jacobian; gripper opening is commanded separately.
-        for _,b in ipairs(Robot.bodies) do
-            if b.joint>0 and b.joint<5 then
-                local frame=f[b.joint+1]
-                cols[b.joint]=M.cross(frame.axis,M.sub(p,frame.joint))
-            end
+        local linear,angular={},{}
+        for j=1,count do
+            local frame=f[j+1]
+            linear[j]=M.cross(frame.axis,M.sub(p,frame.joint)); angular[j]=frame.axis
         end
+        local function gram(cols,lambda)
+            local a={{lambda,0,0},{0,lambda,0},{0,0,lambda}}
+            for _,v in ipairs(cols) do for i=1,3 do for j=1,3 do a[i][j]+=v[i]*v[j] end end end
+            return a
+        end
+        local function inverse(cols,a,v)
+            local solved=M.solve(a,v); local out={}
+            for j,c in ipairs(cols) do out[j]=M.dot(c,solved) end
+            return out
+        end
+        local across=M.unit(M.sub(tipB,tipA))
+        local flatAcross=M.unit({across[1],across[2],0})
         local down=M.mv(f[Robot.fixed_tip[1]].r,{0,0,-1})
-        local orientation=M.sub({0,0,-1},down)
-        local angular={}
-        for i=1,4 do angular[i]=M.cross(f[i+1].axis,down) end
-        local a,b={},{}
-        for i=1,4 do
-            a[i]={}; b[i]=M.dot(cols[i],error)+.0025*M.dot(angular[i],orientation)
-            for j=1,4 do a[i][j]=M.dot(cols[i],cols[j])+.0025*M.dot(angular[i],angular[j])+(if i==j then .000025 else 0) end
+        local flatDown=M.unit(M.sub(down,M.scale(across,M.dot(down,across))))
+        local orientation=M.add(M.cross(across,flatAcross),M.cross(flatDown,{0,0,-1}))
+        local translationGram=gram(linear,.000015)
+        local positionStep=inverse(linear,translationGram,{math.clamp(error[1],-.025,.025),math.clamp(error[2],-.025,.025),math.clamp(error[3],-.025,.025)})
+        local postureStep=inverse(angular,gram(angular,.01),orientation)
+        local shift={0,0,0}
+        for j=1,count do shift=M.add(shift,M.scale(linear[j],postureStep[j])) end
+        local projection=inverse(linear,translationGram,shift)
+        for j=1,count do
+            local delta=positionStep[j]+.6*(postureStep[j]-projection[j])
+            out[j]=math.clamp(out[j]+math.clamp(delta,-.15,.15),Robot.range[j][1]+1e-5,Robot.range[j][2]-1e-5)
         end
-        local e=M.solve(a,b)
-        for j=1,4 do out[j]=math.clamp(out[j]+math.clamp(e[j],-0.16,0.16),Robot.range[j][1],Robot.range[j][2]) end
     end
     return out
 end

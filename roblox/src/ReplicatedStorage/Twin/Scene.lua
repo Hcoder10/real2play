@@ -1,5 +1,6 @@
 local A=require(script.Parent.ArmBuilder)
 local C=require(script.Parent.TaskCheck)
+local Physics=require(script.Parent.Generated.Physics)
 local Scene={}
 local colors={brown=Color3.fromRGB(172,116,76),blue=Color3.fromRGB(67,134,211),green=Color3.fromRGB(78,203,169),gray=Color3.fromRGB(153,174,192),red=Color3.fromRGB(231,96,99),yellow=Color3.fromRGB(242,206,92)}
 local function color(value)
@@ -14,28 +15,35 @@ function Scene.build(parent,origin,scene)
         local size=C.size(o); local cf=CFrame.new(origin+A.vector(o.xyz))*CFrame.Angles(0,math.rad(o.yaw_deg or 0),0)
         local p=A.part(model,o.id,Vector3.new(size[1],size[3],size[2])*10,cf,color(o.color),o.fixed)
         roots[o.id]=p; p.CollisionGroup="R2PObject"; p.CanCollide=o.collide~=false
+        local mass=o.mass_kg or Physics.config.object.mass_kg; local friction=o.friction or Physics.config.object.friction
         local volume=p.Size.X*p.Size.Y*p.Size.Z
-        p.CustomPhysicalProperties=PhysicalProperties.new(math.clamp((o.mass_kg or .03)/volume,.01,100),o.friction or .6,0,10,1)
         if o.shape=="sphere" then p.Shape=Enum.PartType.Ball
+            volume=math.pi/6*p.Size.X^3
         elseif o.shape=="cylinder" then
             p.Shape=Enum.PartType.Cylinder
             local length=o.size_m[2]*10; local diameter=o.size_m[1]*10
             p.Size=Vector3.new(length,diameter,diameter)
-            p.CFrame=cf*(if o.axis=="x" then CFrame.identity elseif o.axis=="y" then CFrame.Angles(0,math.pi/2,0) else CFrame.Angles(0,0,math.pi/2))
+            local rotation=if o.axis=="x" then CFrame.identity elseif o.axis=="y" then CFrame.Angles(0,math.pi/2,0) else CFrame.Angles(0,0,math.pi/2)
+            p.CFrame=cf*rotation; p:SetAttribute("ObjectRotation",rotation:Inverse())
+            volume=math.pi*(diameter/2)^2*length
         elseif o.shape=="bowl" then
             local wall=o.wall_m or .005; local radius=o.size_m[1]/2; local height=o.size_m[2]
             p.Size=Vector3.new((radius+wall)*20,wall*10,(radius+wall)*20)
             p.CFrame=cf*CFrame.new(0,(-height/2+wall/2)*10,0)
+            volume=p.Size.X*p.Size.Y*p.Size.Z; mass/=17
+            p.RootPriority=127
             -- Root origin stays at the nominal bowl centre for traces via offset attribute.
             p:SetAttribute("CenterOffset",Vector3.new(0,(height/2-wall/2)*10,0))
             for i=0,15 do
                 local phi=i*math.pi/8; local r=(radius+wall/2)*10
                 local w=A.part(model,o.id.."Wall",Vector3.new(wall*10,(height-wall)*10,(radius+wall)*math.tan(math.pi/16)*20),
                     cf*CFrame.new(r*math.cos(phi),wall*5,-r*math.sin(phi))*CFrame.Angles(0,phi,0),color(o.color),false)
-                w.Massless=true; w.CollisionGroup="R2PObject"
+                w.Massless=false; w.CollisionGroup="R2PObject"; w.CanCollide=o.collide~=false
+                w.CustomPhysicalProperties=PhysicalProperties.new(math.clamp(mass/(w.Size.X*w.Size.Y*w.Size.Z),.01,100),friction,0,10,1)
                 local joint=Instance.new("WeldConstraint"); joint.Part0=p; joint.Part1=w; joint.Parent=w
             end
         end
+        p.CustomPhysicalProperties=PhysicalProperties.new(math.clamp(mass/volume,.01,100),friction,0,10,1)
         if o.role=="target" then p.Material=Enum.Material.Neon; p.Transparency=.45 end
         if o.role=="target" or o.role=="container" then
             local glow=Instance.new("Highlight"); glow.FillTransparency=.85; glow.OutlineColor=Color3.fromRGB(78,203,169); glow.Adornee=p; glow.Parent=p
@@ -48,12 +56,25 @@ function Scene.poses(roots,origin,definitions)
     for _,o in ipairs(definitions) do
         local p=roots[o.id]
         if p and p.Parent then
-            local cf=p.CFrame; local pos=cf:PointToWorldSpace(p:GetAttribute("CenterOffset") or Vector3.zero)
+            local cf=p.CFrame*(p:GetAttribute("ObjectRotation") or CFrame.identity)
+            local pos=p.CFrame:PointToWorldSpace(p:GetAttribute("CenterOffset") or Vector3.zero)
             local right=cf.RightVector; local yaw=math.deg(math.atan2(-right.Z,right.X))
             local axis,angle=cf:ToAxisAngle(); local s=math.sin(angle/2)
             poses[o.id]={xyz=A.unvector(pos-origin),yaw_deg=yaw,quat={math.cos(angle/2),axis.X*s,-axis.Z*s,axis.Y*s},size_m=o.size_m,v=p.AssemblyLinearVelocity.Magnitude/10}
         end
     end
     return poses
+end
+function Scene.wakeAirborne(roots,origin,definitions)
+    -- Slow servo contact can leave an airborne payload sleeping. Changing the
+    -- unused touch-event flag is a documented wake condition; CanCollide,
+    -- transforms, velocities, masses and applied forces remain untouched.
+    -- https://create.roblox.com/docs/physics/sleep-system
+    for _,o in ipairs(definitions) do
+        local p=roots[o.id]
+        if p and not p.Anchored and p.Position.Y-origin.Y>C.size(o)[3]*5+.10 then
+            p.CanTouch=not p.CanTouch
+        end
+    end
 end
 return Scene

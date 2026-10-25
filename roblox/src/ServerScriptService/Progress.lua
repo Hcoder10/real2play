@@ -5,15 +5,21 @@ local Score=require(game:GetService("ReplicatedStorage").Twin.Score)
 local Config=require(game:GetService("ServerStorage").TwinConfig)
 local P={profiles={},top={},enabled=not Run:IsStudio() or Config.STUDIO_DATASTORES}
 function P.load(player)
+    if P.profiles[player.UserId] then return P.profiles[player.UserId] end
     local stats=Score.new(); stats.day=os.date("!%Y-%m-%d")
+    -- Install one shared profile before the yielding read. A ready message or
+    -- quick first round must not trigger a second load and replace live scores.
+    P.profiles[player.UserId]=stats
     if P.enabled then
         local ok,data=pcall(function() return D:GetDataStore("R2P_Progress_v1"):GetAsync(tostring(player.UserId)) end)
         if ok and type(data)=="table" then
-            stats.points=data.points or 0; stats.stars=data.stars or 0; stats.best=data.best or {}
-            if data.day==stats.day then stats.rounds=data.rounds or 0; stats.sent=data.sent or 0 end
+            stats.points+=data.points or 0
+            for level,stars in pairs(data.best or {}) do stats.best[level]=math.max(stats.best[level] or 0,stars) end
+            stats.stars=0; for _,stars in pairs(stats.best) do stats.stars+=stars end
+            if data.day==stats.day then stats.rounds+=data.rounds or 0; stats.sent+=data.sent or 0 end
         end
     end
-    P.profiles[player.UserId]=stats; return stats
+    return stats
 end
 function P.get(player) return P.profiles[player.UserId] or P.load(player) end
 function P.save(player)
@@ -39,9 +45,23 @@ function P.record(player,level,success,elapsed,limit,grabs,mode,result)
     return reward,stats
 end
 function P.leaders()
-    if not P.enabled then return {} end
+    if not P.enabled then
+        local entries={}
+        for id,profile in pairs(P.profiles) do
+            local player=game:GetService("Players"):GetPlayerByUserId(id)
+            table.insert(entries,{key=tostring(id),name=player and player.DisplayName or "Teacher",value=profile.points})
+        end
+        table.sort(entries,function(a,b) return a.value>b.value end)
+        P.top=entries; return entries
+    end
     local ok,pages=pcall(function() return D:GetOrderedDataStore(G.leaderboards.all):GetSortedAsync(false,5) end)
-    if ok then P.top=pages:GetCurrentPage() end
+    if ok then
+        P.top=pages:GetCurrentPage()
+        for _,entry in ipairs(P.top) do
+            local named,name=pcall(function() return game:GetService("Players"):GetNameFromUserIdAsync(tonumber(entry.key)) end)
+            if named then entry.name=name end
+        end
+    end
     return P.top
 end
 return P

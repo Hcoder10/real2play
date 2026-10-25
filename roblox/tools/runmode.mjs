@@ -1,11 +1,14 @@
 // Execute a test in the real Run/Play server, using StudioTestService's test protocol.
-import { readFileSync, writeFileSync } from 'node:fs';
+import { readFileSync, writeFileSync, existsSync } from 'node:fs';
 import { run, quote, close } from './bridge.mjs';
 const [file, arg = '{}', timeout = '180', output] = process.argv.slice(2);
 const json = (arg.startsWith('@') ? readFileSync(arg.slice(1), 'utf8') : arg).replace(/^\uFEFF/, '');
 JSON.parse(json); // Reject invalid command-line JSON before starting Studio.
 const source = `local service=game:GetService("StudioTestService")\nlocal ok,result=pcall(function()\n_G.R2P_ARGS=game:GetService("HttpService"):JSONDecode(service:GetTestArgs().json)\n${readFileSync(file,'utf8')}\nend)\nservice:EndTest({ok=ok,value=ok and result or nil,error=not ok and tostring(result) or nil})`;
 try {
+  if (existsSync(file + '.client.lua')) {
+    await run(`local parent=game:GetService("StarterPlayer").StarterPlayerScripts; local old=parent:FindFirstChild("R2PTestClient"); if old then old:Destroy() end; local client=Instance.new("LocalScript"); client.Name="R2PTestClient"; client.Source=${quote(readFileSync(file+'.client.lua','utf8'))}; client.Parent=parent; return true`);
+  }
   await run(`local scripts=game:GetService("ServerScriptService"); local old=scripts:FindFirstChild("R2PTestJob"); if old then old:Destroy() end\nlocal job=Instance.new("Script"); job.Name="R2PTestJob"; job.Source=${quote(source)}; job.Parent=scripts\nworkspace:SetAttribute("R2PTest",true); _G.R2P_TEST_DONE=false; _G.R2P_TEST_RESULT=nil\ntask.spawn(function() local ok,result=pcall(function() return game:GetService("StudioTestService"):${process.env.PLAY ? 'ExecutePlayModeAsync' : 'ExecuteRunModeAsync'}({json=${quote(json)}}) end); _G.R2P_TEST_RESULT=ok and result or {ok=false,error=tostring(result)}; _G.R2P_TEST_DONE=true end)\nreturn "started"`);
   const deadline = Date.now() + Number(timeout)*1000;
   let result;
@@ -19,6 +22,6 @@ try {
   if (!result.ok) process.exitCode=1;
 } catch(error) { console.error(error.message);process.exitCode=1; }
 finally {
-  await run('local s=game:GetService("ServerScriptService"):FindFirstChild("R2PTestJob"); if s then s:Destroy() end; workspace:SetAttribute("R2PTest",nil); return true').catch(()=>{});
+  await run('local s=game:GetService("ServerScriptService"):FindFirstChild("R2PTestJob"); if s then s:Destroy() end; local c=game:GetService("StarterPlayer").StarterPlayerScripts:FindFirstChild("R2PTestClient"); if c then c:Destroy() end; workspace:SetAttribute("R2PTest",nil); return true').catch(()=>{});
   await close();
 }

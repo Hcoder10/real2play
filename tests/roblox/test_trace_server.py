@@ -74,3 +74,30 @@ def test_reject_bad_time_and_nan(server):
     assert not list(out.glob("*.jsonl"))
     with urlopen(f"http://127.0.0.1:{srv.server_port}/health") as response:
         assert json.load(response)["ok"]
+
+
+def test_stats_require_key_and_exclude_test_fixtures(server):
+    srv, out = server
+    assert post(srv, chunk(0, 0, 1, True))[0] == 200
+    fixture = chunk(0, 0, 1, True)
+    fixture["trace_id"] = "fixture"
+    fixture["meta"]["test_only"] = True
+    assert post(srv, fixture)[0] == 200
+    with pytest.raises(HTTPError) as error:
+        urlopen(f"http://127.0.0.1:{srv.server_port}/stats")
+    assert error.value.code == 401
+    req = Request(f"http://127.0.0.1:{srv.server_port}/stats", headers={"X-Trace-Key":"test-only-key"})
+    with urlopen(req) as response:
+        stats = json.load(response)
+    assert stats["rounds"] == 1
+    assert stats["tasks"]["cube_in_bowl"]["success_rate"] == 1
+
+
+def test_final_part_cannot_relabel_provenance(server):
+    srv,out=server
+    for field in ("source","level","physics_sha256"):
+        bad=chunk(0,0,1,True); bad["trace_id"]="relabel_"+field
+        bad["meta"].update(level="cube_in_bowl",physics_sha256="original")
+        bad["meta_final"][field]="changed"
+        assert post(srv,bad)[0]==400
+    assert not list(out.glob("*.jsonl"))

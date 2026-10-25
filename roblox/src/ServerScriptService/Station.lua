@@ -13,8 +13,10 @@ local TTT=require(Twin.TicTacToe)
 local S={}; S.__index=S
 function S.new(index,origin,parent)
     local model=Instance.new("Model"); model.Name="Table"..index; model.Parent=parent
+    model:SetAttribute("Origin",origin)
     local self=setmetatable({index=index,origin=origin,model=model,owner=nil,active=false,closed=false,grabs=0,history={},input={move={0,0,0},roll=0},lastInput=0},S)
     local top=A.part(model,"Tabletop",Vector3.new(8,.35,6),CFrame.new(origin+Vector3.new(2,-.175,0)),Color3.fromRGB(225,237,246),true)
+    top.CustomPhysicalProperties=PhysicalProperties.new(1,.6,0,10,10)
     for _,dx in ipairs({-1.5,5.5}) do for _,dz in ipairs({-2.5,2.5}) do A.part(model,"Leg",Vector3.new(.3,7.2,.3),CFrame.new(origin+Vector3.new(dx,-3.8,dz)),Color3.fromRGB(62,91,120),true) end end
     local seat=Instance.new("Seat"); seat.Name="Seat"; seat.Size=Vector3.new(2,.3,2); seat.Anchored=true
     seat.CFrame=CFrame.lookAt(origin+Vector3.new(7,-2.4,3.9),origin+Vector3.new(2,-2.4,0)); seat.Color=Color3.fromRGB(47,113,200); seat.Parent=model
@@ -41,7 +43,7 @@ function S:sleep(sleeping)
 end
 function S:state()
     local _,_,site=self.arm:tips()
-    return {objects=Scene.poses(self.roots or {},self.origin,self.scene and self.scene.objects or {}),gripper_open=not self.closed,site_xyz=site,initial=self.initial}
+    return {objects=Scene.poses(self.roots or {},self.origin,self.scene and self.scene.objects or {}),gripper_open=not self.closed,site_xyz=site,initial=self.initial,q=self.arm:measured()}
 end
 function S:clear()
     self.active=false
@@ -55,18 +57,36 @@ function S:start(name,seed,source,options)
     self.task=L.copy(assert(L.tasks[name],"unknown task")); self.level=name; self.seed=seed
     if options.tictactoe then
         for id,rule in pairs(self.task.randomize or {}) do if type(rule)=="table" and id:sub(1,5)=="other" then rule.p_present=0 end end
+        -- The game declares an 18 mm placement tolerance. Store that exact task
+        -- variant in the trace and still judge it with the shared checker.
+        for _,goal in ipairs(self.task.goal) do if goal.pred=="at" and goal.a=="piece" and goal.xy=="cell" then goal.tol_m=TTT.tolerance end end
     end
     self.scene=L.sample(self.task,seed)
+    if options.boardPieces then
+        local pieces=options.boardPieces
+        for slot=1,math.min(4,#pieces) do
+            local mark=pieces[#pieces-slot+1]
+            local definition=nil
+            for _,o in ipairs(self.task.objects) do if o.id=="other"..slot then definition=L.copy(o) end end
+            if definition then
+                local xy=TTT.xy(mark.cell); definition.xyz={xy[1],xy[2],C.size(definition)[3]/2}; definition.xy=nil
+                definition.yaw_deg=0; definition.fixed=true; definition.collide=true
+                definition.color=if mark.player==1 then "brown" else "blue"
+                table.insert(self.scene.objects,definition)
+            end
+        end
+    end
     self.objects,self.roots=Scene.build(self.model,self.origin,self.scene)
     self.arm:reset(Robot.home_q); self.commanded=table.clone(Robot.home_q)
     local _,_,mid=K.tips(self.commanded); self.ee=mid; self.roll=0; self.closed=false
-    self.grabs=0; self.elapsed=0; self.phaseIndex=1; self.commandList=L.commands(self.task)
+    self.grabs=0; self.elapsed=0; self.phaseIndex=1; self.phaseAge=0; self.commandList=L.commands(self.task)
     self.source=source or "human"; self.active=true; self.history={}; self.initial=self:state().objects
     self.limit=options.limit or self.task.limits.episode_s; self.attract=options.attract==true
     self.tictactoe=options.tictactoe; self.board=options.board; self.candidate=nil; self.hold=0
     self.operator=if self.source=="bot" then Skill.new(self.task) else nil
     self.trace=Trace.new({task=self.task,task_name=name,source=self.source,player=if self.owner then self.owner.UserId else 0,level=name,
-        seed=seed,scene=L.copy(self.scene),rig=Physics.rig,physics_sha256=Physics.sha256,tutorial=options.tutorial==true,board=options.board and table.clone(options.board)},not self.attract)
+        seed=seed,scene=L.copy(self.scene),rig=Physics.rig,physics_sha256=Physics.sha256,mode=self.mode or "solo",round_limit_s=self.limit,
+        tutorial=options.tutorial==true,board=options.board and table.clone(options.board)},not self.attract)
     self.trace:phase(self.commandList[1],"approach")
     self.label.Text=if self.attract then "Watch the robot" else (if self.owner then self.owner.DisplayName else "Robot practice")
     return self
@@ -112,6 +132,7 @@ function S:patchCell(cell)
 end
 function S:tick()
     if not self.active then return end
+    Scene.wakeAirborne(self.roots,self.origin,self.scene.objects)
     local state=self:state(); local measured=self.arm:measured()
     if self.operator then
         local target,command,phase=self.operator:step(state,1/30)

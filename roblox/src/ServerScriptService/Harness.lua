@@ -10,6 +10,7 @@ local Score=require(Twin.Score)
 local Levels=require(Twin.Levels)
 local A=require(Twin.ArmBuilder)
 local G=require(Twin.Generated.Game)
+local Physics=require(Twin.Generated.Physics)
 local Config=require(game:GetService("ServerStorage").TwinConfig)
 local H={stations={},byPlayer={},started=false}
 local function send(player,data) if player and player.Parent then H.state:FireClient(player,data) end end
@@ -27,7 +28,7 @@ function H.release(player)
     if station.match then station.match:destroy(); station.match=nil end
     if station.active then station:finish(false,"stood_up") end
     station.owner=nil; H.byPlayer[player]=nil; station.prompt.Enabled=true; station.label.Text="Table "..station.index
-    station:clear(); station:sleep(true); send(player,{kind="lobby",stats=Progress.get(player),image=Config.REAL_ARM_IMAGE})
+    station:clear(); station:sleep(true); send(player,{kind="lobby",stats=Progress.get(player),image=Config.REAL_ARM_IMAGE,preview=false})
 end
 function H.sit(player,station)
     if station.owner and station.owner~=player then return false end
@@ -42,7 +43,7 @@ function H.begin(player,level,mode)
     if not table.find(G.modes,mode) then return false end
     if station.match then station.match:destroy(); station.match=nil end
     if station.active then station:finish(false,"restarted") end
-    station.mode=mode
+    station.mode=mode; station.opponent=nil
     if mode=="tic_tac_toe" then
         station.match=Match.new(station,function(match,result,reason)
             local reward=Progress.record(player,"tic_tac_toe",result~=2,station.elapsed or 0,G.move_s,station.grabs,mode,result)
@@ -50,6 +51,7 @@ function H.begin(player,level,mode)
         end,function(_,phase) H.snapshot(station,"board",{phase=phase}) end)
         station.match:startMove()
     else
+        if mode=="daily" then level=Levels.order[Score.daily(os.date("!%Y-%m-%d"))%#Levels.order+1] end
         if not Levels.tasks[level] then return false end
         local seed=if mode=="daily" then Score.daily(os.date("!%Y-%m-%d")) else math.random(1,2147483646)
         station:start(level,seed,"human",{limit=if mode=="timed" then G.round_s else nil,tutorial=Progress.get(player).rounds==0})
@@ -67,7 +69,7 @@ local function isOwner(player)
     return (game.CreatorType==Enum.CreatorType.User and player.UserId==game.CreatorId) or table.find(Config.OWNER_IDS,player.UserId)~=nil or (Run:IsStudio() and player.UserId<=0)
 end
 local function onPlayer(player)
-    Progress.load(player)
+    task.spawn(Progress.load,player)
     player.Chatted:Connect(function(message)
         if not isOwner(player) then return end
         local url=message:match("^/traceurl%s+(%S+)%s*$")
@@ -87,7 +89,7 @@ function H.start()
     PhysicsService:CollisionGroupSetCollidable("R2PArm","R2PArm",false)
     PhysicsService:CollisionGroupSetCollidable("R2PArm","R2PPlayer",false)
     PhysicsService:CollisionGroupSetCollidable("R2PObject","R2PPlayer",false)
-    workspace.Gravity=98.1
+    workspace.Gravity=-Physics.config.gravity[3]*10
     local world=Instance.new("Model"); world.Name="Real2Play"; world.Parent=workspace; H.world=world
     A.part(world,"WorkshopFloor",Vector3.new(105,.5,88),CFrame.new(25,-.25,24),Color3.fromRGB(197,217,232),true)
     A.part(world,"BackWall",Vector3.new(105,18,.4),CFrame.new(25,9,-19),Color3.fromRGB(229,239,247),true)
@@ -112,14 +114,17 @@ function H.start()
                 if s.match and s.match.alive then s.match:accepted(success,reason,extra)
                 else
                     local reward=Progress.record(s.owner,s.level,success,s.elapsed,s.limit,s.grabs,s.mode)
-                    local beatBot=not s.opponent or s.opponent.active or not s.opponent.trace.meta.success
+                    local beatBot=if s.opponent then s.opponent.active or not s.opponent.trace.meta.success else nil
                     H.snapshot(s,"result",{success=success,reason=reason,reward=reward,beat_bot=beatBot})
                 end
             end
         end
         station.onUpload=function(s,ok,detail,owner)
             local player=owner or s.owner
-            if player then if ok then Progress.get(player).sent+=1 end; H.snapshot(s,"upload",{uploaded=ok,upload_reason=if ok then "" else detail}) end
+            if player then
+                if ok then Progress.get(player).sent+=1; task.spawn(Progress.save,player) end
+                send(player,{kind="upload",stats=Progress.get(player),uploaded=ok,upload_reason=if ok then "" else detail})
+            end
         end
         station.onEvent=function(s,event) H.snapshot(s,"juice",{effect=event}) end
     end
@@ -136,20 +141,28 @@ function H.start()
         elseif action=="play" and type(args)=="table" then H.begin(player,args.level,args.mode)
         elseif action=="stand" then local s=H.byPlayer[player]; if s and s.seat.Occupant then s.seat.Occupant.Sit=false end; H.release(player)
         elseif action=="color" then local s=H.byPlayer[player]; if s and type(args)=="number" then local unlock=G.unlocks[args]; if unlock and Progress.get(player).stars>=unlock.stars then
-            for _,part in ipairs(s.arm.model:GetChildren()) do if part:IsA("MeshPart") and part.Color.R>.5 then part.Color=Color3.fromRGB(unpack(unlock.color)) end end
+            for _,part in ipairs(s.arm.model:GetChildren()) do
+                local body=part:GetAttribute("Body")
+                if part:IsA("MeshPart") and (body=="gripper" or body=="moving_jaw_so101_v1") and part:GetAttribute("Paintable") then part.Color=Color3.fromRGB(unpack(unlock.color)) end
+            end
         end end end
     end)
     Players.PlayerAdded:Connect(onPlayer); for _,player in ipairs(Players:GetPlayers()) do onPlayer(player) end
     Players.PlayerRemoving:Connect(function(player) H.release(player); Progress.save(player); actions[player]=nil end)
     local acc=0; local ui=0; local idle=0; local botIndex=0
-    H.connection=Run.Heartbeat:Connect(function(dt)
-        -- Fixed control ticks; do not fabricate extra physics samples after a Studio hitch.
-        local step=math.min(dt,.1); acc+=step; ui+=dt; idle+=dt
-        for _,s in ipairs(H.stations) do if s.active then s:step(step) end end
+    H.connection=Run.PreSimulation:Connect(function(dt)
+        -- Advance with simulated physics time; wall-clock Studio stalls are not
+        -- extra simulation ticks. This is the same schedule as the parity runner.
+        acc+=dt; ui+=dt; idle+=dt
+        for _,s in ipairs(H.stations) do if s.active then s:step(dt) end end
+    end)
+    H.postConnection=Run.PostSimulation:Connect(function()
         while acc>=1/30 do acc-=1/30; for _,s in ipairs(H.stations) do if s.active then s:tick() end end end
         if ui>.2 then ui=0; for _,s in ipairs(H.stations) do if s.owner and s.active then H.snapshot(s,"tick") end end end
         if idle>Config.BOT_INTERVAL then
             idle=0
+            local attract=H.stations[#H.stations]
+            if not workspace:GetAttribute("R2PTest") and not attract.owner and not attract.active then attract:start("cube_in_bowl",7,"bot",{attract=true}) end
             if Config.BOT_IDLE and #Players:GetPlayers()==0 then
                 local s=H.stations[1]
                 if not s.active then botIndex+=1; s:start(Levels.order[(botIndex-1)%#Levels.order+1],botIndex,"bot") end

@@ -35,6 +35,9 @@ function A.new(parent,origin,q0)
     local templates=game:GetService("ReplicatedStorage"):WaitForChild("SO101Meshes")
     for i,b in ipairs(Robot.bodies) do
         local cf=A.frame(f[i].p,f[i].r,origin)
+        -- Collision-free solver proxy. Tiny .15-stud roots ill-condition PGS and
+        -- make articulated motors oscillate. Physical link/rotor dynamics live
+        -- exclusively in JointSim; these proxies provide stable contact tracking.
         local root=A.part(model,b.name,Vector3.new(1,1,1),cf,nil,b.joint==0)
         root.Transparency=1; root.CanCollide=false; root.CanTouch=false; root.RootPriority=127
         root.CustomPhysicalProperties=PhysicalProperties.new(math.clamp(b.mass,.01,100),.6,0,1,1)
@@ -51,6 +54,8 @@ function A.new(parent,origin,q0)
                 mesh.CanCollide=false; mesh.CanTouch=false; mesh.CollisionGroup="R2PArm"
                 mesh.CFrame=cf*CFrame.new(A.vector(visual.center)); mesh.Color=if visual.dark then Color3.fromRGB(53,60,68) else Color3.fromRGB(242,206,92)
                 mesh.Material=Enum.Material.SmoothPlastic; mesh.Parent=model; weld(root,mesh)
+                mesh:SetAttribute("Body",b.name)
+                mesh:SetAttribute("Paintable",not visual.dark)
             end
         end
         if b.joint>0 then
@@ -62,8 +67,9 @@ function A.new(parent,origin,q0)
             a0.CFrame=A.frame(M.add(b.pos,M.mv(b.rot,b.joint_pos)),M.mm(b.rot,basis)); a0.Parent=parentRoot
             local a1=Instance.new("Attachment"); a1.Name="JointChild"; a1.CFrame=A.frame(b.joint_pos,basis); a1.Parent=root
             local hinge=Instance.new("HingeConstraint"); hinge.Name=Robot.joints[b.joint]
-            hinge.Attachment0=a0; hinge.Attachment1=a1; hinge.ActuatorType=Enum.ActuatorType.Motor
-            hinge.MotorMaxTorque=self.sim.torque[b.joint]*100; hinge.MotorMaxAcceleration=10000
+            hinge.Attachment0=a0; hinge.Attachment1=a1; hinge.ActuatorType=Enum.ActuatorType.Servo
+            hinge.ServoMaxTorque=self.sim.torque[b.joint]*100; hinge.AngularSpeed=20; hinge.AngularResponsiveness=50
+            hinge.TargetAngle=math.deg(q[b.joint])
             hinge.LimitsEnabled=true; hinge.LowerAngle=math.deg(Robot.range[b.joint][1]); hinge.UpperAngle=math.deg(Robot.range[b.joint][2])
             hinge.Parent=model; self.hinges[b.joint]=hinge
         end
@@ -77,7 +83,7 @@ function A:command(q) self.last=table.clone(q); self.sim:command(q) end
 function A:step(dt)
     self.sim:step(dt)
     for i,h in ipairs(self.hinges) do
-        h.AngularVelocity=math.clamp(self.sim.v[i]+35*(self.sim.q[i]-math.rad(h.CurrentAngle)),-8,8)
+        h.TargetAngle=math.deg(self.sim.q[i])
     end
 end
 function A:tips()

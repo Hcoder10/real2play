@@ -32,7 +32,8 @@ function L.sample(task,seed)
             local index=nil; for i,o in ipairs(pending) do if not o.on or placed[o.on] then index=i; break end end
             assert(index,"absent or cyclic object support")
             local o=L.copy(table.remove(pending,index)); local rule=rnd[o.id] or {}
-            local size={}; for i,d in ipairs(rule.size_m or o.size_m) do size[i]=draw(d)*draw(rule.size_scale or 1) end; o.size_m=size
+            local scale=draw(rule.size_scale or 1)
+            local size={}; for i,d in ipairs(rule.size_m or o.size_m) do size[i]=draw(d)*scale end; o.size_m=size
             o.mass_kg=draw(rule.mass_kg or o.mass_kg or .03); o.friction=draw(rule.friction or o.friction or .6)
             local x,y
             if rule.xy_choice then local p=rule.xy_choice[math.min(#rule.xy_choice,math.floor(rng()*#rule.xy_choice)+1)]; x,y=p[1],p[2]

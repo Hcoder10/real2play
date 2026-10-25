@@ -42,8 +42,8 @@ function Trace:upload(callback)
                 local ok,response=pcall(function() return H:RequestAsync({Url=Config.TRACE_URL:gsub("/$","").."/trace",Method="POST",
                     Headers={["Content-Type"]="application/json",["X-Trace-Key"]=Config.TRACE_KEY},Body=body}) end)
                 if ok and response.Success then
-                    local parsed=H:JSONDecode(response.Body)
-                    delivered=parsed.ok==true and parsed.part==part and (part<parts-1 or parsed.complete==true)
+                    local decoded,parsed=pcall(function() return H:JSONDecode(response.Body) end)
+                    delivered=decoded and type(parsed)=="table" and parsed.ok==true and parsed.part==part and (part<parts-1 or parsed.complete==true)
                     if delivered then break end
                 end
                 if ok and response.StatusCode>=400 and response.StatusCode<500 and response.StatusCode~=429 then break end

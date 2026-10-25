@@ -116,7 +116,7 @@ def robot_data(with_voxels=True):
             "home_q": HOME_Q.tolist(), "base_origin": BASE_ORIGIN_MJCF.tolist(),
             "fixed_tip": [next(i + 1 for i, b in enumerate(bodies) if b["name"] == FIXED_TIP[0]), FIXED_TIP[1].tolist()],
             "moving_tip": [next(i + 1 for i, b in enumerate(bodies) if b["name"] == MOVING_TIP[0]), MOVING_TIP[1].tolist()],
-            "mjcf_sha256": hashlib.sha256(MJCF.read_bytes()).hexdigest(), "voxel_m": 0.004}
+            "mjcf_sha256": hashlib.sha256(MJCF.read_text(encoding="utf-8").encode()).hexdigest(), "voxel_m": 0.004}
 
 
 def write(name, value, check=False):
@@ -136,7 +136,7 @@ def main():
     parser.add_argument("--robot", action="store_true", help="regenerate expensive collision voxels")
     parser.add_argument("--rig", default="so101_bench")
     args = parser.parse_args()
-    if args.robot or not (OUT / "Robot.lua").exists():
+    if args.robot or args.check or not (OUT / "Robot.lua").exists():
         write("Robot", robot_data(), args.check)
     task_paths = sorted((ROOT / "tasks").glob("*/task.json"))
     tasks = {p.parent.name: json.loads(p.read_text(encoding="utf-8")) for p in task_paths}
@@ -146,7 +146,9 @@ def main():
     if not physics.exists():
         raise SystemExit(f"canonical physics preset missing: {physics}; ask agent B")
     data = json.loads(physics.read_text(encoding="utf-8"))
-    write("Physics", {"rig": args.rig, "sha256": hashlib.sha256(physics.read_bytes()).hexdigest(), "config": data}, args.check)
+    # Match r2p.sim expert / policy fingerprints, independent of JSON whitespace
+    # and Windows checkout line endings.
+    write("Physics", {"rig": args.rig, "sha256": hashlib.sha256(json.dumps(data, sort_keys=True).encode()).hexdigest(), "config": data}, args.check)
     write("Game", json.loads((ROOT / "roblox/presets/game/workshop.json").read_text(encoding="utf-8")), args.check)
     vectors = ROOT / "r2p/tasks/vectors.json"
     if vectors.exists():

@@ -5,7 +5,7 @@ local G=require(Twin.Generated.Game)
 local Match={}; Match.__index=Match
 function Match.new(station,onResult,onMove)
     local marks=Instance.new("Folder"); marks.Name="BoardMarks"; marks.Parent=station.model
-    return setmetatable({station=station,board=Rules.new(),marks=marks,turn=0,onResult=onResult,onMove=onMove,alive=true},Match)
+    return setmetatable({station=station,board=Rules.new(),marks=marks,pieces={},turn=0,onResult=onResult,onMove=onMove,alive=true},Match)
 end
 function Match:startMove()
     if not self.alive or not self.station.owner then return end
@@ -14,6 +14,7 @@ function Match:startMove()
     if self.onMove then self.onMove(self,"your_turn") end
 end
 function Match:mark(cell,player)
+    table.insert(self.pieces,{cell=cell,player=player})
     local xy=Rules.xy(cell)
     local p=A.part(self.marks,if player==1 then "X" else "O",Vector3.new(.27,.14,.27),CFrame.new(self.station.origin+A.vector({xy[1],xy[2],.007})),
         if player==1 then Color3.fromRGB(172,116,76) else Color3.fromRGB(47,113,200),true)

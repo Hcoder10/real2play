@@ -1,4 +1,6 @@
-local T={}
+local Tasks=require(if script then script.Parent.Generated.Tasks else "./Generated/Tasks")
+local Layout=Tasks.tasks.place_on_cell.board
+local T={tolerance=.018}
 T.lines={{1,2,3},{4,5,6},{7,8,9},{1,4,7},{2,5,8},{3,6,9},{1,5,9},{3,5,7}}
 function T.new() return table.create(9,0) end
 function T.result(board)
@@ -39,9 +41,13 @@ function T.choose(board,slip,random)
     for _,cell in ipairs(legal) do board[cell]=2; local s=search(board,1); board[cell]=0; if s>score then best,score=cell,s end end
     return best
 end
-function T.xy(cell) return {.200+math.floor((cell-1)/3)*.045,-.045+((cell-1)%3)*.045} end
+function T.xy(cell)
+    local row,col=math.floor((cell-1)/3),(cell-1)%3
+    local p=assert(Layout.cells["r"..row.."c"..col],"unknown board cell")
+    return {p[1],p[2]}
+end
 function T.cell(xyz,board)
-    for _,i in ipairs(T.legal(board)) do local p=T.xy(i); if math.sqrt((xyz[1]-p[1])^2+(xyz[2]-p[2])^2)<.018 then return i end end
+    for _,i in ipairs(T.legal(board)) do local p=T.xy(i); if math.sqrt((xyz[1]-p[1])^2+(xyz[2]-p[2])^2)<=T.tolerance then return i end end
     return nil
 end
 return T

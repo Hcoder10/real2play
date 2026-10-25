@@ -17,6 +17,7 @@ import re
 import threading
 import time
 import sys
+from collections import Counter
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 from r2p.traces import write_trace
@@ -55,6 +56,27 @@ class TraceStore:
         self.parts.mkdir(parents=True, exist_ok=True)
         self.key = key
         self.lock = threading.Lock()
+
+    def stats(self):
+        tasks = {}
+        for path in self.out.glob("*.jsonl"):
+            try:
+                with path.open(encoding="utf-8") as stream:
+                    meta = json.loads(stream.readline())["meta"]
+                if meta.get("test_only"):
+                    continue
+                name = meta["task_name"]
+                row = tasks.setdefault(name, {"rounds": 0, "successes": 0, "sources": Counter(), "fail_reasons": Counter()})
+                row["rounds"] += 1
+                row["successes"] += int(meta["success"])
+                row["sources"][meta["source"]] += 1
+                if not meta["success"]:
+                    row["fail_reasons"][meta.get("fail_reason") or "unknown"] += 1
+            except (OSError, ValueError, KeyError):
+                continue
+        for row in tasks.values():
+            row["success_rate"] = row["successes"] / row["rounds"]
+        return {"schema": "r2p_game_stats/1", "rounds": sum(r["rounds"] for r in tasks.values()), "tasks": tasks}
 
     def accept(self, payload):
         trace_id = payload.get("trace_id", "")
@@ -100,7 +122,7 @@ class TraceStore:
             if complete:
                 meta = dict(parts[0]["meta"])
                 trailer = parts[final[0]].get("meta_final", {})
-                for name in ("schema", "task", "task_name", "source", "player", "seed", "scene", "rig"):
+                for name in ("schema", "task", "task_name", "source", "player", "level", "seed", "scene", "rig", "physics_sha256"):
                     if name in trailer and name in meta and trailer[name] != meta[name]:
                         raise ValueError(f"meta_final cannot change {name}")
                 meta.update(trailer)
@@ -141,6 +163,18 @@ def make_server(host, port, out, key):
         def do_GET(self):
             if self.path == "/health":
                 self.reply(200, {"ok": True, "schema": "r2p_trace/1", "traces": len(list(store.out.glob("*.jsonl")))})
+            elif self.path in ("/stats", "/presets"):
+                key = self.headers.get("X-Trace-Key", "")
+                if not hmac.compare_digest(key.encode(), store.key.encode()):
+                    self.reply(401, {"error": "unauthorized"}); return
+                if self.path == "/stats":
+                    self.reply(200, store.stats())
+                else:
+                    root = Path(__file__).resolve().parents[2]
+                    read = lambda p: json.loads(p.read_text(encoding="utf-8"))
+                    self.reply(200, {"game": read(root / "roblox/presets/game/workshop.json"),
+                                     "tasks": {p.parent.name: read(p) for p in (root / "tasks").glob("*/task.json")},
+                                     "physics": {p.stem: read(p) for p in (root / "config/physics").glob("*.json")}})
             else:
                 self.reply(404, {"error": "not found"})
 

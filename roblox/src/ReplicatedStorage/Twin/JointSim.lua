@@ -34,9 +34,9 @@ function JointSim.inverse(q,qd,qdd,gravity,frames)
     end
     return tau
 end
-function JointSim.massBias(q,qd,armature)
+function JointSim.massBias(q,qd,armature,gravity)
     local f=K.fk(q); local z=table.create(6,0)
-    local bias=JointSim.inverse(q,qd,z,9.81,f)
+    local bias=JointSim.inverse(q,qd,z,gravity or 9.81,f)
     local mass=table.create(6)
     for i=1,6 do mass[i]=table.create(6,0) end
     for j=1,6 do
@@ -69,6 +69,7 @@ function JointSim.new(physics,q)
         end
     end
     self.latency=c.latency_ticks or 0
+    self.gravity=if c.gravity then -c.gravity[3] else 9.81
     self.target=table.clone(self.q)
     return self
 end
@@ -82,8 +83,8 @@ function JointSim:command(q)
     if #self.queue>self.latency then self.target=table.remove(self.queue,1) end
 end
 function JointSim:substep(h)
-    local mass,bias=JointSim.massBias(self.q,self.v,self.armature)
-    local gravity=JointSim.inverse(self.q,table.create(6,0),table.create(6,0),9.81)
+    local mass,bias=JointSim.massBias(self.q,self.v,self.armature,self.gravity)
+    local gravity=JointSim.inverse(self.q,table.create(6,0),table.create(6,0),self.gravity)
     local rhs={}
     for i=1,6 do
         local wanted=self.target[i]-self.sag[i]*gravity[i]
