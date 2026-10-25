@@ -1,0 +1,102 @@
+{
+  "url": "http://127.0.0.1:8801/demo",
+  "screenshot": "C:\\Users\\sarta\\real2play\\dashboard\\shots\\demo-t2-lab-focus.png",
+  "wall_clock_wait_s": 3,
+  "virtual_time": false,
+  "metrics": {
+    "width": 1920,
+    "height": 1080,
+    "scrollWidth": 1920,
+    "scrollHeight": 1080,
+    "panels": [
+      "Argon Lab",
+      "Game",
+      "Replay & train",
+      "Deploy"
+    ],
+    "mock": "false",
+    "image_badge": null,
+    "dominant_image": null,
+    "ttt_model_visible": true,
+    "focused_panel": "1",
+    "video": {
+      "source": null,
+      "readyState": 0,
+      "currentTime": 0,
+      "duration": null,
+      "paused": true,
+      "loop": true,
+      "error": null
+    },
+    "camera_frames": [
+      {
+        "id": "phone",
+        "loaded": true,
+        "visible": true
+      },
+      {
+        "id": "wrist",
+        "loaded": true,
+        "visible": true
+      }
+    ],
+    "step_slideshow": {
+      "frames": 23,
+      "auto_advanced": true,
+      "looped": true,
+      "latest_paused": true
+    },
+    "step_evidence": {
+      "actions": 6,
+      "thought": "Look at Turn 23: the white bottle cap (`cap2`) is placed squarely in the center cell `r1c1` of the tic-tac-toe grid! Let's do a final refinement of `cap2`'s sim coordinates to `[0.155, 0.008, 0.008]` so the SIM render's placed cap matches the scene camera relative to the two paperweights, and mark `done: true`.",
+      "objects": "6",
+      "z": "-1.5 mm",
+      "xy": "[10, 11] mm",
+      "policy": [
+        "96.67%",
+        "80%",
+        "43.33%"
+      ],
+      "images": [
+        {
+          "id": "lab-comparison",
+          "loaded": true,
+          "visible": true
+        },
+        {
+          "id": "lab-wrist",
+          "loaded": true,
+          "visible": true
+        }
+      ]
+    },
+    "keyboard_checks": [
+      {
+        "focus": "1",
+        "visible": [
+          "1"
+        ]
+      },
+      {
+        "focus": "2",
+        "visible": [
+          "2"
+        ]
+      },
+      {
+        "focus": "3",
+        "visible": [
+          "3"
+        ]
+      },
+      {
+        "focus": "4",
+        "visible": [
+          "4"
+        ]
+      }
+    ],
+    "overview_restored": null
+  },
+  "javascript_errors": []
+}

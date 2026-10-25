@@ -178,6 +178,24 @@ def capture(url, out, *, width=1920, height=1080, wait=3, browser=None, cdp_url=
         metrics["focused_panel"] = client.evaluate("document.body.dataset.focus ?? null")
         metrics["video"] = client.evaluate("(()=>{const v=document.querySelector('video');return v?{source:v.getAttribute('src'),readyState:v.readyState,currentTime:v.currentTime,duration:Number.isFinite(v.duration)?v.duration:null,paused:v.paused,loop:v.loop,error:v.error?.code??null}:null})()")
         metrics["camera_frames"] = client.evaluate("[...document.querySelectorAll('.live-cameras img')].map(i=>({id:i.id,loaded:i.complete&&i.naturalWidth>0,visible:!i.hidden}))")
+        if client.evaluate("!!document.querySelector('.step-lab')"):
+            slide = "({turn:document.getElementById('step-comparison').dataset.turn,index:Number(document.getElementById('slide-turn').value),last:Number(document.getElementById('slide-turn').max),playing:document.getElementById('slide-play').getAttribute('aria-pressed')==='true'})"
+            before = client.evaluate(slide)
+            time.sleep(1.2)
+            after = client.evaluate(slide)
+            client.evaluate("document.getElementById('slide-latest').click();document.getElementById('slide-play').click()")
+            time.sleep(1.2)
+            wrapped = client.evaluate(slide)
+            client.evaluate("document.getElementById('slide-latest').click()")
+            time.sleep(1.2)
+            paused = client.evaluate(slide)
+            metrics["step_slideshow"] = {"frames": before["last"] + 1,
+                                         "auto_advanced": before["index"] != after["index"],
+                                         "looped": wrapped["index"] < wrapped["last"],
+                                         "latest_paused": paused["index"] == paused["last"] and not paused["playing"]}
+            metrics["step_evidence"] = client.evaluate("({actions:document.querySelectorAll('#tools li').length,thought:document.getElementById('thought').textContent,objects:document.getElementById('sim-objects').textContent,z:document.getElementById('sim-z').textContent,xy:document.getElementById('sim-xy').textContent,policy:[...document.querySelectorAll('.evals strong')].map(e=>e.textContent),images:['lab-comparison','lab-wrist'].map(id=>{const i=document.getElementById(id);return {id,loaded:i.complete&&i.naturalWidth>0,visible:!i.hidden}})})")
+            if before["last"] > 0 and not all(metrics["step_slideshow"][key] for key in ("auto_advanced", "looped", "latest_paused")):
+                raise RuntimeError(f"Step slideshow check failed: {metrics['step_slideshow']}")
         if client.evaluate("!!document.querySelector('.demo-grid')"):
             checks = []
             for panel in ("1", "2", "3", "4"):

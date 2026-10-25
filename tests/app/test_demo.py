@@ -95,18 +95,14 @@ def test_game_sources_are_disjoint_and_exclude_test_traces(tmp_path):
     assert result["invalid"] == 1 and result["receiver_online"] and result["receiver_traces"] == 4
 
 
-def test_orchestrator_ledger_overrides_status_and_retains_synthetic_provenance(tmp_path):
+def test_synthetic_orchestrator_never_overrides_recorded_chain(tmp_path):
     run = tmp_path / "runs/argon_orchestrator/latest"
-    write(run / "status.json", {"synthetic": True, "status": "BLOCKED", "last_tool": "build_game",
-                                "error": "Parity failed", "results": {"twin_gate": {"ok": True, "metrics": {"jaw_mm": 2}}}})
-    (run / "ledger.jsonl").write_text(json.dumps({"kind": "result", "tool": "build_game",
-                                                 "result": {"ok": False, "metrics": {"local_checks": 3}}}) + "\n")
+    write(run / "status.json", {"synthetic": True, "status": "DONE",
+                                "results": {"deploy_real": {"ok": True, "metrics": {"attempts": 8}}}})
     result = DemoData(adapter(tmp_path)).snapshot()["chain"]
-    stages = {s["name"]: s for s in result["stages"]}
-    assert result["synthetic"] and stages["Twin"]["metric"] == "2 mm jaw"
-    assert stages["Game"]["state"] == "blocked" and stages["Game"]["detail"] == "Parity failed"
-    assert all(s["provenance"] == "Synthetic orchestrator" for s in stages.values())
-    assert stages["Deploy"]["state"] == "pending"
+    assert not result["synthetic"]
+    assert all(s["state"] == "pending" for s in result["stages"])
+    assert all("orchestrator" not in s["provenance"].lower() for s in result["stages"])
 
 
 def test_nested_board_decision_and_latency(tmp_path):

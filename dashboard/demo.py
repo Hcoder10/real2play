@@ -85,6 +85,9 @@ class DemoData:
     def lab(self):
         # Only direct run directories: acceptance-test subdirectories are not live runs.
         path = newest((self.root / "runs/lab").glob("*/status.json"))
+        step = newest((self.root / "runs/argon_step").glob("*/ledger.jsonl"))
+        if step and newest(p for p in (step, path) if p) == step:
+            return self.step_lab(step)
         if not path:
             return {"available": False, "state": "pending", "thought": None, "calls": [],
                     "history": [], "edits": [], "frames": {}, "video": None}
@@ -163,6 +166,104 @@ class DemoData:
                 "video_message": video_message, "original_video": self.media(video),
                 "heldout": status.get("heldout", {}), "complete": status.get("complete") is True}
 
+    def step_lab(self, path):
+        """The step loop records observations BEFORE each proposed action."""
+        run = path.parent
+        rows = ledger(path, limit=None)
+        turns, actions, thought = {}, [], None
+        for row in rows:
+            turn, reply = row.get("turn"), row.get("reply")
+            if not isinstance(turn, int) or isinstance(turn, bool) or not isinstance(reply, dict):
+                continue
+            turns[turn] = row
+            if isinstance(reply.get("thought"), str):
+                thought = reply["thought"]
+            action = reply.get("action", {})
+            if not isinstance(action, dict):
+                continue
+            labels = []
+            move = action.get("move")
+            if isinstance(move, list) and len(move) == 3 and all(finite(v) for v in move):
+                labels.append("move [" + ", ".join(f"{v:g}" for v in move) + "] m")
+            if finite(action.get("gripper")):
+                labels.append(f"gripper {action['gripper']:g}")
+            if action.get("done") is True:
+                labels.append("done")
+            if labels:
+                actions.append({"turn": turn, "label": " / ".join(labels), "action": action})
+        slides = []
+        for frame in run.glob("t*_real_vs_sim.jpg"):
+            token = frame.name.split("_", 1)[0][1:]
+            if not token.isdigit():
+                continue
+            turn = int(token)
+            slides.append({"turn": turn, "comparison": self.media(frame),
+                           "wrist": self.media(run / f"t{token}_wrist.jpg")})
+        slides.sort(key=lambda slide: slide["turn"])
+        last = turns[max(turns)] if turns else {}
+        action = last.get("reply", {}).get("action", {})
+        complete = isinstance(action, dict) and action.get("done") is True
+        updated = path.stat().st_mtime
+        status = "done" if complete else "running" if time.time() - updated < 120 else "pending"
+        sim_path = run / "sim.json"
+        sim = object_json(sim_path)
+        arm = sim.get("arm", {})
+        arm = arm if isinstance(arm, dict) else {}
+        xy = arm.get("xy_offset_mm")
+        summary = {"available": bool(sim), "source": sim_path.relative_to(self.root).as_posix(),
+                   "objects": len(sim["objects"]) if isinstance(sim.get("objects"), list) else None,
+                   "z_mm": arm.get("z_offset_mm") if finite(arm.get("z_offset_mm")) else None,
+                   "xy_mm": xy if isinstance(xy, list) and len(xy) == 2 and all(finite(v) for v in xy) else None,
+                   "notes": str(arm.get("notes") or sim.get("notes") or "No arm notes recorded")}
+        placement = complete and "r1c1" in summary["notes"].lower() and "picked" in summary["notes"].lower()
+        latest = slides[-1] if slides else {}
+        return {"available": True, "kind": "argon_step", "run": run.name,
+                "source": path.relative_to(self.root).as_posix(), "status": status, "state": status,
+                "synthetic": False, "label": "Real bench", "model": "Gemini 4 Argon",
+                "turn": last.get("turn"), "turn_count": len(turns), "updated": updated,
+                "thought": thought, "actions": actions[-6:], "slides": slides, "sim": summary,
+                "frames": {"comparison": latest.get("comparison"), "wrist": latest.get("wrist")},
+                "placement": "Real pick-and-place into r1c1" if placement else None,
+                "calls": [], "history": [], "edits": [], "video": None, "complete": complete}
+
+    def after_step(self):
+        root = self.root / "runs/after_step"
+        # Choose one run, then keep its game and loop evidence together.
+        paths = list(root.glob("*/game/**/result.json")) + list(root.glob("*/loop/game_loop.json"))
+        latest = newest(paths)
+        if not latest:
+            return {}
+        run = root / latest.relative_to(root).parts[0]
+        build_path = newest((run / "game").rglob("result.json"))
+        loop_path = run / "loop/game_loop.json"
+        build = object_json(build_path) if build_path else {}
+        loop = object_json(loop_path)
+        return {"run": run.name, "updated": latest.stat().st_mtime,
+                "build": {key: build[key] for key in ("passed", "published", "deployment_ready", "status", "synthetic", "dry_run") if key in build},
+                "build_source": build_path.relative_to(self.root).as_posix() if build_path else None,
+                "loop": {key: loop[key] for key in ("status", "stage", "error", "counts", "started", "finished", "evidence") if key in loop},
+                "loop_source": loop_path.relative_to(self.root).as_posix()}
+
+    def policy(self):
+        path = self.root / "exports/wide_v3/config.json"
+        config = object_json(path)
+        evaluation = config.get("eval", {})
+        evaluation = evaluation if isinstance(evaluation, dict) else {}
+        values, counts = {}, {}
+        for field, key in (("clean", "clean"), ("half", "realx0.5"), ("real", "real")):
+            report = evaluation.get(key, {})
+            report = report if isinstance(report, dict) else {}
+            value, count = report.get("success"), report.get("n", evaluation.get("n"))
+            values[field] = value if finite(value) and 0 <= value <= 1 else None
+            counts[field] = count if finite(count) and count > 0 else None
+        available = any(value is not None for value in values.values())
+        ns = set(counts.values())
+        return {"available": available, "name": "wide_v3", "source": path.relative_to(self.root).as_posix(),
+                "evidence": "Twin eval", "n": next(iter(ns)) if len(ns) == 1 else None,
+                "counts": counts, **values,
+                "message": "state policy, twin eval; real-arm deployment pending (bench-profile expert)"
+                           if available else "Awaiting wide_v3 recorded twin evaluations"}
+
     def game(self):
         groups = dict.fromkeys(("human", "headless", "bot", "expert", "unknown"), 0)
         paths = set()
@@ -198,7 +299,7 @@ class DemoData:
             health = {}
         return {"url": self.data.config.get("game_url") or GAME_URL, "groups": groups,
                 "receiver_online": health.get("ok") is True, "receiver_traces": health.get("traces"),
-                "invalid": rejected, "total": sum(groups.values())}
+                "invalid": rejected, "total": sum(groups.values()), "after_step": self.after_step()}
 
     def deploy(self):
         status = object_json(self.data.path(self.data.config.get("ttt_status", "out/ttt/status.json")))
@@ -222,77 +323,71 @@ class DemoData:
                 "cameras": {name: f"/demo/camera/{name}.jpg" for name in CAMERAS}}
 
     def chain(self, lab, game, policy, deploy):
-        def node(name, status="pending", metric="Awaiting evidence", provenance="", detail=""):
-            return {"name": name, "state": status, "metric": metric, "provenance": provenance, "detail": detail}
+        # The judges' chain is evidence from individual stages. An orchestrator
+        # rehearsal is never allowed to overwrite these recorded artifacts.
+        def node(name, status="pending", metric="Awaiting evidence", provenance="", detail="", source=None):
+            return {"name": name, "state": status, "metric": metric, "provenance": provenance,
+                    "detail": detail, "source": source}
+
         stages = {n: node(n) for n in ("Real", "Twin", "Game", "Play", "Replay", "Train", "Deploy")}
         if lab["available"]:
-            stages["Real"] = node("Real", "done" if lab["frames"].get("scene") else "pending",
-                                  number(lab.get("turn"), " turns"), lab["label"], lab.get("run", ""))
-            stages["Twin"] = node("Twin", lab["state"], number(len(lab["edits"]), " edited files"), lab["label"], lab.get("why"))
-        build_path = newest((self.root / "runs").glob("game_live_*/result.json"))
-        build = object_json(build_path) if build_path else {}
-        stages["Game"] = node("Game", "done", "Published game", "Roblox", "Published link supplied for the judges' demo")
+            if lab.get("kind") == "argon_step":
+                stages["Real"] = node("Real", lab["state"], number(lab["turn_count"], " turns"),
+                                      lab.get("placement") or "Real bench experiments",
+                                      lab.get("thought"), lab["source"])
+                sim = lab["sim"]
+                xy = ", ".join(number(v) for v in sim["xy_mm"]) if sim["xy_mm"] else "unknown"
+                offsets = f"z {number(sim['z_mm'])} mm / xy [{xy}] mm"
+                stages["Twin"] = node("Twin", "done" if sim["available"] else "pending",
+                                      number(sim["objects"], " objects"), offsets,
+                                      sim["notes"], sim["source"])
+            else:
+                stages["Real"] = node("Real", "done" if lab["frames"].get("scene") else "pending",
+                                      number(lab.get("turn"), " turns"), lab["label"], lab.get("run"))
+                stages["Twin"] = node("Twin", "done" if lab.get("complete") else "pending",
+                                      number(len(lab["edits"]), " edited files"), lab["label"], lab.get("why"))
+        after = game.get("after_step", {})
+        build, loop = after.get("build", {}), after.get("loop", {})
         if build:
-            stages["Game"]["detail"] = f"Latest build checks: {build.get('passed')}; this build published: {build.get('published')}"
-        stages["Play"] = node("Play", "done" if game["total"] else "pending", f"{game['groups']['human']} human / {game['groups']['headless']} headless",
-                              "Trace metadata", f"{game['groups']['bot']} bots; {game['groups']['expert']} experts")
-        loop = object_json(self.root / "runs/game_loop_latest.json")
-        counts = loop.get("counts", {})
-        if counts:
-            stages["Replay"] = node("Replay", state(loop.get("status")), number(counts.get("relabeled"), " relabeled"), "Twin replay")
-        manifests = sorted((self.root / "runs").glob("*/manifest.json"), key=lambda p: p.stat().st_mtime)
-        for path in manifests:
-            manifest = object_json(path)
-            for row in manifest.get("rounds", {}).values():
-                for key, item in row.get("stages", {}).items():
-                    target = {"label": "Replay", "train": "Train", "deploy": "Deploy"}.get(key)
-                    if target and item.get("status"):
-                        stages[target] = node(target, state(item["status"]), str(item["status"]).lower(),
-                                              "Synthetic pipeline" if synthetic(manifest) else "Pipeline", item.get("message", ""))
+            passed = build.get("passed") is True
+            build_state = "done" if passed else "running" if state(build.get("status")) == "running" else "pending"
+            provenance = "Synthetic build" if synthetic(build) else "Recorded game build"
+            stages["Game"] = node("Game", build_state, "Build checks passed" if passed else "Build checks pending",
+                                  provenance, f"Published: {build.get('published')}; deployment ready: {build.get('deployment_ready')}",
+                                  after.get("build_source"))
+        groups = game["groups"]
+        loop_state = state(loop.get("status"))
+        play_state = "running" if loop_state == "running" else "done" if game["total"] else "pending"
+        if loop and loop_state in {"blocked", "pending"}:
+            play_state = "pending"
+        stages["Play"] = node("Play", play_state, f"{groups['human']} human / {groups['headless']} headless",
+                              f"{groups['bot']} bot / {groups['expert']} expert / {groups['unknown']} unknown",
+                              f"Loop: {loop.get('status', 'pending')} at {loop.get('stage', 'unknown')}. "
+                              + str(loop.get("error") or "Saved trace metadata"), after.get("loop_source"))
         if policy.get("available"):
-            stages["Train"] = node("Train", "done", number((policy.get("clean") or 0) * 100, "% clean"),
-                                   policy.get("evidence", "Simulation eval"), policy.get("name"))
+            def rate(key):
+                value = policy.get(key)
+                return f"{value * 100:.1f}%" if finite(value) else "pending"
+            n = policy.get("n")
+            evidence = f"wide_v3 · twin · n={n}" if n else "wide_v3 · twin"
+            complete = all(finite(policy.get(key)) for key in ("clean", "half", "real"))
+            stages["Replay"] = node("Replay", "done" if complete else "pending", f"{rate('half')} half noise",
+                                    evidence, "Recorded twin evaluations; separate from the current play loop.", policy["source"])
+            stages["Train"] = node("Train", "done" if complete else "pending", f"{rate('clean')} / {rate('real')}",
+                                   evidence, "Clean / full-noise twin success. " + policy["message"], policy["source"])
         if deploy["available"]:
-            is_done = deploy.get("physical_placement") is True and state(deploy.get("status")) == "done"
-            stages["Deploy"] = node("Deploy", "done" if is_done else "pending" if deploy["synthetic"] else state(deploy.get("status")),
-                                    "Simulated board" if deploy["synthetic"] else str(deploy.get("status") or "Board read"),
-                                    "Synthetic" if deploy["synthetic"] else "Recorded board", deploy.get("why"))
-        path = newest((self.root / "runs/argon_orchestrator").glob("*/status.json"))
-        orchestrator = object_json(path) if path else {}
-        if orchestrator:
-            rows = ledger(path.with_name("ledger.jsonl"))
-            results = dict(orchestrator.get("results") or {})
-            for row in rows:
-                if row.get("kind") == "result" and isinstance(row.get("result"), dict):
-                    results[row.get("tool")] = row["result"]
-            mapping = {"Real": ("measure_scene", "calibrate_arm"), "Twin": ("active_twin", "analyze_experiments", "twin_gate"),
-                       "Game": ("build_game",), "Play": ("collect_play",), "Replay": ("replay_and_train",),
-                       "Train": ("replay_and_train",), "Deploy": ("deploy_real",)}
-            preferred = {"Real": ("heldout_px", " px"), "Twin": ("jaw_mm", " mm jaw"),
-                         "Game": ("local_checks", " checks"), "Play": ("human", " human"),
-                         "Replay": ("replayed", " replayed"), "Train": ("eval_n", " eval scenes"), "Deploy": ("attempts", " attempts")}
-            for name, tools in mapping.items():
-                result = next((results[t] for t in reversed(tools) if isinstance(results.get(t), dict)), None)
-                active = orchestrator.get("last_tool") in tools
-                provenance = "Synthetic orchestrator" if synthetic(orchestrator) else "Orchestrator"
-                if result:
-                    key, suffix = preferred[name]
-                    metrics = result.get("metrics", {})
-                    stages[name] = node(name, "done" if result.get("ok") is True else "blocked",
-                                        number(metrics.get(key), suffix), provenance, result.get("error") or result.get("evidence") or "")
-                elif active:
-                    stages[name] = node(name, state(orchestrator.get("status")), str(orchestrator.get("last_tool")), provenance,
-                                        orchestrator.get("error") or orchestrator.get("why"))
-                else:
-                    stages[name] = node(name, provenance=provenance)
-                if active and state(orchestrator.get("status")) == "blocked":
-                    stages[name].update(state="blocked", detail=orchestrator.get("error"))
-        return {"stages": list(stages.values()), "source": path.parent.name if path else "Individual artifacts",
-                "synthetic": synthetic(orchestrator), "updated": orchestrator.get("updated"),
-                "status": orchestrator.get("status"), "why": orchestrator.get("error") or orchestrator.get("why")}
+            physical = deploy.get("physical_placement") is True and not deploy["synthetic"]
+            done = physical and state(deploy.get("status")) == "done"
+            running = not deploy["synthetic"] and state(deploy.get("status")) == "running"
+            stages["Deploy"] = node("Deploy", "done" if done else "running" if running else "pending",
+                                    "Physical placement" if done else "Real-arm pending",
+                                    "Mock board recorded" if deploy["synthetic"] else "Recorded board",
+                                    deploy.get("why"), self.data.config.get("ttt_status", "out/ttt/status.json"))
+        return {"stages": list(stages.values()), "source": "Recorded artifacts · " + (lab.get("run") or "waiting for lab"),
+                "synthetic": False, "updated": after.get("updated", lab.get("updated"))}
 
     def snapshot(self):
         lab, game, deploy = self.lab(), self.game(), self.deploy()
-        policy = self.data.policy()
+        policy = self.policy()
         return {"updated": time.time(), "lab": lab, "game": game, "deploy": deploy, "policy": policy,
                 "chain": self.chain(lab, game, policy, deploy), "mock": False}

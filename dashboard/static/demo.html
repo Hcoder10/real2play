@@ -21,16 +21,18 @@
     <div class="lab-meta"><span id="lab-run">No lab run yet</span><span id="lab-status"></span></div>
     <div class="thought"><span class="thought-label">Argon's latest thought</span><p id="thought">Start a lab experiment to see Argon's observations and next step.</p></div>
     <div class="comparison">
-      <div class="comparison-label"><span id="reference-label">Real observation</span><span>Editable twin</span></div>
+      <div class="comparison-label"><span id="reference-label">Real observation</span><span>Twin render</span></div>
       <video id="replay" muted autoplay loop playsinline controls preload="metadata" hidden aria-label="Latest recorded reference and simulation replay"></video>
       <div id="comparison-stills" class="comparison-stills"><div class="media-slot"><img id="lab-scene" alt="Latest scene observation from the lab" hidden><span>No scene observation yet</span></div><div class="media-slot"><img id="lab-preview" alt="Latest simulated scene render" hidden><span>No twin render yet</span></div></div>
+      <div id="step-comparison" class="media-slot" hidden><img id="lab-comparison" alt="Recorded turn: real scene camera on the left, simulation render on the right" hidden><span>No comparison image recorded</span></div>
+      <div id="slideshow-controls" class="slideshow-controls" hidden><button id="slide-play" type="button">Pause</button><input id="slide-turn" type="range" min="0" max="0" value="0" aria-label="Recorded experiment turn"><span id="slide-label"></span><button id="slide-latest" type="button">Latest</button></div>
       <div class="comparison-foot"><span id="replay-caption">Awaiting the first real | sim replay</span><span id="lab-age"></span></div>
     </div>
     <div class="lab-bottom">
-      <div class="residual-area"><div class="section-line"><h2>Measured residuals</h2><span id="metric-count">No replay yet</span></div><div id="residuals" class="residuals"></div></div>
+      <div class="residual-area"><div class="section-line"><h2 id="metric-title">Measured residuals</h2><span id="metric-count">No replay yet</span></div><div id="residuals" class="residuals"></div><div id="sim-summary" class="sim-summary" hidden><div><span>Objects</span><strong id="sim-objects"></strong></div><div><span>Arm z offset</span><strong id="sim-z"></strong></div><div><span>Arm xy offsets</span><strong id="sim-xy"></strong></div></div></div>
       <div class="wrist-observation media-slot"><img id="lab-wrist" alt="Latest wrist observation from the lab" hidden><span>No wrist observation yet</span><small id="lab-wrist-label">Wrist observation</small></div>
     </div>
-    <div class="lab-log"><div><div class="section-line"><h2>Recent tool calls</h2><span id="tool-count"></span></div><ol id="tools"></ol></div><div><div class="section-line"><h2>Sim edits</h2><span id="edit-count"></span></div><ul id="edits"></ul></div></div>
+    <div class="lab-log"><div><div class="section-line"><h2 id="tools-title">Recent tool calls</h2><span id="tool-count"></span></div><ol id="tools"></ol></div><div><div class="section-line"><h2 id="edits-title">Sim edits</h2><span id="edit-count"></span></div><ul id="edits"></ul><p id="sim-notes" hidden></p></div></div>
   </section>
   <section class="panel game" data-panel="2" aria-labelledby="game-title">
     <div class="panel-heading"><h1 id="game-title">Game</h1><span class="tag blue">Roblox</span><button class="focus-button" data-focus="2" aria-label="Focus Game">2 ↗</button></div>
@@ -38,7 +40,7 @@
   </section>
   <section class="panel train" data-panel="3" aria-labelledby="train-title">
     <div class="panel-heading"><h1 id="train-title">Replay & train</h1><span id="policy-label" class="tag">Simulation</span><button class="focus-button" data-focus="3" aria-label="Focus Replay and train">3 ↗</button></div>
-    <div class="train-content"><p class="command">Argon plans <span>pick(piece) · place_at(cell)</span></p><div class="evals"><div><span>Clean simulation</span><strong id="clean">—</strong></div><div><span>With real noise</span><strong id="noise">—</strong></div><div class="policy-rate"><strong>30 <small>Hz</small></strong><span>Policy control contract</span></div></div><p id="policy-note" class="muted">Waiting for a recorded policy evaluation.</p></div>
+    <div class="train-content"><p class="command">Argon plans <span>pick(piece) · place_at(cell) · policy at 30 Hz</span></p><div class="evals"><div><span>Clean · twin</span><strong id="clean">—</strong><small id="clean-n"></small></div><div><span>Half noise · twin</span><strong id="half">—</strong><small id="half-n"></small></div><div><span>Full noise · twin</span><strong id="noise">—</strong><small id="real-n"></small></div></div><p id="policy-note" class="muted">Waiting for a recorded policy evaluation.</p></div>
   </section>
   <section class="panel deploy" data-panel="4" aria-labelledby="deploy-title">
     <div class="panel-heading"><h1 id="deploy-title">Deploy</h1><span id="deploy-label" class="tag">Waiting</span><button class="focus-button" data-focus="4" aria-label="Focus Deploy">4 ↗</button></div>

@@ -9,3 +9,24 @@ body[data-focus] .demo-grid{display:flex}body[data-focus] .panel{display:none}bo
 @media(max-height:950px) and (min-width:1101px){body{grid-template-rows:65px 108px minmax(0,1fr) 30px}.masthead>p{font-size:17px}.chain-head strong{font-size:19px}.chain-metric{font-size:14px}.panel-heading{height:42px}.thought p{font-size:20px;-webkit-line-clamp:3}.lab-bottom{flex-basis:90px;margin-top:8px;margin-bottom:6px}.lab-log{flex-basis:95px}.residual strong{font-size:22px}.game-content{padding:10px 16px}.game-content h2{font-size:21px}.game-content a img{width:100px;height:100px}.trace-counts{margin-top:5px}.trace-counts strong{font-size:25px}.deploy-content{flex-basis:135px;padding:8px 16px}.board{width:98px;height:98px}.decision p{font-size:15px}.train-content{padding:8px 16px}.evals{margin-top:7px}.evals strong{font-size:27px}.command{font-size:14px}}
 @media(max-width:1100px){body{display:block;height:auto;overflow:auto}.masthead{padding:15px 20px;flex-wrap:wrap;gap:12px}.masthead>p{display:none}.header-actions{font-size:12px}.chain-wrap{padding:5px 20px 20px;overflow-x:auto}#chain{min-width:900px}.chain-caption{min-width:900px}.demo-grid{display:flex;flex-direction:column;padding:0 15px;gap:16px}.lab{min-height:740px}.game{min-height:255px}.train{min-height:230px}.deploy{min-height:450px}.live-cameras{min-height:190px}.comparison{min-height:200px}.thought p{font-size:21px}.lab-bottom{grid-template-columns:1fr 140px}.lab-log{flex-basis:125px}.game-content{padding:20px}.train-content{padding:20px}footer{padding:20px;gap:15px;flex-wrap:wrap}body[data-focus] .panel{min-height:70vh}body[data-focus="2"] .game-content{padding:20px;grid-template-columns:1fr 180px}body[data-focus="2"] .game-content h2{font-size:35px}body[data-focus="2"] #game-link img{width:165px;height:165px}body[data-focus="2"] .trace-counts{gap:20px}body[data-focus="2"] .trace-counts strong{font-size:40px}body[data-focus="3"] .train-content{padding:20px}body[data-focus="3"] .evals strong{font-size:45px}}
 @media(max-width:600px){.brand{font-size:30px}.header-actions{width:100%;justify-content:space-between}.thought p{font-size:19px}.lab-meta{font-size:11px}.lab-bottom{grid-template-columns:1fr}.wrist-observation{display:none}.lab-log{grid-template-columns:1fr;gap:10px;flex-basis:210px}.lab{min-height:850px}.residuals{gap:8px}.residual>span{font-size:10px}.residual strong{font-size:21px}.game-content{grid-template-columns:1fr 115px;gap:10px}.game-content a img{width:110px;height:110px}.game-content h2{font-size:21px}.trace-counts{gap:14px}.tag{font-size:10px}.command{flex-direction:column;gap:3px}.evals{gap:10px}.evals strong{font-size:27px}.deploy-content{grid-template-columns:110px 1fr;gap:10px;padding:12px}.decision p{font-size:15px}.decision h2{font-size:17px}.live-cameras{padding:0 12px 12px}.panel-heading{padding:0 14px;gap:9px}.panel-heading h1{font-size:21px}}
+
+/* Recorded step-loop evidence keeps the comparison intact: real left, sim right. */
+.demo-grid{grid-template-rows:1.05fr .95fr 1.4fr}
+#step-comparison{flex:1;min-height:0}
+.slideshow-controls{display:flex;align-items:center;gap:12px;padding:6px 10px;font-size:12px;flex-shrink:0}
+.slideshow-controls button{padding:3px 9px;font-size:12px;min-width:56px}
+.slideshow-controls input{flex:1;min-width:30px;accent-color:var(--real);cursor:pointer}
+#slide-label{min-width:90px;text-align:center;font-variant-numeric:tabular-nums}
+.step-lab .lab-log{flex-basis:164px;grid-template-columns:1fr 1.25fr}
+.step-lab .lab-bottom{grid-template-columns:minmax(0,1fr) 200px}
+.sim-summary{display:grid;grid-template-columns:.65fr .9fr 1.2fr;gap:14px;margin-top:12px}
+.sim-summary span{display:block;color:var(--muted);font-size:13px;margin-bottom:6px}
+.sim-summary strong{font-size:26px;color:var(--sim);font-weight:600;white-space:nowrap}
+#sim-notes{font-size:13px;line-height:1.45;overflow:auto;max-height:119px}
+.evals small{font-size:11px;color:var(--muted)}
+#policy-note{white-space:normal;font-size:12px;line-height:1.4}
+body[data-focus="1"] .step-lab .lab-log{flex-basis:164px}
+body[data-focus="3"] .evals small{font-size:20px}
+@media(max-height:950px) and (min-width:1101px){.step-lab .lab-log{flex-basis:147px}.sim-summary strong{font-size:22px}.sim-summary{margin-top:6px}#sim-notes{max-height:108px}}
+@media(max-width:1100px){.step-lab{min-height:830px}.train{min-height:265px}}
+@media(max-width:600px){.step-lab{min-height:1060px}.step-lab .lab-bottom{grid-template-columns:1fr;flex-basis:245px}.step-lab .wrist-observation{display:grid;min-height:150px}.step-lab .lab-log{grid-template-columns:1fr;flex-basis:290px}.sim-summary strong{font-size:23px}.slideshow-controls{gap:6px}#slide-label{min-width:76px}}

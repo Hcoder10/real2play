@@ -21,13 +21,23 @@ The original dashboard and `/runs` remain available. `/demo` always shows actual
 artifact sources, including their synthetic labels; `--mock` applies to the
 original dashboard only.
 
-`/api/demo` reads the newest direct `runs/lab/*/status.json` and its ledger. Nested
-acceptance fixtures are excluded from live discovery. It shows the latest
+`/api/demo` prefers `runs/argon_step/*/ledger.jsonl` when newer than the latest
+direct `runs/lab/*/status.json`. The step-loop view shows the latest Argon thought,
+six recent action replies, and the intact real-camera (left) / sim-render (right)
+comparison. All recorded turn images form a one-second looping slideshow; Pause,
+the turn slider, and Latest allow inspection. The wrist image stays on the latest
+recorded turn and is labeled separately. `sim.json` supplies the object count,
+arm z/xy offsets in millimetres, and arm notes. These are recorded estimates, not
+a claim that a held-out twin gate passed. No coordinate transforms are applied.
+
+Nested acceptance fixtures are excluded from live lab discovery. The older lab
+format remains supported. It shows the latest
 `# Thought:`, tool outcomes (including refusals), recorded scene/wrist observations,
 simulation preview, replay video, and joint/jaw/object/image residual sparklines.
 Sim edit counts are accepted tool edits. Line additions/removals are computed when
 the ledger contains both file versions; otherwise the UI says **diff unavailable**.
-The ledger reader is bounded to the last 16 MiB / 500 entries. Unknown measurements
+The ledger reader is bounded to the last 16 MiB (500 entries for the older format).
+The step slideshow includes every available turn image. Unknown measurements
 stay blank; a missing replay shows the latest observation and sim-render stills.
 
 Lab MP4s use `mp4v`, which Chrome cannot decode. If **ffmpeg** is on PATH, one CPU
@@ -38,11 +48,22 @@ polling. Missing ffmpeg or failed conversions produce an explicit message and
 retain stills. Allowlisted MP4 tokens support streamed single-byte-range requests,
 suffix ranges, seeking, and looping; invalid ranges return 416.
 
-The chain uses the latest orchestrator status and result ledger when available,
-including explicit **Synthetic orchestrator** labels. Otherwise it derives stages
-from lab, game-build, trace, pipeline-manifest, replay, export-evaluation, and TTT
-artifacts. `done` describes the recorded stage, not a claim of successful physical
-deployment. Synthetic board placement never marks physical deployment complete.
+The chain derives its stages from individual recorded artifacts. Orchestrator
+rehearsals never overwrite it: Real uses the step ledger, Twin uses its `sim.json`,
+Game uses the newest `runs/after_step/<run>/game/**/result.json`, and Play uses
+trace source counts plus that same run's `loop/game_loop.json`. Failed or blocked
+work stays pending with its recorded reason. A passed game build does not claim
+that candidate was published. Replay and Train show the recorded **wide_v3 twin
+evaluations**, independent of the current play loop. Deploy reads
+`out/ttt/status.json`; completion requires a real physical placement. Mock board
+placement never marks physical deployment complete.
+
+The Replay & train panel reads `exports/wide_v3/config.json` directly, including
+clean, `realx0.5` (half noise), and `real` (full noise) results and each sample count.
+The current values are 29/30 (96.67%), 24/30 (80%), and 13/30 (43.33%). It explicitly
+labels these **state policy, twin eval; real-arm deployment pending
+(bench-profile expert)**. Missing metrics stay unknown; no fallback export is used
+in the judges' view. The original dashboard retains its existing export discovery.
 
 The published game link from the T brief has a locally generated, verified QR.
 Trace counts come from configured trace directories (default `roblox/out/traces`)
@@ -57,11 +78,18 @@ record viewport bounds, JavaScript exceptions, camera loading, video playback an
 the 1–4 / Escape focus checks. `demo-offline-video` is explicitly a simulated test
 fixture; it verifies browser decoding and looping without accessing hardware.
 
-Current source limitations at handoff: the latest real lab run has not yet written
-a comparison replay or residual measurements; the latest orchestrator is synthetic,
-and `out/ttt/status.json` describes a mock placement. These are labeled, not replaced
-with invented live results. No arm command, Gemini call, training, GPU work, or
-receiver restart is performed by this dashboard.
+T2 verification: `dashboard/shots/demo-t2-1920x1080.png` and
+`dashboard/shots/demo-t2-lab-focus.png` (with JSON sidecars). The screenshot tool
+checks automatic slideshow advance, wraparound, Latest/pause, loaded comparison
+and wrist frames, and all four keyboard focus shortcuts. It pauses on the latest
+turn for the saved screenshot; a fresh demo page starts the slideshow automatically.
+
+Current source limitations at T2 handoff: step_01 records 23 real turns and the
+pick-and-place into r1c1; its downstream game build passed, but the play loop is
+blocked at ingest by a recorded memory-allocation error. `out/ttt/status.json`
+still describes a mock placement. The saved wide_v3 evaluations are separate twin
+evidence. No arm command, Gemini call, training, GPU work, or receiver restart is
+performed by this dashboard.
 
 Run from the repository root with the shared Python environment:
 
