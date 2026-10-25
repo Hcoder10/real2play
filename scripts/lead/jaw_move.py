@@ -7,6 +7,7 @@ sag compensated), sent to armd as owner-degree joint targets (armd still checks 
 import argparse
 import json
 import sys
+import urllib.error
 import urllib.request
 from pathlib import Path
 
@@ -22,10 +23,43 @@ ARMD = "http://127.0.0.1:8793"
 ROLL_OWNER = 81.9
 
 
-def armd(path, body=None):
+# Calibrated owner limits of this follower (from the legacy daemon's calibration file); the repo daemon applies its
+# own model-space guard limits with a 2 degree margin on top.
+OWNER_LO = [-107.8, -90.2, -99.1, -101.8, -179.0, 0.0]
+OWNER_HI = [107.8, 90.2, 99.1, 101.8, 179.0, 100.0]
+
+
+def _http(path, body=None):
     req = urllib.request.Request(ARMD + path, json.dumps(body).encode() if body else None,
                                  {"Content-Type": "application/json"})
-    return json.loads(urllib.request.urlopen(req, timeout=120).read())
+    try:
+        return json.loads(urllib.request.urlopen(req, timeout=120).read())
+    except urllib.error.HTTPError as e:  # the repo daemon answers refusals with 4xx + JSON
+        return json.loads(e.read() or b"{}")
+
+
+def armd(path, body=None):
+    """Speak either daemon: the legacy argon-hack armd ({"cmd": ...}, owner degrees) or the repo daemon
+    (r2p/robot/daemon.py: {"joints": model rad} / {"gripper": model rad} / {"rest": true}); always return the
+    legacy-shaped dict {"ok", "q" (owner deg), "lo", "hi", "refused"} so callers do not care which one runs."""
+    st = _http("/state")
+    if "owner_deg" not in st:  # legacy daemon
+        return _http(path, body) if body is not None else st
+    if body is not None:
+        jm = JointMap.load(ROOT / "config" / "joint_map.json")
+        cmd = body["cmd"]
+        if cmd == "joints":
+            out = _http("/cmd", {"joints": jm.to_model(np.asarray(body["owner"], float)).tolist()})
+        elif cmd == "gripper":
+            out = _http("/cmd", {"gripper": float(jm.to_model(np.r_[st["owner_deg"][:5], body["value"]])[5])})
+        elif cmd == "rest":
+            out = _http("/cmd", {"rest": True})
+        else:
+            raise ValueError(cmd)
+        err = out.get("error")
+        return {"ok": err is None, "refused": err, "q": out.get("owner_deg", st["owner_deg"]),
+                "lo": OWNER_LO, "hi": OWNER_HI}
+    return {"q": st["owner_deg"], "lo": OWNER_LO, "hi": OWNER_HI, "modern": True}
 
 
 def plan(xyz, grip, q_owner, arm, jm, physics, lo=None, hi=None):
