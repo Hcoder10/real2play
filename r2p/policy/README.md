@@ -15,6 +15,16 @@ boundaries; runtime resets it on command changes, not on measured-q resets.
 Old exports without `temporal_context` retain their original input layout and
 need retraining to use this feature.
 
+New training exports declare `commanded_q_source: previous_executed` and
+`command_alignment: state_tracker`. The loader reconstructs the preceding
+executed target (including DART) before applying the arm-only four-degree reset.
+This repairs old expert records whose `q_commanded` field was already reset by
+a contact-held gripper. It also replays the evaluator's state-based command
+tracker on recorded observations, so the command one-hot, elapsed clock and
+chunk boundaries agree with inference. Expert phase labels never enter the
+policy. Existing exports without these markers retain their original diagnostic
+input convention and need retraining to benefit from the repair.
+
 From the repository root (use `.venv/Scripts/python.exe` on Windows):
 
 ```sh
@@ -66,6 +76,19 @@ chunk and first-action error, then requires at least one physical closed-loop
 success on five fixed training scenes. This is an overfit implementation check,
 not a deployment qualification. See `P_POLICY_ZERO_REPORT.md` for the ablations,
 remaining failures and the rig retraining command.
+
+The stronger P2 proof fits exactly 200 successful traces and evaluates their
+saved scenes with contact physics and the unchanged success checker:
+
+```sh
+python -m r2p.policy.prove --traces runs/P2/traces --out runs/P2/cpu200 --steps 16000 --workers 4
+python -m r2p.policy.prove --traces runs/P2/traces --out runs/P2/cpu200 --reuse --workers 4
+```
+
+It exits unsuccessfully unless more than half of the evaluated scenes succeed.
+The default evaluates all 200; `--eval-scenes` is only a preliminary subset check.
+`diagnose` reports teacher-forced errors per expert phase and the nearest recorded
+phase during rollout. The latter is an audit estimate, never a policy input.
 
 The evaluator uses the shared task checker over the final half second and
 state-based subtask completion. All noise modes use identical seeded scenes.

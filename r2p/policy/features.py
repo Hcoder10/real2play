@@ -34,6 +34,8 @@ def export_config(task, name, *, start_q=HOME_Q, seeds=(0,), width=512, blocks=3
                 {"name": "yaw_symmetry", "start": 12+9*k+c, "size": 4*k},
                 {"name": "command_age_s", "start": 12+13*k+c, "size": 1}],
             "input_dim": 13+13*k+c, "temporal_context": "command_age_s",
+            "commanded_q_source": "previous_executed",
+            "command_alignment": "state_tracker",
             "command_vocab": command_vocab(task), "commands": commands(task),
             "start_q": np.asarray(start_q, float).tolist(), "obs_const": [], "horizon": 15,
             "hz": 30, "action": "absolute_q", "joints": list(JOINTS), "joint_limits": arm.range.tolist(),

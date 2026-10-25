@@ -1,0 +1,8829 @@
+{
+  "training_traces": 200,
+  "evaluated_training_scenes": 200,
+  "success": 0.905,
+  "noise": "clean",
+  "seconds": 80.23777510000218,
+  "weights_sha256": "9e6b313b8f45c267972c007b89f08e169b7fa4fefe27781a64d580aa839ce6b1",
+  "training": {
+    "steps": 16000,
+    "device": "cpu",
+    "batch_size": 128,
+    "learning_rate": 0.0003,
+    "augmentation": {
+      "joint_offset_std": 0,
+      "position_std": 0,
+      "stale_probability": 0,
+      "stale_ticks": 6,
+      "aim_radial_m": 0,
+      "aim_lateral_m": 0,
+      "recovery_weight": 4.0,
+      "smooth_ticks": 1
+    },
+    "joint_offset_convention": "observation_and_absolute_target",
+    "samples": 127750,
+    "lease_id": null
+  },
+  "outcomes": [
+    {
+      "success": false,
+      "reason": "timeout",
+      "ticks": 1200,
+      "resets": 246,
+      "commands_completed": 1,
+      "check": {
+        "ok": false,
+        "per_predicate": [
+          {
+            "pred": "at",
+            "ok": false
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "gripper_open",
+            "ok": true
+          },
+          {
+            "pred": "settled",
+            "ok": true
+          }
+        ],
+        "ticks": 15,
+        "required_ticks": 15
+      },
+      "seed": 200001,
+      "trace": "runs\\P2\\traces\\expert_place_on_cell_00200001.jsonl"
+    },
+    {
+      "success": true,
+      "reason": "goal_reached",
+      "ticks": 441,
+      "resets": 2,
+      "commands_completed": 3,
+      "check": {
+        "ok": true,
+        "per_predicate": [
+          {
+            "pred": "at",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "gripper_open",
+            "ok": true
+          },
+          {
+            "pred": "settled",
+            "ok": true
+          }
+        ],
+        "ticks": 15,
+        "required_ticks": 15
+      },
+      "seed": 200002,
+      "trace": "runs\\P2\\traces\\expert_place_on_cell_00200002.jsonl"
+    },
+    {
+      "success": true,
+      "reason": "goal_reached",
+      "ticks": 411,
+      "resets": 3,
+      "commands_completed": 3,
+      "check": {
+        "ok": true,
+        "per_predicate": [
+          {
+            "pred": "at",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "gripper_open",
+            "ok": true
+          },
+          {
+            "pred": "settled",
+            "ok": true
+          }
+        ],
+        "ticks": 15,
+        "required_ticks": 15
+      },
+      "seed": 200004,
+      "trace": "runs\\P2\\traces\\expert_place_on_cell_00200004.jsonl"
+    },
+    {
+      "success": true,
+      "reason": "goal_reached",
+      "ticks": 440,
+      "resets": 3,
+      "commands_completed": 3,
+      "check": {
+        "ok": true,
+        "per_predicate": [
+          {
+            "pred": "at",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "gripper_open",
+            "ok": true
+          },
+          {
+            "pred": "settled",
+            "ok": true
+          }
+        ],
+        "ticks": 15,
+        "required_ticks": 15
+      },
+      "seed": 200005,
+      "trace": "runs\\P2\\traces\\expert_place_on_cell_00200005.jsonl"
+    },
+    {
+      "success": false,
+      "reason": "timeout",
+      "ticks": 1200,
+      "resets": 311,
+      "commands_completed": 1,
+      "check": {
+        "ok": false,
+        "per_predicate": [
+          {
+            "pred": "at",
+            "ok": false
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "gripper_open",
+            "ok": true
+          },
+          {
+            "pred": "settled",
+            "ok": true
+          }
+        ],
+        "ticks": 15,
+        "required_ticks": 15
+      },
+      "seed": 200006,
+      "trace": "runs\\P2\\traces\\expert_place_on_cell_00200006.jsonl"
+    },
+    {
+      "success": true,
+      "reason": "goal_reached",
+      "ticks": 422,
+      "resets": 7,
+      "commands_completed": 3,
+      "check": {
+        "ok": true,
+        "per_predicate": [
+          {
+            "pred": "at",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "gripper_open",
+            "ok": true
+          },
+          {
+            "pred": "settled",
+            "ok": true
+          }
+        ],
+        "ticks": 15,
+        "required_ticks": 15
+      },
+      "seed": 200007,
+      "trace": "runs\\P2\\traces\\expert_place_on_cell_00200007.jsonl"
+    },
+    {
+      "success": true,
+      "reason": "goal_reached",
+      "ticks": 432,
+      "resets": 2,
+      "commands_completed": 3,
+      "check": {
+        "ok": true,
+        "per_predicate": [
+          {
+            "pred": "at",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "gripper_open",
+            "ok": true
+          },
+          {
+            "pred": "settled",
+            "ok": true
+          }
+        ],
+        "ticks": 15,
+        "required_ticks": 15
+      },
+      "seed": 200009,
+      "trace": "runs\\P2\\traces\\expert_place_on_cell_00200009.jsonl"
+    },
+    {
+      "success": true,
+      "reason": "goal_reached",
+      "ticks": 463,
+      "resets": 2,
+      "commands_completed": 3,
+      "check": {
+        "ok": true,
+        "per_predicate": [
+          {
+            "pred": "at",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "gripper_open",
+            "ok": true
+          },
+          {
+            "pred": "settled",
+            "ok": true
+          }
+        ],
+        "ticks": 15,
+        "required_ticks": 15
+      },
+      "seed": 200010,
+      "trace": "runs\\P2\\traces\\expert_place_on_cell_00200010.jsonl"
+    },
+    {
+      "success": true,
+      "reason": "goal_reached",
+      "ticks": 408,
+      "resets": 2,
+      "commands_completed": 3,
+      "check": {
+        "ok": true,
+        "per_predicate": [
+          {
+            "pred": "at",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "gripper_open",
+            "ok": true
+          },
+          {
+            "pred": "settled",
+            "ok": true
+          }
+        ],
+        "ticks": 15,
+        "required_ticks": 15
+      },
+      "seed": 200011,
+      "trace": "runs\\P2\\traces\\expert_place_on_cell_00200011.jsonl"
+    },
+    {
+      "success": true,
+      "reason": "goal_reached",
+      "ticks": 432,
+      "resets": 4,
+      "commands_completed": 3,
+      "check": {
+        "ok": true,
+        "per_predicate": [
+          {
+            "pred": "at",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "gripper_open",
+            "ok": true
+          },
+          {
+            "pred": "settled",
+            "ok": true
+          }
+        ],
+        "ticks": 15,
+        "required_ticks": 15
+      },
+      "seed": 200012,
+      "trace": "runs\\P2\\traces\\expert_place_on_cell_00200012.jsonl"
+    },
+    {
+      "success": true,
+      "reason": "goal_reached",
+      "ticks": 448,
+      "resets": 2,
+      "commands_completed": 3,
+      "check": {
+        "ok": true,
+        "per_predicate": [
+          {
+            "pred": "at",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "gripper_open",
+            "ok": true
+          },
+          {
+            "pred": "settled",
+            "ok": true
+          }
+        ],
+        "ticks": 15,
+        "required_ticks": 15
+      },
+      "seed": 200013,
+      "trace": "runs\\P2\\traces\\expert_place_on_cell_00200013.jsonl"
+    },
+    {
+      "success": true,
+      "reason": "goal_reached",
+      "ticks": 457,
+      "resets": 3,
+      "commands_completed": 3,
+      "check": {
+        "ok": true,
+        "per_predicate": [
+          {
+            "pred": "at",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "gripper_open",
+            "ok": true
+          },
+          {
+            "pred": "settled",
+            "ok": true
+          }
+        ],
+        "ticks": 15,
+        "required_ticks": 15
+      },
+      "seed": 200014,
+      "trace": "runs\\P2\\traces\\expert_place_on_cell_00200014.jsonl"
+    },
+    {
+      "success": true,
+      "reason": "goal_reached",
+      "ticks": 466,
+      "resets": 10,
+      "commands_completed": 3,
+      "check": {
+        "ok": true,
+        "per_predicate": [
+          {
+            "pred": "at",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "gripper_open",
+            "ok": true
+          },
+          {
+            "pred": "settled",
+            "ok": true
+          }
+        ],
+        "ticks": 15,
+        "required_ticks": 15
+      },
+      "seed": 200016,
+      "trace": "runs\\P2\\traces\\expert_place_on_cell_00200016.jsonl"
+    },
+    {
+      "success": false,
+      "reason": "timeout",
+      "ticks": 1200,
+      "resets": 321,
+      "commands_completed": 1,
+      "check": {
+        "ok": false,
+        "per_predicate": [
+          {
+            "pred": "at",
+            "ok": false
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "gripper_open",
+            "ok": true
+          },
+          {
+            "pred": "settled",
+            "ok": true
+          }
+        ],
+        "ticks": 15,
+        "required_ticks": 15
+      },
+      "seed": 200017,
+      "trace": "runs\\P2\\traces\\expert_place_on_cell_00200017.jsonl"
+    },
+    {
+      "success": true,
+      "reason": "goal_reached",
+      "ticks": 419,
+      "resets": 5,
+      "commands_completed": 3,
+      "check": {
+        "ok": true,
+        "per_predicate": [
+          {
+            "pred": "at",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "gripper_open",
+            "ok": true
+          },
+          {
+            "pred": "settled",
+            "ok": true
+          }
+        ],
+        "ticks": 15,
+        "required_ticks": 15
+      },
+      "seed": 200019,
+      "trace": "runs\\P2\\traces\\expert_place_on_cell_00200019.jsonl"
+    },
+    {
+      "success": true,
+      "reason": "goal_reached",
+      "ticks": 393,
+      "resets": 2,
+      "commands_completed": 3,
+      "check": {
+        "ok": true,
+        "per_predicate": [
+          {
+            "pred": "at",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "gripper_open",
+            "ok": true
+          },
+          {
+            "pred": "settled",
+            "ok": true
+          }
+        ],
+        "ticks": 15,
+        "required_ticks": 15
+      },
+      "seed": 200021,
+      "trace": "runs\\P2\\traces\\expert_place_on_cell_00200021.jsonl"
+    },
+    {
+      "success": true,
+      "reason": "goal_reached",
+      "ticks": 437,
+      "resets": 2,
+      "commands_completed": 3,
+      "check": {
+        "ok": true,
+        "per_predicate": [
+          {
+            "pred": "at",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "gripper_open",
+            "ok": true
+          },
+          {
+            "pred": "settled",
+            "ok": true
+          }
+        ],
+        "ticks": 15,
+        "required_ticks": 15
+      },
+      "seed": 200022,
+      "trace": "runs\\P2\\traces\\expert_place_on_cell_00200022.jsonl"
+    },
+    {
+      "success": true,
+      "reason": "goal_reached",
+      "ticks": 423,
+      "resets": 2,
+      "commands_completed": 3,
+      "check": {
+        "ok": true,
+        "per_predicate": [
+          {
+            "pred": "at",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "gripper_open",
+            "ok": true
+          },
+          {
+            "pred": "settled",
+            "ok": true
+          }
+        ],
+        "ticks": 15,
+        "required_ticks": 15
+      },
+      "seed": 200023,
+      "trace": "runs\\P2\\traces\\expert_place_on_cell_00200023.jsonl"
+    },
+    {
+      "success": true,
+      "reason": "goal_reached",
+      "ticks": 454,
+      "resets": 3,
+      "commands_completed": 3,
+      "check": {
+        "ok": true,
+        "per_predicate": [
+          {
+            "pred": "at",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "gripper_open",
+            "ok": true
+          },
+          {
+            "pred": "settled",
+            "ok": true
+          }
+        ],
+        "ticks": 15,
+        "required_ticks": 15
+      },
+      "seed": 200024,
+      "trace": "runs\\P2\\traces\\expert_place_on_cell_00200024.jsonl"
+    },
+    {
+      "success": true,
+      "reason": "goal_reached",
+      "ticks": 438,
+      "resets": 2,
+      "commands_completed": 3,
+      "check": {
+        "ok": true,
+        "per_predicate": [
+          {
+            "pred": "at",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "gripper_open",
+            "ok": true
+          },
+          {
+            "pred": "settled",
+            "ok": true
+          }
+        ],
+        "ticks": 15,
+        "required_ticks": 15
+      },
+      "seed": 200025,
+      "trace": "runs\\P2\\traces\\expert_place_on_cell_00200025.jsonl"
+    },
+    {
+      "success": true,
+      "reason": "goal_reached",
+      "ticks": 457,
+      "resets": 2,
+      "commands_completed": 3,
+      "check": {
+        "ok": true,
+        "per_predicate": [
+          {
+            "pred": "at",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "gripper_open",
+            "ok": true
+          },
+          {
+            "pred": "settled",
+            "ok": true
+          }
+        ],
+        "ticks": 15,
+        "required_ticks": 15
+      },
+      "seed": 200026,
+      "trace": "runs\\P2\\traces\\expert_place_on_cell_00200026.jsonl"
+    },
+    {
+      "success": true,
+      "reason": "goal_reached",
+      "ticks": 477,
+      "resets": 2,
+      "commands_completed": 3,
+      "check": {
+        "ok": true,
+        "per_predicate": [
+          {
+            "pred": "at",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "gripper_open",
+            "ok": true
+          },
+          {
+            "pred": "settled",
+            "ok": true
+          }
+        ],
+        "ticks": 15,
+        "required_ticks": 15
+      },
+      "seed": 200027,
+      "trace": "runs\\P2\\traces\\expert_place_on_cell_00200027.jsonl"
+    },
+    {
+      "success": true,
+      "reason": "goal_reached",
+      "ticks": 448,
+      "resets": 2,
+      "commands_completed": 3,
+      "check": {
+        "ok": true,
+        "per_predicate": [
+          {
+            "pred": "at",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "gripper_open",
+            "ok": true
+          },
+          {
+            "pred": "settled",
+            "ok": true
+          }
+        ],
+        "ticks": 15,
+        "required_ticks": 15
+      },
+      "seed": 200028,
+      "trace": "runs\\P2\\traces\\expert_place_on_cell_00200028.jsonl"
+    },
+    {
+      "success": true,
+      "reason": "goal_reached",
+      "ticks": 405,
+      "resets": 4,
+      "commands_completed": 3,
+      "check": {
+        "ok": true,
+        "per_predicate": [
+          {
+            "pred": "at",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "gripper_open",
+            "ok": true
+          },
+          {
+            "pred": "settled",
+            "ok": true
+          }
+        ],
+        "ticks": 15,
+        "required_ticks": 15
+      },
+      "seed": 200029,
+      "trace": "runs\\P2\\traces\\expert_place_on_cell_00200029.jsonl"
+    },
+    {
+      "success": true,
+      "reason": "goal_reached",
+      "ticks": 447,
+      "resets": 14,
+      "commands_completed": 3,
+      "check": {
+        "ok": true,
+        "per_predicate": [
+          {
+            "pred": "at",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "gripper_open",
+            "ok": true
+          },
+          {
+            "pred": "settled",
+            "ok": true
+          }
+        ],
+        "ticks": 15,
+        "required_ticks": 15
+      },
+      "seed": 200030,
+      "trace": "runs\\P2\\traces\\expert_place_on_cell_00200030.jsonl"
+    },
+    {
+      "success": false,
+      "reason": "timeout",
+      "ticks": 1200,
+      "resets": 935,
+      "commands_completed": 0,
+      "check": {
+        "ok": false,
+        "per_predicate": [
+          {
+            "pred": "at",
+            "ok": false
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "gripper_open",
+            "ok": false
+          },
+          {
+            "pred": "settled",
+            "ok": true
+          }
+        ],
+        "ticks": 15,
+        "required_ticks": 15
+      },
+      "seed": 200031,
+      "trace": "runs\\P2\\traces\\expert_place_on_cell_00200031.jsonl"
+    },
+    {
+      "success": false,
+      "reason": "timeout",
+      "ticks": 1200,
+      "resets": 291,
+      "commands_completed": 1,
+      "check": {
+        "ok": false,
+        "per_predicate": [
+          {
+            "pred": "at",
+            "ok": false
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "gripper_open",
+            "ok": true
+          },
+          {
+            "pred": "settled",
+            "ok": true
+          }
+        ],
+        "ticks": 15,
+        "required_ticks": 15
+      },
+      "seed": 200032,
+      "trace": "runs\\P2\\traces\\expert_place_on_cell_00200032.jsonl"
+    },
+    {
+      "success": true,
+      "reason": "goal_reached",
+      "ticks": 445,
+      "resets": 6,
+      "commands_completed": 3,
+      "check": {
+        "ok": true,
+        "per_predicate": [
+          {
+            "pred": "at",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "gripper_open",
+            "ok": true
+          },
+          {
+            "pred": "settled",
+            "ok": true
+          }
+        ],
+        "ticks": 15,
+        "required_ticks": 15
+      },
+      "seed": 200033,
+      "trace": "runs\\P2\\traces\\expert_place_on_cell_00200033.jsonl"
+    },
+    {
+      "success": true,
+      "reason": "goal_reached",
+      "ticks": 471,
+      "resets": 2,
+      "commands_completed": 3,
+      "check": {
+        "ok": true,
+        "per_predicate": [
+          {
+            "pred": "at",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "gripper_open",
+            "ok": true
+          },
+          {
+            "pred": "settled",
+            "ok": true
+          }
+        ],
+        "ticks": 15,
+        "required_ticks": 15
+      },
+      "seed": 200034,
+      "trace": "runs\\P2\\traces\\expert_place_on_cell_00200034.jsonl"
+    },
+    {
+      "success": true,
+      "reason": "goal_reached",
+      "ticks": 416,
+      "resets": 2,
+      "commands_completed": 3,
+      "check": {
+        "ok": true,
+        "per_predicate": [
+          {
+            "pred": "at",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "gripper_open",
+            "ok": true
+          },
+          {
+            "pred": "settled",
+            "ok": true
+          }
+        ],
+        "ticks": 15,
+        "required_ticks": 15
+      },
+      "seed": 200035,
+      "trace": "runs\\P2\\traces\\expert_place_on_cell_00200035.jsonl"
+    },
+    {
+      "success": true,
+      "reason": "goal_reached",
+      "ticks": 446,
+      "resets": 2,
+      "commands_completed": 3,
+      "check": {
+        "ok": true,
+        "per_predicate": [
+          {
+            "pred": "at",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "gripper_open",
+            "ok": true
+          },
+          {
+            "pred": "settled",
+            "ok": true
+          }
+        ],
+        "ticks": 15,
+        "required_ticks": 15
+      },
+      "seed": 200036,
+      "trace": "runs\\P2\\traces\\expert_place_on_cell_00200036.jsonl"
+    },
+    {
+      "success": true,
+      "reason": "goal_reached",
+      "ticks": 459,
+      "resets": 4,
+      "commands_completed": 3,
+      "check": {
+        "ok": true,
+        "per_predicate": [
+          {
+            "pred": "at",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "gripper_open",
+            "ok": true
+          },
+          {
+            "pred": "settled",
+            "ok": true
+          }
+        ],
+        "ticks": 15,
+        "required_ticks": 15
+      },
+      "seed": 200037,
+      "trace": "runs\\P2\\traces\\expert_place_on_cell_00200037.jsonl"
+    },
+    {
+      "success": false,
+      "reason": "timeout",
+      "ticks": 1200,
+      "resets": 319,
+      "commands_completed": 1,
+      "check": {
+        "ok": false,
+        "per_predicate": [
+          {
+            "pred": "at",
+            "ok": false
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "gripper_open",
+            "ok": true
+          },
+          {
+            "pred": "settled",
+            "ok": true
+          }
+        ],
+        "ticks": 15,
+        "required_ticks": 15
+      },
+      "seed": 200038,
+      "trace": "runs\\P2\\traces\\expert_place_on_cell_00200038.jsonl"
+    },
+    {
+      "success": true,
+      "reason": "goal_reached",
+      "ticks": 447,
+      "resets": 2,
+      "commands_completed": 3,
+      "check": {
+        "ok": true,
+        "per_predicate": [
+          {
+            "pred": "at",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "gripper_open",
+            "ok": true
+          },
+          {
+            "pred": "settled",
+            "ok": true
+          }
+        ],
+        "ticks": 15,
+        "required_ticks": 15
+      },
+      "seed": 200040,
+      "trace": "runs\\P2\\traces\\expert_place_on_cell_00200040.jsonl"
+    },
+    {
+      "success": true,
+      "reason": "goal_reached",
+      "ticks": 439,
+      "resets": 2,
+      "commands_completed": 3,
+      "check": {
+        "ok": true,
+        "per_predicate": [
+          {
+            "pred": "at",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "gripper_open",
+            "ok": true
+          },
+          {
+            "pred": "settled",
+            "ok": true
+          }
+        ],
+        "ticks": 15,
+        "required_ticks": 15
+      },
+      "seed": 200042,
+      "trace": "runs\\P2\\traces\\expert_place_on_cell_00200042.jsonl"
+    },
+    {
+      "success": true,
+      "reason": "goal_reached",
+      "ticks": 459,
+      "resets": 3,
+      "commands_completed": 3,
+      "check": {
+        "ok": true,
+        "per_predicate": [
+          {
+            "pred": "at",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "gripper_open",
+            "ok": true
+          },
+          {
+            "pred": "settled",
+            "ok": true
+          }
+        ],
+        "ticks": 15,
+        "required_ticks": 15
+      },
+      "seed": 200043,
+      "trace": "runs\\P2\\traces\\expert_place_on_cell_00200043.jsonl"
+    },
+    {
+      "success": true,
+      "reason": "goal_reached",
+      "ticks": 442,
+      "resets": 2,
+      "commands_completed": 3,
+      "check": {
+        "ok": true,
+        "per_predicate": [
+          {
+            "pred": "at",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "gripper_open",
+            "ok": true
+          },
+          {
+            "pred": "settled",
+            "ok": true
+          }
+        ],
+        "ticks": 15,
+        "required_ticks": 15
+      },
+      "seed": 200044,
+      "trace": "runs\\P2\\traces\\expert_place_on_cell_00200044.jsonl"
+    },
+    {
+      "success": true,
+      "reason": "goal_reached",
+      "ticks": 454,
+      "resets": 3,
+      "commands_completed": 3,
+      "check": {
+        "ok": true,
+        "per_predicate": [
+          {
+            "pred": "at",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "gripper_open",
+            "ok": true
+          },
+          {
+            "pred": "settled",
+            "ok": true
+          }
+        ],
+        "ticks": 15,
+        "required_ticks": 15
+      },
+      "seed": 200045,
+      "trace": "runs\\P2\\traces\\expert_place_on_cell_00200045.jsonl"
+    },
+    {
+      "success": true,
+      "reason": "goal_reached",
+      "ticks": 415,
+      "resets": 2,
+      "commands_completed": 3,
+      "check": {
+        "ok": true,
+        "per_predicate": [
+          {
+            "pred": "at",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "gripper_open",
+            "ok": true
+          },
+          {
+            "pred": "settled",
+            "ok": true
+          }
+        ],
+        "ticks": 15,
+        "required_ticks": 15
+      },
+      "seed": 200046,
+      "trace": "runs\\P2\\traces\\expert_place_on_cell_00200046.jsonl"
+    },
+    {
+      "success": true,
+      "reason": "goal_reached",
+      "ticks": 450,
+      "resets": 2,
+      "commands_completed": 3,
+      "check": {
+        "ok": true,
+        "per_predicate": [
+          {
+            "pred": "at",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "gripper_open",
+            "ok": true
+          },
+          {
+            "pred": "settled",
+            "ok": true
+          }
+        ],
+        "ticks": 15,
+        "required_ticks": 15
+      },
+      "seed": 200047,
+      "trace": "runs\\P2\\traces\\expert_place_on_cell_00200047.jsonl"
+    },
+    {
+      "success": true,
+      "reason": "goal_reached",
+      "ticks": 424,
+      "resets": 2,
+      "commands_completed": 3,
+      "check": {
+        "ok": true,
+        "per_predicate": [
+          {
+            "pred": "at",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "gripper_open",
+            "ok": true
+          },
+          {
+            "pred": "settled",
+            "ok": true
+          }
+        ],
+        "ticks": 15,
+        "required_ticks": 15
+      },
+      "seed": 200048,
+      "trace": "runs\\P2\\traces\\expert_place_on_cell_00200048.jsonl"
+    },
+    {
+      "success": true,
+      "reason": "goal_reached",
+      "ticks": 419,
+      "resets": 5,
+      "commands_completed": 3,
+      "check": {
+        "ok": true,
+        "per_predicate": [
+          {
+            "pred": "at",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "gripper_open",
+            "ok": true
+          },
+          {
+            "pred": "settled",
+            "ok": true
+          }
+        ],
+        "ticks": 15,
+        "required_ticks": 15
+      },
+      "seed": 200049,
+      "trace": "runs\\P2\\traces\\expert_place_on_cell_00200049.jsonl"
+    },
+    {
+      "success": true,
+      "reason": "goal_reached",
+      "ticks": 445,
+      "resets": 6,
+      "commands_completed": 3,
+      "check": {
+        "ok": true,
+        "per_predicate": [
+          {
+            "pred": "at",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "gripper_open",
+            "ok": true
+          },
+          {
+            "pred": "settled",
+            "ok": true
+          }
+        ],
+        "ticks": 15,
+        "required_ticks": 15
+      },
+      "seed": 200051,
+      "trace": "runs\\P2\\traces\\expert_place_on_cell_00200051.jsonl"
+    },
+    {
+      "success": true,
+      "reason": "goal_reached",
+      "ticks": 448,
+      "resets": 2,
+      "commands_completed": 3,
+      "check": {
+        "ok": true,
+        "per_predicate": [
+          {
+            "pred": "at",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "gripper_open",
+            "ok": true
+          },
+          {
+            "pred": "settled",
+            "ok": true
+          }
+        ],
+        "ticks": 15,
+        "required_ticks": 15
+      },
+      "seed": 200054,
+      "trace": "runs\\P2\\traces\\expert_place_on_cell_00200054.jsonl"
+    },
+    {
+      "success": true,
+      "reason": "goal_reached",
+      "ticks": 437,
+      "resets": 2,
+      "commands_completed": 3,
+      "check": {
+        "ok": true,
+        "per_predicate": [
+          {
+            "pred": "at",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "gripper_open",
+            "ok": true
+          },
+          {
+            "pred": "settled",
+            "ok": true
+          }
+        ],
+        "ticks": 15,
+        "required_ticks": 15
+      },
+      "seed": 200056,
+      "trace": "runs\\P2\\traces\\expert_place_on_cell_00200056.jsonl"
+    },
+    {
+      "success": true,
+      "reason": "goal_reached",
+      "ticks": 457,
+      "resets": 2,
+      "commands_completed": 3,
+      "check": {
+        "ok": true,
+        "per_predicate": [
+          {
+            "pred": "at",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "gripper_open",
+            "ok": true
+          },
+          {
+            "pred": "settled",
+            "ok": true
+          }
+        ],
+        "ticks": 15,
+        "required_ticks": 15
+      },
+      "seed": 200057,
+      "trace": "runs\\P2\\traces\\expert_place_on_cell_00200057.jsonl"
+    },
+    {
+      "success": true,
+      "reason": "goal_reached",
+      "ticks": 427,
+      "resets": 2,
+      "commands_completed": 3,
+      "check": {
+        "ok": true,
+        "per_predicate": [
+          {
+            "pred": "at",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "gripper_open",
+            "ok": true
+          },
+          {
+            "pred": "settled",
+            "ok": true
+          }
+        ],
+        "ticks": 15,
+        "required_ticks": 15
+      },
+      "seed": 200058,
+      "trace": "runs\\P2\\traces\\expert_place_on_cell_00200058.jsonl"
+    },
+    {
+      "success": true,
+      "reason": "goal_reached",
+      "ticks": 558,
+      "resets": 2,
+      "commands_completed": 3,
+      "check": {
+        "ok": true,
+        "per_predicate": [
+          {
+            "pred": "at",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "gripper_open",
+            "ok": true
+          },
+          {
+            "pred": "settled",
+            "ok": true
+          }
+        ],
+        "ticks": 15,
+        "required_ticks": 15
+      },
+      "seed": 200061,
+      "trace": "runs\\P2\\traces\\expert_place_on_cell_00200061.jsonl"
+    },
+    {
+      "success": true,
+      "reason": "goal_reached",
+      "ticks": 425,
+      "resets": 2,
+      "commands_completed": 3,
+      "check": {
+        "ok": true,
+        "per_predicate": [
+          {
+            "pred": "at",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "gripper_open",
+            "ok": true
+          },
+          {
+            "pred": "settled",
+            "ok": true
+          }
+        ],
+        "ticks": 15,
+        "required_ticks": 15
+      },
+      "seed": 200062,
+      "trace": "runs\\P2\\traces\\expert_place_on_cell_00200062.jsonl"
+    },
+    {
+      "success": true,
+      "reason": "goal_reached",
+      "ticks": 420,
+      "resets": 2,
+      "commands_completed": 3,
+      "check": {
+        "ok": true,
+        "per_predicate": [
+          {
+            "pred": "at",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "gripper_open",
+            "ok": true
+          },
+          {
+            "pred": "settled",
+            "ok": true
+          }
+        ],
+        "ticks": 15,
+        "required_ticks": 15
+      },
+      "seed": 200064,
+      "trace": "runs\\P2\\traces\\expert_place_on_cell_00200064.jsonl"
+    },
+    {
+      "success": false,
+      "reason": "timeout",
+      "ticks": 1200,
+      "resets": 77,
+      "commands_completed": 4,
+      "check": {
+        "ok": false,
+        "per_predicate": [
+          {
+            "pred": "at",
+            "ok": false
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "gripper_open",
+            "ok": true
+          },
+          {
+            "pred": "settled",
+            "ok": true
+          }
+        ],
+        "ticks": 15,
+        "required_ticks": 15
+      },
+      "seed": 200065,
+      "trace": "runs\\P2\\traces\\expert_place_on_cell_00200065.jsonl"
+    },
+    {
+      "success": true,
+      "reason": "goal_reached",
+      "ticks": 466,
+      "resets": 2,
+      "commands_completed": 3,
+      "check": {
+        "ok": true,
+        "per_predicate": [
+          {
+            "pred": "at",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "gripper_open",
+            "ok": true
+          },
+          {
+            "pred": "settled",
+            "ok": true
+          }
+        ],
+        "ticks": 15,
+        "required_ticks": 15
+      },
+      "seed": 200066,
+      "trace": "runs\\P2\\traces\\expert_place_on_cell_00200066.jsonl"
+    },
+    {
+      "success": true,
+      "reason": "goal_reached",
+      "ticks": 444,
+      "resets": 2,
+      "commands_completed": 3,
+      "check": {
+        "ok": true,
+        "per_predicate": [
+          {
+            "pred": "at",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "gripper_open",
+            "ok": true
+          },
+          {
+            "pred": "settled",
+            "ok": true
+          }
+        ],
+        "ticks": 15,
+        "required_ticks": 15
+      },
+      "seed": 200069,
+      "trace": "runs\\P2\\traces\\expert_place_on_cell_00200069.jsonl"
+    },
+    {
+      "success": true,
+      "reason": "goal_reached",
+      "ticks": 444,
+      "resets": 2,
+      "commands_completed": 3,
+      "check": {
+        "ok": true,
+        "per_predicate": [
+          {
+            "pred": "at",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "gripper_open",
+            "ok": true
+          },
+          {
+            "pred": "settled",
+            "ok": true
+          }
+        ],
+        "ticks": 15,
+        "required_ticks": 15
+      },
+      "seed": 200071,
+      "trace": "runs\\P2\\traces\\expert_place_on_cell_00200071.jsonl"
+    },
+    {
+      "success": true,
+      "reason": "goal_reached",
+      "ticks": 416,
+      "resets": 2,
+      "commands_completed": 3,
+      "check": {
+        "ok": true,
+        "per_predicate": [
+          {
+            "pred": "at",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "gripper_open",
+            "ok": true
+          },
+          {
+            "pred": "settled",
+            "ok": true
+          }
+        ],
+        "ticks": 15,
+        "required_ticks": 15
+      },
+      "seed": 200072,
+      "trace": "runs\\P2\\traces\\expert_place_on_cell_00200072.jsonl"
+    },
+    {
+      "success": true,
+      "reason": "goal_reached",
+      "ticks": 424,
+      "resets": 2,
+      "commands_completed": 3,
+      "check": {
+        "ok": true,
+        "per_predicate": [
+          {
+            "pred": "at",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "gripper_open",
+            "ok": true
+          },
+          {
+            "pred": "settled",
+            "ok": true
+          }
+        ],
+        "ticks": 15,
+        "required_ticks": 15
+      },
+      "seed": 200073,
+      "trace": "runs\\P2\\traces\\expert_place_on_cell_00200073.jsonl"
+    },
+    {
+      "success": true,
+      "reason": "goal_reached",
+      "ticks": 452,
+      "resets": 2,
+      "commands_completed": 3,
+      "check": {
+        "ok": true,
+        "per_predicate": [
+          {
+            "pred": "at",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "gripper_open",
+            "ok": true
+          },
+          {
+            "pred": "settled",
+            "ok": true
+          }
+        ],
+        "ticks": 15,
+        "required_ticks": 15
+      },
+      "seed": 200074,
+      "trace": "runs\\P2\\traces\\expert_place_on_cell_00200074.jsonl"
+    },
+    {
+      "success": true,
+      "reason": "goal_reached",
+      "ticks": 436,
+      "resets": 2,
+      "commands_completed": 3,
+      "check": {
+        "ok": true,
+        "per_predicate": [
+          {
+            "pred": "at",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "gripper_open",
+            "ok": true
+          },
+          {
+            "pred": "settled",
+            "ok": true
+          }
+        ],
+        "ticks": 15,
+        "required_ticks": 15
+      },
+      "seed": 200076,
+      "trace": "runs\\P2\\traces\\expert_place_on_cell_00200076.jsonl"
+    },
+    {
+      "success": false,
+      "reason": "timeout",
+      "ticks": 1200,
+      "resets": 699,
+      "commands_completed": 1,
+      "check": {
+        "ok": false,
+        "per_predicate": [
+          {
+            "pred": "at",
+            "ok": false
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "gripper_open",
+            "ok": true
+          },
+          {
+            "pred": "settled",
+            "ok": true
+          }
+        ],
+        "ticks": 15,
+        "required_ticks": 15
+      },
+      "seed": 200079,
+      "trace": "runs\\P2\\traces\\expert_place_on_cell_00200079.jsonl"
+    },
+    {
+      "success": true,
+      "reason": "goal_reached",
+      "ticks": 466,
+      "resets": 2,
+      "commands_completed": 3,
+      "check": {
+        "ok": true,
+        "per_predicate": [
+          {
+            "pred": "at",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "gripper_open",
+            "ok": true
+          },
+          {
+            "pred": "settled",
+            "ok": true
+          }
+        ],
+        "ticks": 15,
+        "required_ticks": 15
+      },
+      "seed": 200080,
+      "trace": "runs\\P2\\traces\\expert_place_on_cell_00200080.jsonl"
+    },
+    {
+      "success": false,
+      "reason": "timeout",
+      "ticks": 1200,
+      "resets": 688,
+      "commands_completed": 1,
+      "check": {
+        "ok": false,
+        "per_predicate": [
+          {
+            "pred": "at",
+            "ok": false
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "gripper_open",
+            "ok": true
+          },
+          {
+            "pred": "settled",
+            "ok": true
+          }
+        ],
+        "ticks": 15,
+        "required_ticks": 15
+      },
+      "seed": 200081,
+      "trace": "runs\\P2\\traces\\expert_place_on_cell_00200081.jsonl"
+    },
+    {
+      "success": true,
+      "reason": "goal_reached",
+      "ticks": 412,
+      "resets": 2,
+      "commands_completed": 3,
+      "check": {
+        "ok": true,
+        "per_predicate": [
+          {
+            "pred": "at",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "gripper_open",
+            "ok": true
+          },
+          {
+            "pred": "settled",
+            "ok": true
+          }
+        ],
+        "ticks": 15,
+        "required_ticks": 15
+      },
+      "seed": 200082,
+      "trace": "runs\\P2\\traces\\expert_place_on_cell_00200082.jsonl"
+    },
+    {
+      "success": true,
+      "reason": "goal_reached",
+      "ticks": 443,
+      "resets": 2,
+      "commands_completed": 3,
+      "check": {
+        "ok": true,
+        "per_predicate": [
+          {
+            "pred": "at",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "gripper_open",
+            "ok": true
+          },
+          {
+            "pred": "settled",
+            "ok": true
+          }
+        ],
+        "ticks": 15,
+        "required_ticks": 15
+      },
+      "seed": 200083,
+      "trace": "runs\\P2\\traces\\expert_place_on_cell_00200083.jsonl"
+    },
+    {
+      "success": true,
+      "reason": "goal_reached",
+      "ticks": 398,
+      "resets": 2,
+      "commands_completed": 3,
+      "check": {
+        "ok": true,
+        "per_predicate": [
+          {
+            "pred": "at",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "gripper_open",
+            "ok": true
+          },
+          {
+            "pred": "settled",
+            "ok": true
+          }
+        ],
+        "ticks": 15,
+        "required_ticks": 15
+      },
+      "seed": 200084,
+      "trace": "runs\\P2\\traces\\expert_place_on_cell_00200084.jsonl"
+    },
+    {
+      "success": true,
+      "reason": "goal_reached",
+      "ticks": 437,
+      "resets": 2,
+      "commands_completed": 3,
+      "check": {
+        "ok": true,
+        "per_predicate": [
+          {
+            "pred": "at",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "gripper_open",
+            "ok": true
+          },
+          {
+            "pred": "settled",
+            "ok": true
+          }
+        ],
+        "ticks": 15,
+        "required_ticks": 15
+      },
+      "seed": 200085,
+      "trace": "runs\\P2\\traces\\expert_place_on_cell_00200085.jsonl"
+    },
+    {
+      "success": true,
+      "reason": "goal_reached",
+      "ticks": 463,
+      "resets": 3,
+      "commands_completed": 3,
+      "check": {
+        "ok": true,
+        "per_predicate": [
+          {
+            "pred": "at",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "gripper_open",
+            "ok": true
+          },
+          {
+            "pred": "settled",
+            "ok": true
+          }
+        ],
+        "ticks": 15,
+        "required_ticks": 15
+      },
+      "seed": 200086,
+      "trace": "runs\\P2\\traces\\expert_place_on_cell_00200086.jsonl"
+    },
+    {
+      "success": true,
+      "reason": "goal_reached",
+      "ticks": 501,
+      "resets": 3,
+      "commands_completed": 3,
+      "check": {
+        "ok": true,
+        "per_predicate": [
+          {
+            "pred": "at",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "gripper_open",
+            "ok": true
+          },
+          {
+            "pred": "settled",
+            "ok": true
+          }
+        ],
+        "ticks": 15,
+        "required_ticks": 15
+      },
+      "seed": 200087,
+      "trace": "runs\\P2\\traces\\expert_place_on_cell_00200087.jsonl"
+    },
+    {
+      "success": true,
+      "reason": "goal_reached",
+      "ticks": 428,
+      "resets": 2,
+      "commands_completed": 3,
+      "check": {
+        "ok": true,
+        "per_predicate": [
+          {
+            "pred": "at",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "gripper_open",
+            "ok": true
+          },
+          {
+            "pred": "settled",
+            "ok": true
+          }
+        ],
+        "ticks": 15,
+        "required_ticks": 15
+      },
+      "seed": 200090,
+      "trace": "runs\\P2\\traces\\expert_place_on_cell_00200090.jsonl"
+    },
+    {
+      "success": true,
+      "reason": "goal_reached",
+      "ticks": 412,
+      "resets": 2,
+      "commands_completed": 3,
+      "check": {
+        "ok": true,
+        "per_predicate": [
+          {
+            "pred": "at",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "gripper_open",
+            "ok": true
+          },
+          {
+            "pred": "settled",
+            "ok": true
+          }
+        ],
+        "ticks": 15,
+        "required_ticks": 15
+      },
+      "seed": 200091,
+      "trace": "runs\\P2\\traces\\expert_place_on_cell_00200091.jsonl"
+    },
+    {
+      "success": true,
+      "reason": "goal_reached",
+      "ticks": 412,
+      "resets": 2,
+      "commands_completed": 3,
+      "check": {
+        "ok": true,
+        "per_predicate": [
+          {
+            "pred": "at",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "gripper_open",
+            "ok": true
+          },
+          {
+            "pred": "settled",
+            "ok": true
+          }
+        ],
+        "ticks": 15,
+        "required_ticks": 15
+      },
+      "seed": 200092,
+      "trace": "runs\\P2\\traces\\expert_place_on_cell_00200092.jsonl"
+    },
+    {
+      "success": true,
+      "reason": "goal_reached",
+      "ticks": 451,
+      "resets": 2,
+      "commands_completed": 3,
+      "check": {
+        "ok": true,
+        "per_predicate": [
+          {
+            "pred": "at",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "gripper_open",
+            "ok": true
+          },
+          {
+            "pred": "settled",
+            "ok": true
+          }
+        ],
+        "ticks": 15,
+        "required_ticks": 15
+      },
+      "seed": 200093,
+      "trace": "runs\\P2\\traces\\expert_place_on_cell_00200093.jsonl"
+    },
+    {
+      "success": true,
+      "reason": "goal_reached",
+      "ticks": 476,
+      "resets": 6,
+      "commands_completed": 3,
+      "check": {
+        "ok": true,
+        "per_predicate": [
+          {
+            "pred": "at",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "gripper_open",
+            "ok": true
+          },
+          {
+            "pred": "settled",
+            "ok": true
+          }
+        ],
+        "ticks": 15,
+        "required_ticks": 15
+      },
+      "seed": 200094,
+      "trace": "runs\\P2\\traces\\expert_place_on_cell_00200094.jsonl"
+    },
+    {
+      "success": true,
+      "reason": "goal_reached",
+      "ticks": 471,
+      "resets": 3,
+      "commands_completed": 3,
+      "check": {
+        "ok": true,
+        "per_predicate": [
+          {
+            "pred": "at",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "gripper_open",
+            "ok": true
+          },
+          {
+            "pred": "settled",
+            "ok": true
+          }
+        ],
+        "ticks": 15,
+        "required_ticks": 15
+      },
+      "seed": 200095,
+      "trace": "runs\\P2\\traces\\expert_place_on_cell_00200095.jsonl"
+    },
+    {
+      "success": true,
+      "reason": "goal_reached",
+      "ticks": 417,
+      "resets": 2,
+      "commands_completed": 3,
+      "check": {
+        "ok": true,
+        "per_predicate": [
+          {
+            "pred": "at",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "gripper_open",
+            "ok": true
+          },
+          {
+            "pred": "settled",
+            "ok": true
+          }
+        ],
+        "ticks": 15,
+        "required_ticks": 15
+      },
+      "seed": 200096,
+      "trace": "runs\\P2\\traces\\expert_place_on_cell_00200096.jsonl"
+    },
+    {
+      "success": true,
+      "reason": "goal_reached",
+      "ticks": 407,
+      "resets": 2,
+      "commands_completed": 3,
+      "check": {
+        "ok": true,
+        "per_predicate": [
+          {
+            "pred": "at",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "gripper_open",
+            "ok": true
+          },
+          {
+            "pred": "settled",
+            "ok": true
+          }
+        ],
+        "ticks": 15,
+        "required_ticks": 15
+      },
+      "seed": 200097,
+      "trace": "runs\\P2\\traces\\expert_place_on_cell_00200097.jsonl"
+    },
+    {
+      "success": true,
+      "reason": "goal_reached",
+      "ticks": 426,
+      "resets": 2,
+      "commands_completed": 3,
+      "check": {
+        "ok": true,
+        "per_predicate": [
+          {
+            "pred": "at",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "gripper_open",
+            "ok": true
+          },
+          {
+            "pred": "settled",
+            "ok": true
+          }
+        ],
+        "ticks": 15,
+        "required_ticks": 15
+      },
+      "seed": 200098,
+      "trace": "runs\\P2\\traces\\expert_place_on_cell_00200098.jsonl"
+    },
+    {
+      "success": true,
+      "reason": "goal_reached",
+      "ticks": 416,
+      "resets": 3,
+      "commands_completed": 3,
+      "check": {
+        "ok": true,
+        "per_predicate": [
+          {
+            "pred": "at",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "gripper_open",
+            "ok": true
+          },
+          {
+            "pred": "settled",
+            "ok": true
+          }
+        ],
+        "ticks": 15,
+        "required_ticks": 15
+      },
+      "seed": 200102,
+      "trace": "runs\\P2\\traces\\expert_place_on_cell_00200102.jsonl"
+    },
+    {
+      "success": false,
+      "reason": "timeout",
+      "ticks": 1200,
+      "resets": 2,
+      "commands_completed": 0,
+      "check": {
+        "ok": false,
+        "per_predicate": [
+          {
+            "pred": "at",
+            "ok": false
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "gripper_open",
+            "ok": false
+          },
+          {
+            "pred": "settled",
+            "ok": true
+          }
+        ],
+        "ticks": 15,
+        "required_ticks": 15
+      },
+      "seed": 200103,
+      "trace": "runs\\P2\\traces\\expert_place_on_cell_00200103.jsonl"
+    },
+    {
+      "success": true,
+      "reason": "goal_reached",
+      "ticks": 449,
+      "resets": 2,
+      "commands_completed": 3,
+      "check": {
+        "ok": true,
+        "per_predicate": [
+          {
+            "pred": "at",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "gripper_open",
+            "ok": true
+          },
+          {
+            "pred": "settled",
+            "ok": true
+          }
+        ],
+        "ticks": 15,
+        "required_ticks": 15
+      },
+      "seed": 200104,
+      "trace": "runs\\P2\\traces\\expert_place_on_cell_00200104.jsonl"
+    },
+    {
+      "success": true,
+      "reason": "goal_reached",
+      "ticks": 444,
+      "resets": 3,
+      "commands_completed": 3,
+      "check": {
+        "ok": true,
+        "per_predicate": [
+          {
+            "pred": "at",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "gripper_open",
+            "ok": true
+          },
+          {
+            "pred": "settled",
+            "ok": true
+          }
+        ],
+        "ticks": 15,
+        "required_ticks": 15
+      },
+      "seed": 200105,
+      "trace": "runs\\P2\\traces\\expert_place_on_cell_00200105.jsonl"
+    },
+    {
+      "success": true,
+      "reason": "goal_reached",
+      "ticks": 490,
+      "resets": 15,
+      "commands_completed": 3,
+      "check": {
+        "ok": true,
+        "per_predicate": [
+          {
+            "pred": "at",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "gripper_open",
+            "ok": true
+          },
+          {
+            "pred": "settled",
+            "ok": true
+          }
+        ],
+        "ticks": 15,
+        "required_ticks": 15
+      },
+      "seed": 200106,
+      "trace": "runs\\P2\\traces\\expert_place_on_cell_00200106.jsonl"
+    },
+    {
+      "success": true,
+      "reason": "goal_reached",
+      "ticks": 436,
+      "resets": 2,
+      "commands_completed": 3,
+      "check": {
+        "ok": true,
+        "per_predicate": [
+          {
+            "pred": "at",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "gripper_open",
+            "ok": true
+          },
+          {
+            "pred": "settled",
+            "ok": true
+          }
+        ],
+        "ticks": 15,
+        "required_ticks": 15
+      },
+      "seed": 200107,
+      "trace": "runs\\P2\\traces\\expert_place_on_cell_00200107.jsonl"
+    },
+    {
+      "success": true,
+      "reason": "goal_reached",
+      "ticks": 455,
+      "resets": 2,
+      "commands_completed": 3,
+      "check": {
+        "ok": true,
+        "per_predicate": [
+          {
+            "pred": "at",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "gripper_open",
+            "ok": true
+          },
+          {
+            "pred": "settled",
+            "ok": true
+          }
+        ],
+        "ticks": 15,
+        "required_ticks": 15
+      },
+      "seed": 200108,
+      "trace": "runs\\P2\\traces\\expert_place_on_cell_00200108.jsonl"
+    },
+    {
+      "success": true,
+      "reason": "goal_reached",
+      "ticks": 447,
+      "resets": 2,
+      "commands_completed": 3,
+      "check": {
+        "ok": true,
+        "per_predicate": [
+          {
+            "pred": "at",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "gripper_open",
+            "ok": true
+          },
+          {
+            "pred": "settled",
+            "ok": true
+          }
+        ],
+        "ticks": 15,
+        "required_ticks": 15
+      },
+      "seed": 200109,
+      "trace": "runs\\P2\\traces\\expert_place_on_cell_00200109.jsonl"
+    },
+    {
+      "success": true,
+      "reason": "goal_reached",
+      "ticks": 434,
+      "resets": 7,
+      "commands_completed": 3,
+      "check": {
+        "ok": true,
+        "per_predicate": [
+          {
+            "pred": "at",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "gripper_open",
+            "ok": true
+          },
+          {
+            "pred": "settled",
+            "ok": true
+          }
+        ],
+        "ticks": 15,
+        "required_ticks": 15
+      },
+      "seed": 200111,
+      "trace": "runs\\P2\\traces\\expert_place_on_cell_00200111.jsonl"
+    },
+    {
+      "success": true,
+      "reason": "goal_reached",
+      "ticks": 421,
+      "resets": 3,
+      "commands_completed": 3,
+      "check": {
+        "ok": true,
+        "per_predicate": [
+          {
+            "pred": "at",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "gripper_open",
+            "ok": true
+          },
+          {
+            "pred": "settled",
+            "ok": true
+          }
+        ],
+        "ticks": 15,
+        "required_ticks": 15
+      },
+      "seed": 200112,
+      "trace": "runs\\P2\\traces\\expert_place_on_cell_00200112.jsonl"
+    },
+    {
+      "success": true,
+      "reason": "goal_reached",
+      "ticks": 443,
+      "resets": 2,
+      "commands_completed": 3,
+      "check": {
+        "ok": true,
+        "per_predicate": [
+          {
+            "pred": "at",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "gripper_open",
+            "ok": true
+          },
+          {
+            "pred": "settled",
+            "ok": true
+          }
+        ],
+        "ticks": 15,
+        "required_ticks": 15
+      },
+      "seed": 200113,
+      "trace": "runs\\P2\\traces\\expert_place_on_cell_00200113.jsonl"
+    },
+    {
+      "success": true,
+      "reason": "goal_reached",
+      "ticks": 414,
+      "resets": 2,
+      "commands_completed": 3,
+      "check": {
+        "ok": true,
+        "per_predicate": [
+          {
+            "pred": "at",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "gripper_open",
+            "ok": true
+          },
+          {
+            "pred": "settled",
+            "ok": true
+          }
+        ],
+        "ticks": 15,
+        "required_ticks": 15
+      },
+      "seed": 200114,
+      "trace": "runs\\P2\\traces\\expert_place_on_cell_00200114.jsonl"
+    },
+    {
+      "success": true,
+      "reason": "goal_reached",
+      "ticks": 452,
+      "resets": 4,
+      "commands_completed": 3,
+      "check": {
+        "ok": true,
+        "per_predicate": [
+          {
+            "pred": "at",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "gripper_open",
+            "ok": true
+          },
+          {
+            "pred": "settled",
+            "ok": true
+          }
+        ],
+        "ticks": 15,
+        "required_ticks": 15
+      },
+      "seed": 200116,
+      "trace": "runs\\P2\\traces\\expert_place_on_cell_00200116.jsonl"
+    },
+    {
+      "success": true,
+      "reason": "goal_reached",
+      "ticks": 420,
+      "resets": 2,
+      "commands_completed": 3,
+      "check": {
+        "ok": true,
+        "per_predicate": [
+          {
+            "pred": "at",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "gripper_open",
+            "ok": true
+          },
+          {
+            "pred": "settled",
+            "ok": true
+          }
+        ],
+        "ticks": 15,
+        "required_ticks": 15
+      },
+      "seed": 200117,
+      "trace": "runs\\P2\\traces\\expert_place_on_cell_00200117.jsonl"
+    },
+    {
+      "success": true,
+      "reason": "goal_reached",
+      "ticks": 460,
+      "resets": 14,
+      "commands_completed": 3,
+      "check": {
+        "ok": true,
+        "per_predicate": [
+          {
+            "pred": "at",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "gripper_open",
+            "ok": true
+          },
+          {
+            "pred": "settled",
+            "ok": true
+          }
+        ],
+        "ticks": 15,
+        "required_ticks": 15
+      },
+      "seed": 200118,
+      "trace": "runs\\P2\\traces\\expert_place_on_cell_00200118.jsonl"
+    },
+    {
+      "success": true,
+      "reason": "goal_reached",
+      "ticks": 440,
+      "resets": 2,
+      "commands_completed": 3,
+      "check": {
+        "ok": true,
+        "per_predicate": [
+          {
+            "pred": "at",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "gripper_open",
+            "ok": true
+          },
+          {
+            "pred": "settled",
+            "ok": true
+          }
+        ],
+        "ticks": 15,
+        "required_ticks": 15
+      },
+      "seed": 200119,
+      "trace": "runs\\P2\\traces\\expert_place_on_cell_00200119.jsonl"
+    },
+    {
+      "success": true,
+      "reason": "goal_reached",
+      "ticks": 464,
+      "resets": 2,
+      "commands_completed": 3,
+      "check": {
+        "ok": true,
+        "per_predicate": [
+          {
+            "pred": "at",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "gripper_open",
+            "ok": true
+          },
+          {
+            "pred": "settled",
+            "ok": true
+          }
+        ],
+        "ticks": 15,
+        "required_ticks": 15
+      },
+      "seed": 200120,
+      "trace": "runs\\P2\\traces\\expert_place_on_cell_00200120.jsonl"
+    },
+    {
+      "success": true,
+      "reason": "goal_reached",
+      "ticks": 447,
+      "resets": 2,
+      "commands_completed": 3,
+      "check": {
+        "ok": true,
+        "per_predicate": [
+          {
+            "pred": "at",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "gripper_open",
+            "ok": true
+          },
+          {
+            "pred": "settled",
+            "ok": true
+          }
+        ],
+        "ticks": 15,
+        "required_ticks": 15
+      },
+      "seed": 200122,
+      "trace": "runs\\P2\\traces\\expert_place_on_cell_00200122.jsonl"
+    },
+    {
+      "success": true,
+      "reason": "goal_reached",
+      "ticks": 476,
+      "resets": 3,
+      "commands_completed": 3,
+      "check": {
+        "ok": true,
+        "per_predicate": [
+          {
+            "pred": "at",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "gripper_open",
+            "ok": true
+          },
+          {
+            "pred": "settled",
+            "ok": true
+          }
+        ],
+        "ticks": 15,
+        "required_ticks": 15
+      },
+      "seed": 200124,
+      "trace": "runs\\P2\\traces\\expert_place_on_cell_00200124.jsonl"
+    },
+    {
+      "success": true,
+      "reason": "goal_reached",
+      "ticks": 438,
+      "resets": 2,
+      "commands_completed": 3,
+      "check": {
+        "ok": true,
+        "per_predicate": [
+          {
+            "pred": "at",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "gripper_open",
+            "ok": true
+          },
+          {
+            "pred": "settled",
+            "ok": true
+          }
+        ],
+        "ticks": 15,
+        "required_ticks": 15
+      },
+      "seed": 200125,
+      "trace": "runs\\P2\\traces\\expert_place_on_cell_00200125.jsonl"
+    },
+    {
+      "success": true,
+      "reason": "goal_reached",
+      "ticks": 434,
+      "resets": 4,
+      "commands_completed": 3,
+      "check": {
+        "ok": true,
+        "per_predicate": [
+          {
+            "pred": "at",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "gripper_open",
+            "ok": true
+          },
+          {
+            "pred": "settled",
+            "ok": true
+          }
+        ],
+        "ticks": 15,
+        "required_ticks": 15
+      },
+      "seed": 200126,
+      "trace": "runs\\P2\\traces\\expert_place_on_cell_00200126.jsonl"
+    },
+    {
+      "success": true,
+      "reason": "goal_reached",
+      "ticks": 489,
+      "resets": 3,
+      "commands_completed": 3,
+      "check": {
+        "ok": true,
+        "per_predicate": [
+          {
+            "pred": "at",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "gripper_open",
+            "ok": true
+          },
+          {
+            "pred": "settled",
+            "ok": true
+          }
+        ],
+        "ticks": 15,
+        "required_ticks": 15
+      },
+      "seed": 200127,
+      "trace": "runs\\P2\\traces\\expert_place_on_cell_00200127.jsonl"
+    },
+    {
+      "success": true,
+      "reason": "goal_reached",
+      "ticks": 482,
+      "resets": 2,
+      "commands_completed": 3,
+      "check": {
+        "ok": true,
+        "per_predicate": [
+          {
+            "pred": "at",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "gripper_open",
+            "ok": true
+          },
+          {
+            "pred": "settled",
+            "ok": true
+          }
+        ],
+        "ticks": 15,
+        "required_ticks": 15
+      },
+      "seed": 200128,
+      "trace": "runs\\P2\\traces\\expert_place_on_cell_00200128.jsonl"
+    },
+    {
+      "success": true,
+      "reason": "goal_reached",
+      "ticks": 417,
+      "resets": 2,
+      "commands_completed": 3,
+      "check": {
+        "ok": true,
+        "per_predicate": [
+          {
+            "pred": "at",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "gripper_open",
+            "ok": true
+          },
+          {
+            "pred": "settled",
+            "ok": true
+          }
+        ],
+        "ticks": 15,
+        "required_ticks": 15
+      },
+      "seed": 200129,
+      "trace": "runs\\P2\\traces\\expert_place_on_cell_00200129.jsonl"
+    },
+    {
+      "success": true,
+      "reason": "goal_reached",
+      "ticks": 418,
+      "resets": 1,
+      "commands_completed": 3,
+      "check": {
+        "ok": true,
+        "per_predicate": [
+          {
+            "pred": "at",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "gripper_open",
+            "ok": true
+          },
+          {
+            "pred": "settled",
+            "ok": true
+          }
+        ],
+        "ticks": 15,
+        "required_ticks": 15
+      },
+      "seed": 200130,
+      "trace": "runs\\P2\\traces\\expert_place_on_cell_00200130.jsonl"
+    },
+    {
+      "success": true,
+      "reason": "goal_reached",
+      "ticks": 432,
+      "resets": 2,
+      "commands_completed": 3,
+      "check": {
+        "ok": true,
+        "per_predicate": [
+          {
+            "pred": "at",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "gripper_open",
+            "ok": true
+          },
+          {
+            "pred": "settled",
+            "ok": true
+          }
+        ],
+        "ticks": 15,
+        "required_ticks": 15
+      },
+      "seed": 200132,
+      "trace": "runs\\P2\\traces\\expert_place_on_cell_00200132.jsonl"
+    },
+    {
+      "success": true,
+      "reason": "goal_reached",
+      "ticks": 414,
+      "resets": 2,
+      "commands_completed": 3,
+      "check": {
+        "ok": true,
+        "per_predicate": [
+          {
+            "pred": "at",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "gripper_open",
+            "ok": true
+          },
+          {
+            "pred": "settled",
+            "ok": true
+          }
+        ],
+        "ticks": 15,
+        "required_ticks": 15
+      },
+      "seed": 200133,
+      "trace": "runs\\P2\\traces\\expert_place_on_cell_00200133.jsonl"
+    },
+    {
+      "success": true,
+      "reason": "goal_reached",
+      "ticks": 439,
+      "resets": 3,
+      "commands_completed": 3,
+      "check": {
+        "ok": true,
+        "per_predicate": [
+          {
+            "pred": "at",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "gripper_open",
+            "ok": true
+          },
+          {
+            "pred": "settled",
+            "ok": true
+          }
+        ],
+        "ticks": 15,
+        "required_ticks": 15
+      },
+      "seed": 200134,
+      "trace": "runs\\P2\\traces\\expert_place_on_cell_00200134.jsonl"
+    },
+    {
+      "success": true,
+      "reason": "goal_reached",
+      "ticks": 451,
+      "resets": 2,
+      "commands_completed": 3,
+      "check": {
+        "ok": true,
+        "per_predicate": [
+          {
+            "pred": "at",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "gripper_open",
+            "ok": true
+          },
+          {
+            "pred": "settled",
+            "ok": true
+          }
+        ],
+        "ticks": 15,
+        "required_ticks": 15
+      },
+      "seed": 200135,
+      "trace": "runs\\P2\\traces\\expert_place_on_cell_00200135.jsonl"
+    },
+    {
+      "success": true,
+      "reason": "goal_reached",
+      "ticks": 466,
+      "resets": 3,
+      "commands_completed": 3,
+      "check": {
+        "ok": true,
+        "per_predicate": [
+          {
+            "pred": "at",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "gripper_open",
+            "ok": true
+          },
+          {
+            "pred": "settled",
+            "ok": true
+          }
+        ],
+        "ticks": 15,
+        "required_ticks": 15
+      },
+      "seed": 200136,
+      "trace": "runs\\P2\\traces\\expert_place_on_cell_00200136.jsonl"
+    },
+    {
+      "success": true,
+      "reason": "goal_reached",
+      "ticks": 403,
+      "resets": 3,
+      "commands_completed": 3,
+      "check": {
+        "ok": true,
+        "per_predicate": [
+          {
+            "pred": "at",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "gripper_open",
+            "ok": true
+          },
+          {
+            "pred": "settled",
+            "ok": true
+          }
+        ],
+        "ticks": 15,
+        "required_ticks": 15
+      },
+      "seed": 200137,
+      "trace": "runs\\P2\\traces\\expert_place_on_cell_00200137.jsonl"
+    },
+    {
+      "success": true,
+      "reason": "goal_reached",
+      "ticks": 458,
+      "resets": 3,
+      "commands_completed": 3,
+      "check": {
+        "ok": true,
+        "per_predicate": [
+          {
+            "pred": "at",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "gripper_open",
+            "ok": true
+          },
+          {
+            "pred": "settled",
+            "ok": true
+          }
+        ],
+        "ticks": 15,
+        "required_ticks": 15
+      },
+      "seed": 200138,
+      "trace": "runs\\P2\\traces\\expert_place_on_cell_00200138.jsonl"
+    },
+    {
+      "success": true,
+      "reason": "goal_reached",
+      "ticks": 435,
+      "resets": 3,
+      "commands_completed": 3,
+      "check": {
+        "ok": true,
+        "per_predicate": [
+          {
+            "pred": "at",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "gripper_open",
+            "ok": true
+          },
+          {
+            "pred": "settled",
+            "ok": true
+          }
+        ],
+        "ticks": 15,
+        "required_ticks": 15
+      },
+      "seed": 200139,
+      "trace": "runs\\P2\\traces\\expert_place_on_cell_00200139.jsonl"
+    },
+    {
+      "success": true,
+      "reason": "goal_reached",
+      "ticks": 468,
+      "resets": 2,
+      "commands_completed": 3,
+      "check": {
+        "ok": true,
+        "per_predicate": [
+          {
+            "pred": "at",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "gripper_open",
+            "ok": true
+          },
+          {
+            "pred": "settled",
+            "ok": true
+          }
+        ],
+        "ticks": 15,
+        "required_ticks": 15
+      },
+      "seed": 200140,
+      "trace": "runs\\P2\\traces\\expert_place_on_cell_00200140.jsonl"
+    },
+    {
+      "success": true,
+      "reason": "goal_reached",
+      "ticks": 946,
+      "resets": 230,
+      "commands_completed": 3,
+      "check": {
+        "ok": true,
+        "per_predicate": [
+          {
+            "pred": "at",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "gripper_open",
+            "ok": true
+          },
+          {
+            "pred": "settled",
+            "ok": true
+          }
+        ],
+        "ticks": 15,
+        "required_ticks": 15
+      },
+      "seed": 200141,
+      "trace": "runs\\P2\\traces\\expert_place_on_cell_00200141.jsonl"
+    },
+    {
+      "success": true,
+      "reason": "goal_reached",
+      "ticks": 449,
+      "resets": 2,
+      "commands_completed": 3,
+      "check": {
+        "ok": true,
+        "per_predicate": [
+          {
+            "pred": "at",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "gripper_open",
+            "ok": true
+          },
+          {
+            "pred": "settled",
+            "ok": true
+          }
+        ],
+        "ticks": 15,
+        "required_ticks": 15
+      },
+      "seed": 200142,
+      "trace": "runs\\P2\\traces\\expert_place_on_cell_00200142.jsonl"
+    },
+    {
+      "success": true,
+      "reason": "goal_reached",
+      "ticks": 416,
+      "resets": 2,
+      "commands_completed": 3,
+      "check": {
+        "ok": true,
+        "per_predicate": [
+          {
+            "pred": "at",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "gripper_open",
+            "ok": true
+          },
+          {
+            "pred": "settled",
+            "ok": true
+          }
+        ],
+        "ticks": 15,
+        "required_ticks": 15
+      },
+      "seed": 200144,
+      "trace": "runs\\P2\\traces\\expert_place_on_cell_00200144.jsonl"
+    },
+    {
+      "success": true,
+      "reason": "goal_reached",
+      "ticks": 446,
+      "resets": 2,
+      "commands_completed": 3,
+      "check": {
+        "ok": true,
+        "per_predicate": [
+          {
+            "pred": "at",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "gripper_open",
+            "ok": true
+          },
+          {
+            "pred": "settled",
+            "ok": true
+          }
+        ],
+        "ticks": 15,
+        "required_ticks": 15
+      },
+      "seed": 200145,
+      "trace": "runs\\P2\\traces\\expert_place_on_cell_00200145.jsonl"
+    },
+    {
+      "success": false,
+      "reason": "timeout",
+      "ticks": 1200,
+      "resets": 82,
+      "commands_completed": 1,
+      "check": {
+        "ok": false,
+        "per_predicate": [
+          {
+            "pred": "at",
+            "ok": false
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "gripper_open",
+            "ok": true
+          },
+          {
+            "pred": "settled",
+            "ok": true
+          }
+        ],
+        "ticks": 15,
+        "required_ticks": 15
+      },
+      "seed": 200146,
+      "trace": "runs\\P2\\traces\\expert_place_on_cell_00200146.jsonl"
+    },
+    {
+      "success": true,
+      "reason": "goal_reached",
+      "ticks": 408,
+      "resets": 2,
+      "commands_completed": 3,
+      "check": {
+        "ok": true,
+        "per_predicate": [
+          {
+            "pred": "at",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "gripper_open",
+            "ok": true
+          },
+          {
+            "pred": "settled",
+            "ok": true
+          }
+        ],
+        "ticks": 15,
+        "required_ticks": 15
+      },
+      "seed": 200149,
+      "trace": "runs\\P2\\traces\\expert_place_on_cell_00200149.jsonl"
+    },
+    {
+      "success": true,
+      "reason": "goal_reached",
+      "ticks": 473,
+      "resets": 6,
+      "commands_completed": 3,
+      "check": {
+        "ok": true,
+        "per_predicate": [
+          {
+            "pred": "at",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "gripper_open",
+            "ok": true
+          },
+          {
+            "pred": "settled",
+            "ok": true
+          }
+        ],
+        "ticks": 15,
+        "required_ticks": 15
+      },
+      "seed": 200151,
+      "trace": "runs\\P2\\traces\\expert_place_on_cell_00200151.jsonl"
+    },
+    {
+      "success": true,
+      "reason": "goal_reached",
+      "ticks": 440,
+      "resets": 2,
+      "commands_completed": 3,
+      "check": {
+        "ok": true,
+        "per_predicate": [
+          {
+            "pred": "at",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "gripper_open",
+            "ok": true
+          },
+          {
+            "pred": "settled",
+            "ok": true
+          }
+        ],
+        "ticks": 15,
+        "required_ticks": 15
+      },
+      "seed": 200152,
+      "trace": "runs\\P2\\traces\\expert_place_on_cell_00200152.jsonl"
+    },
+    {
+      "success": true,
+      "reason": "goal_reached",
+      "ticks": 458,
+      "resets": 2,
+      "commands_completed": 3,
+      "check": {
+        "ok": true,
+        "per_predicate": [
+          {
+            "pred": "at",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "gripper_open",
+            "ok": true
+          },
+          {
+            "pred": "settled",
+            "ok": true
+          }
+        ],
+        "ticks": 15,
+        "required_ticks": 15
+      },
+      "seed": 200154,
+      "trace": "runs\\P2\\traces\\expert_place_on_cell_00200154.jsonl"
+    },
+    {
+      "success": true,
+      "reason": "goal_reached",
+      "ticks": 454,
+      "resets": 3,
+      "commands_completed": 3,
+      "check": {
+        "ok": true,
+        "per_predicate": [
+          {
+            "pred": "at",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "gripper_open",
+            "ok": true
+          },
+          {
+            "pred": "settled",
+            "ok": true
+          }
+        ],
+        "ticks": 15,
+        "required_ticks": 15
+      },
+      "seed": 200155,
+      "trace": "runs\\P2\\traces\\expert_place_on_cell_00200155.jsonl"
+    },
+    {
+      "success": true,
+      "reason": "goal_reached",
+      "ticks": 449,
+      "resets": 2,
+      "commands_completed": 3,
+      "check": {
+        "ok": true,
+        "per_predicate": [
+          {
+            "pred": "at",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "gripper_open",
+            "ok": true
+          },
+          {
+            "pred": "settled",
+            "ok": true
+          }
+        ],
+        "ticks": 15,
+        "required_ticks": 15
+      },
+      "seed": 200157,
+      "trace": "runs\\P2\\traces\\expert_place_on_cell_00200157.jsonl"
+    },
+    {
+      "success": true,
+      "reason": "goal_reached",
+      "ticks": 432,
+      "resets": 2,
+      "commands_completed": 3,
+      "check": {
+        "ok": true,
+        "per_predicate": [
+          {
+            "pred": "at",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "gripper_open",
+            "ok": true
+          },
+          {
+            "pred": "settled",
+            "ok": true
+          }
+        ],
+        "ticks": 15,
+        "required_ticks": 15
+      },
+      "seed": 200158,
+      "trace": "runs\\P2\\traces\\expert_place_on_cell_00200158.jsonl"
+    },
+    {
+      "success": false,
+      "reason": "timeout",
+      "ticks": 1200,
+      "resets": 2,
+      "commands_completed": 4,
+      "check": {
+        "ok": false,
+        "per_predicate": [
+          {
+            "pred": "at",
+            "ok": false
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "gripper_open",
+            "ok": true
+          },
+          {
+            "pred": "settled",
+            "ok": true
+          }
+        ],
+        "ticks": 15,
+        "required_ticks": 15
+      },
+      "seed": 200161,
+      "trace": "runs\\P2\\traces\\expert_place_on_cell_00200161.jsonl"
+    },
+    {
+      "success": true,
+      "reason": "goal_reached",
+      "ticks": 419,
+      "resets": 2,
+      "commands_completed": 3,
+      "check": {
+        "ok": true,
+        "per_predicate": [
+          {
+            "pred": "at",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "gripper_open",
+            "ok": true
+          },
+          {
+            "pred": "settled",
+            "ok": true
+          }
+        ],
+        "ticks": 15,
+        "required_ticks": 15
+      },
+      "seed": 200162,
+      "trace": "runs\\P2\\traces\\expert_place_on_cell_00200162.jsonl"
+    },
+    {
+      "success": true,
+      "reason": "goal_reached",
+      "ticks": 435,
+      "resets": 2,
+      "commands_completed": 3,
+      "check": {
+        "ok": true,
+        "per_predicate": [
+          {
+            "pred": "at",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "gripper_open",
+            "ok": true
+          },
+          {
+            "pred": "settled",
+            "ok": true
+          }
+        ],
+        "ticks": 15,
+        "required_ticks": 15
+      },
+      "seed": 200163,
+      "trace": "runs\\P2\\traces\\expert_place_on_cell_00200163.jsonl"
+    },
+    {
+      "success": false,
+      "reason": "timeout",
+      "ticks": 1200,
+      "resets": 364,
+      "commands_completed": 1,
+      "check": {
+        "ok": false,
+        "per_predicate": [
+          {
+            "pred": "at",
+            "ok": false
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "gripper_open",
+            "ok": true
+          },
+          {
+            "pred": "settled",
+            "ok": true
+          }
+        ],
+        "ticks": 15,
+        "required_ticks": 15
+      },
+      "seed": 200165,
+      "trace": "runs\\P2\\traces\\expert_place_on_cell_00200165.jsonl"
+    },
+    {
+      "success": true,
+      "reason": "goal_reached",
+      "ticks": 405,
+      "resets": 2,
+      "commands_completed": 3,
+      "check": {
+        "ok": true,
+        "per_predicate": [
+          {
+            "pred": "at",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "gripper_open",
+            "ok": true
+          },
+          {
+            "pred": "settled",
+            "ok": true
+          }
+        ],
+        "ticks": 15,
+        "required_ticks": 15
+      },
+      "seed": 200166,
+      "trace": "runs\\P2\\traces\\expert_place_on_cell_00200166.jsonl"
+    },
+    {
+      "success": true,
+      "reason": "goal_reached",
+      "ticks": 434,
+      "resets": 3,
+      "commands_completed": 3,
+      "check": {
+        "ok": true,
+        "per_predicate": [
+          {
+            "pred": "at",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "gripper_open",
+            "ok": true
+          },
+          {
+            "pred": "settled",
+            "ok": true
+          }
+        ],
+        "ticks": 15,
+        "required_ticks": 15
+      },
+      "seed": 200167,
+      "trace": "runs\\P2\\traces\\expert_place_on_cell_00200167.jsonl"
+    },
+    {
+      "success": true,
+      "reason": "goal_reached",
+      "ticks": 471,
+      "resets": 2,
+      "commands_completed": 3,
+      "check": {
+        "ok": true,
+        "per_predicate": [
+          {
+            "pred": "at",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "gripper_open",
+            "ok": true
+          },
+          {
+            "pred": "settled",
+            "ok": true
+          }
+        ],
+        "ticks": 15,
+        "required_ticks": 15
+      },
+      "seed": 200168,
+      "trace": "runs\\P2\\traces\\expert_place_on_cell_00200168.jsonl"
+    },
+    {
+      "success": true,
+      "reason": "goal_reached",
+      "ticks": 480,
+      "resets": 2,
+      "commands_completed": 3,
+      "check": {
+        "ok": true,
+        "per_predicate": [
+          {
+            "pred": "at",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "gripper_open",
+            "ok": true
+          },
+          {
+            "pred": "settled",
+            "ok": true
+          }
+        ],
+        "ticks": 15,
+        "required_ticks": 15
+      },
+      "seed": 200170,
+      "trace": "runs\\P2\\traces\\expert_place_on_cell_00200170.jsonl"
+    },
+    {
+      "success": false,
+      "reason": "timeout",
+      "ticks": 1200,
+      "resets": 226,
+      "commands_completed": 1,
+      "check": {
+        "ok": false,
+        "per_predicate": [
+          {
+            "pred": "at",
+            "ok": false
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "gripper_open",
+            "ok": true
+          },
+          {
+            "pred": "settled",
+            "ok": true
+          }
+        ],
+        "ticks": 15,
+        "required_ticks": 15
+      },
+      "seed": 200172,
+      "trace": "runs\\P2\\traces\\expert_place_on_cell_00200172.jsonl"
+    },
+    {
+      "success": true,
+      "reason": "goal_reached",
+      "ticks": 447,
+      "resets": 7,
+      "commands_completed": 3,
+      "check": {
+        "ok": true,
+        "per_predicate": [
+          {
+            "pred": "at",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "gripper_open",
+            "ok": true
+          },
+          {
+            "pred": "settled",
+            "ok": true
+          }
+        ],
+        "ticks": 15,
+        "required_ticks": 15
+      },
+      "seed": 200173,
+      "trace": "runs\\P2\\traces\\expert_place_on_cell_00200173.jsonl"
+    },
+    {
+      "success": true,
+      "reason": "goal_reached",
+      "ticks": 424,
+      "resets": 2,
+      "commands_completed": 3,
+      "check": {
+        "ok": true,
+        "per_predicate": [
+          {
+            "pred": "at",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "gripper_open",
+            "ok": true
+          },
+          {
+            "pred": "settled",
+            "ok": true
+          }
+        ],
+        "ticks": 15,
+        "required_ticks": 15
+      },
+      "seed": 200174,
+      "trace": "runs\\P2\\traces\\expert_place_on_cell_00200174.jsonl"
+    },
+    {
+      "success": true,
+      "reason": "goal_reached",
+      "ticks": 472,
+      "resets": 2,
+      "commands_completed": 3,
+      "check": {
+        "ok": true,
+        "per_predicate": [
+          {
+            "pred": "at",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "gripper_open",
+            "ok": true
+          },
+          {
+            "pred": "settled",
+            "ok": true
+          }
+        ],
+        "ticks": 15,
+        "required_ticks": 15
+      },
+      "seed": 200175,
+      "trace": "runs\\P2\\traces\\expert_place_on_cell_00200175.jsonl"
+    },
+    {
+      "success": true,
+      "reason": "goal_reached",
+      "ticks": 434,
+      "resets": 3,
+      "commands_completed": 3,
+      "check": {
+        "ok": true,
+        "per_predicate": [
+          {
+            "pred": "at",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "gripper_open",
+            "ok": true
+          },
+          {
+            "pred": "settled",
+            "ok": true
+          }
+        ],
+        "ticks": 15,
+        "required_ticks": 15
+      },
+      "seed": 200176,
+      "trace": "runs\\P2\\traces\\expert_place_on_cell_00200176.jsonl"
+    },
+    {
+      "success": true,
+      "reason": "goal_reached",
+      "ticks": 459,
+      "resets": 2,
+      "commands_completed": 3,
+      "check": {
+        "ok": true,
+        "per_predicate": [
+          {
+            "pred": "at",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "gripper_open",
+            "ok": true
+          },
+          {
+            "pred": "settled",
+            "ok": true
+          }
+        ],
+        "ticks": 15,
+        "required_ticks": 15
+      },
+      "seed": 200177,
+      "trace": "runs\\P2\\traces\\expert_place_on_cell_00200177.jsonl"
+    },
+    {
+      "success": true,
+      "reason": "goal_reached",
+      "ticks": 414,
+      "resets": 2,
+      "commands_completed": 3,
+      "check": {
+        "ok": true,
+        "per_predicate": [
+          {
+            "pred": "at",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "gripper_open",
+            "ok": true
+          },
+          {
+            "pred": "settled",
+            "ok": true
+          }
+        ],
+        "ticks": 15,
+        "required_ticks": 15
+      },
+      "seed": 200178,
+      "trace": "runs\\P2\\traces\\expert_place_on_cell_00200178.jsonl"
+    },
+    {
+      "success": true,
+      "reason": "goal_reached",
+      "ticks": 515,
+      "resets": 3,
+      "commands_completed": 3,
+      "check": {
+        "ok": true,
+        "per_predicate": [
+          {
+            "pred": "at",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "gripper_open",
+            "ok": true
+          },
+          {
+            "pred": "settled",
+            "ok": true
+          }
+        ],
+        "ticks": 15,
+        "required_ticks": 15
+      },
+      "seed": 200179,
+      "trace": "runs\\P2\\traces\\expert_place_on_cell_00200179.jsonl"
+    },
+    {
+      "success": false,
+      "reason": "timeout",
+      "ticks": 1200,
+      "resets": 312,
+      "commands_completed": 1,
+      "check": {
+        "ok": false,
+        "per_predicate": [
+          {
+            "pred": "at",
+            "ok": false
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "gripper_open",
+            "ok": true
+          },
+          {
+            "pred": "settled",
+            "ok": true
+          }
+        ],
+        "ticks": 15,
+        "required_ticks": 15
+      },
+      "seed": 200180,
+      "trace": "runs\\P2\\traces\\expert_place_on_cell_00200180.jsonl"
+    },
+    {
+      "success": true,
+      "reason": "goal_reached",
+      "ticks": 457,
+      "resets": 4,
+      "commands_completed": 3,
+      "check": {
+        "ok": true,
+        "per_predicate": [
+          {
+            "pred": "at",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "gripper_open",
+            "ok": true
+          },
+          {
+            "pred": "settled",
+            "ok": true
+          }
+        ],
+        "ticks": 15,
+        "required_ticks": 15
+      },
+      "seed": 200181,
+      "trace": "runs\\P2\\traces\\expert_place_on_cell_00200181.jsonl"
+    },
+    {
+      "success": true,
+      "reason": "goal_reached",
+      "ticks": 421,
+      "resets": 2,
+      "commands_completed": 3,
+      "check": {
+        "ok": true,
+        "per_predicate": [
+          {
+            "pred": "at",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "gripper_open",
+            "ok": true
+          },
+          {
+            "pred": "settled",
+            "ok": true
+          }
+        ],
+        "ticks": 15,
+        "required_ticks": 15
+      },
+      "seed": 200182,
+      "trace": "runs\\P2\\traces\\expert_place_on_cell_00200182.jsonl"
+    },
+    {
+      "success": true,
+      "reason": "goal_reached",
+      "ticks": 406,
+      "resets": 2,
+      "commands_completed": 3,
+      "check": {
+        "ok": true,
+        "per_predicate": [
+          {
+            "pred": "at",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "gripper_open",
+            "ok": true
+          },
+          {
+            "pred": "settled",
+            "ok": true
+          }
+        ],
+        "ticks": 15,
+        "required_ticks": 15
+      },
+      "seed": 200183,
+      "trace": "runs\\P2\\traces\\expert_place_on_cell_00200183.jsonl"
+    },
+    {
+      "success": true,
+      "reason": "goal_reached",
+      "ticks": 449,
+      "resets": 2,
+      "commands_completed": 3,
+      "check": {
+        "ok": true,
+        "per_predicate": [
+          {
+            "pred": "at",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "gripper_open",
+            "ok": true
+          },
+          {
+            "pred": "settled",
+            "ok": true
+          }
+        ],
+        "ticks": 15,
+        "required_ticks": 15
+      },
+      "seed": 200185,
+      "trace": "runs\\P2\\traces\\expert_place_on_cell_00200185.jsonl"
+    },
+    {
+      "success": true,
+      "reason": "goal_reached",
+      "ticks": 447,
+      "resets": 7,
+      "commands_completed": 3,
+      "check": {
+        "ok": true,
+        "per_predicate": [
+          {
+            "pred": "at",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "gripper_open",
+            "ok": true
+          },
+          {
+            "pred": "settled",
+            "ok": true
+          }
+        ],
+        "ticks": 15,
+        "required_ticks": 15
+      },
+      "seed": 200188,
+      "trace": "runs\\P2\\traces\\expert_place_on_cell_00200188.jsonl"
+    },
+    {
+      "success": true,
+      "reason": "goal_reached",
+      "ticks": 466,
+      "resets": 3,
+      "commands_completed": 3,
+      "check": {
+        "ok": true,
+        "per_predicate": [
+          {
+            "pred": "at",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "gripper_open",
+            "ok": true
+          },
+          {
+            "pred": "settled",
+            "ok": true
+          }
+        ],
+        "ticks": 15,
+        "required_ticks": 15
+      },
+      "seed": 200190,
+      "trace": "runs\\P2\\traces\\expert_place_on_cell_00200190.jsonl"
+    },
+    {
+      "success": true,
+      "reason": "goal_reached",
+      "ticks": 415,
+      "resets": 3,
+      "commands_completed": 3,
+      "check": {
+        "ok": true,
+        "per_predicate": [
+          {
+            "pred": "at",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "gripper_open",
+            "ok": true
+          },
+          {
+            "pred": "settled",
+            "ok": true
+          }
+        ],
+        "ticks": 15,
+        "required_ticks": 15
+      },
+      "seed": 200191,
+      "trace": "runs\\P2\\traces\\expert_place_on_cell_00200191.jsonl"
+    },
+    {
+      "success": true,
+      "reason": "goal_reached",
+      "ticks": 427,
+      "resets": 7,
+      "commands_completed": 3,
+      "check": {
+        "ok": true,
+        "per_predicate": [
+          {
+            "pred": "at",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "gripper_open",
+            "ok": true
+          },
+          {
+            "pred": "settled",
+            "ok": true
+          }
+        ],
+        "ticks": 15,
+        "required_ticks": 15
+      },
+      "seed": 200192,
+      "trace": "runs\\P2\\traces\\expert_place_on_cell_00200192.jsonl"
+    },
+    {
+      "success": true,
+      "reason": "goal_reached",
+      "ticks": 472,
+      "resets": 2,
+      "commands_completed": 3,
+      "check": {
+        "ok": true,
+        "per_predicate": [
+          {
+            "pred": "at",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "gripper_open",
+            "ok": true
+          },
+          {
+            "pred": "settled",
+            "ok": true
+          }
+        ],
+        "ticks": 15,
+        "required_ticks": 15
+      },
+      "seed": 200193,
+      "trace": "runs\\P2\\traces\\expert_place_on_cell_00200193.jsonl"
+    },
+    {
+      "success": true,
+      "reason": "goal_reached",
+      "ticks": 433,
+      "resets": 4,
+      "commands_completed": 3,
+      "check": {
+        "ok": true,
+        "per_predicate": [
+          {
+            "pred": "at",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "gripper_open",
+            "ok": true
+          },
+          {
+            "pred": "settled",
+            "ok": true
+          }
+        ],
+        "ticks": 15,
+        "required_ticks": 15
+      },
+      "seed": 200194,
+      "trace": "runs\\P2\\traces\\expert_place_on_cell_00200194.jsonl"
+    },
+    {
+      "success": true,
+      "reason": "goal_reached",
+      "ticks": 397,
+      "resets": 2,
+      "commands_completed": 3,
+      "check": {
+        "ok": true,
+        "per_predicate": [
+          {
+            "pred": "at",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "gripper_open",
+            "ok": true
+          },
+          {
+            "pred": "settled",
+            "ok": true
+          }
+        ],
+        "ticks": 15,
+        "required_ticks": 15
+      },
+      "seed": 200195,
+      "trace": "runs\\P2\\traces\\expert_place_on_cell_00200195.jsonl"
+    },
+    {
+      "success": true,
+      "reason": "goal_reached",
+      "ticks": 487,
+      "resets": 2,
+      "commands_completed": 3,
+      "check": {
+        "ok": true,
+        "per_predicate": [
+          {
+            "pred": "at",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "gripper_open",
+            "ok": true
+          },
+          {
+            "pred": "settled",
+            "ok": true
+          }
+        ],
+        "ticks": 15,
+        "required_ticks": 15
+      },
+      "seed": 200196,
+      "trace": "runs\\P2\\traces\\expert_place_on_cell_00200196.jsonl"
+    },
+    {
+      "success": true,
+      "reason": "goal_reached",
+      "ticks": 443,
+      "resets": 3,
+      "commands_completed": 3,
+      "check": {
+        "ok": true,
+        "per_predicate": [
+          {
+            "pred": "at",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "gripper_open",
+            "ok": true
+          },
+          {
+            "pred": "settled",
+            "ok": true
+          }
+        ],
+        "ticks": 15,
+        "required_ticks": 15
+      },
+      "seed": 200197,
+      "trace": "runs\\P2\\traces\\expert_place_on_cell_00200197.jsonl"
+    },
+    {
+      "success": true,
+      "reason": "goal_reached",
+      "ticks": 419,
+      "resets": 2,
+      "commands_completed": 3,
+      "check": {
+        "ok": true,
+        "per_predicate": [
+          {
+            "pred": "at",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "gripper_open",
+            "ok": true
+          },
+          {
+            "pred": "settled",
+            "ok": true
+          }
+        ],
+        "ticks": 15,
+        "required_ticks": 15
+      },
+      "seed": 200198,
+      "trace": "runs\\P2\\traces\\expert_place_on_cell_00200198.jsonl"
+    },
+    {
+      "success": true,
+      "reason": "goal_reached",
+      "ticks": 469,
+      "resets": 3,
+      "commands_completed": 3,
+      "check": {
+        "ok": true,
+        "per_predicate": [
+          {
+            "pred": "at",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "gripper_open",
+            "ok": true
+          },
+          {
+            "pred": "settled",
+            "ok": true
+          }
+        ],
+        "ticks": 15,
+        "required_ticks": 15
+      },
+      "seed": 200199,
+      "trace": "runs\\P2\\traces\\expert_place_on_cell_00200199.jsonl"
+    },
+    {
+      "success": false,
+      "reason": "timeout",
+      "ticks": 1200,
+      "resets": 363,
+      "commands_completed": 1,
+      "check": {
+        "ok": false,
+        "per_predicate": [
+          {
+            "pred": "at",
+            "ok": false
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "gripper_open",
+            "ok": true
+          },
+          {
+            "pred": "settled",
+            "ok": true
+          }
+        ],
+        "ticks": 15,
+        "required_ticks": 15
+      },
+      "seed": 200200,
+      "trace": "runs\\P2\\traces\\expert_place_on_cell_00200200.jsonl"
+    },
+    {
+      "success": false,
+      "reason": "timeout",
+      "ticks": 1200,
+      "resets": 139,
+      "commands_completed": 0,
+      "check": {
+        "ok": false,
+        "per_predicate": [
+          {
+            "pred": "at",
+            "ok": false
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "gripper_open",
+            "ok": true
+          },
+          {
+            "pred": "settled",
+            "ok": true
+          }
+        ],
+        "ticks": 15,
+        "required_ticks": 15
+      },
+      "seed": 200201,
+      "trace": "runs\\P2\\traces\\expert_place_on_cell_00200201.jsonl"
+    },
+    {
+      "success": true,
+      "reason": "goal_reached",
+      "ticks": 422,
+      "resets": 2,
+      "commands_completed": 3,
+      "check": {
+        "ok": true,
+        "per_predicate": [
+          {
+            "pred": "at",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "gripper_open",
+            "ok": true
+          },
+          {
+            "pred": "settled",
+            "ok": true
+          }
+        ],
+        "ticks": 15,
+        "required_ticks": 15
+      },
+      "seed": 200202,
+      "trace": "runs\\P2\\traces\\expert_place_on_cell_00200202.jsonl"
+    },
+    {
+      "success": true,
+      "reason": "goal_reached",
+      "ticks": 450,
+      "resets": 2,
+      "commands_completed": 3,
+      "check": {
+        "ok": true,
+        "per_predicate": [
+          {
+            "pred": "at",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "gripper_open",
+            "ok": true
+          },
+          {
+            "pred": "settled",
+            "ok": true
+          }
+        ],
+        "ticks": 15,
+        "required_ticks": 15
+      },
+      "seed": 200204,
+      "trace": "runs\\P2\\traces\\expert_place_on_cell_00200204.jsonl"
+    },
+    {
+      "success": true,
+      "reason": "goal_reached",
+      "ticks": 430,
+      "resets": 2,
+      "commands_completed": 3,
+      "check": {
+        "ok": true,
+        "per_predicate": [
+          {
+            "pred": "at",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "gripper_open",
+            "ok": true
+          },
+          {
+            "pred": "settled",
+            "ok": true
+          }
+        ],
+        "ticks": 15,
+        "required_ticks": 15
+      },
+      "seed": 200205,
+      "trace": "runs\\P2\\traces\\expert_place_on_cell_00200205.jsonl"
+    },
+    {
+      "success": true,
+      "reason": "goal_reached",
+      "ticks": 451,
+      "resets": 2,
+      "commands_completed": 3,
+      "check": {
+        "ok": true,
+        "per_predicate": [
+          {
+            "pred": "at",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "gripper_open",
+            "ok": true
+          },
+          {
+            "pred": "settled",
+            "ok": true
+          }
+        ],
+        "ticks": 15,
+        "required_ticks": 15
+      },
+      "seed": 200207,
+      "trace": "runs\\P2\\traces\\expert_place_on_cell_00200207.jsonl"
+    },
+    {
+      "success": true,
+      "reason": "goal_reached",
+      "ticks": 422,
+      "resets": 2,
+      "commands_completed": 3,
+      "check": {
+        "ok": true,
+        "per_predicate": [
+          {
+            "pred": "at",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "gripper_open",
+            "ok": true
+          },
+          {
+            "pred": "settled",
+            "ok": true
+          }
+        ],
+        "ticks": 15,
+        "required_ticks": 15
+      },
+      "seed": 200208,
+      "trace": "runs\\P2\\traces\\expert_place_on_cell_00200208.jsonl"
+    },
+    {
+      "success": true,
+      "reason": "goal_reached",
+      "ticks": 464,
+      "resets": 2,
+      "commands_completed": 3,
+      "check": {
+        "ok": true,
+        "per_predicate": [
+          {
+            "pred": "at",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "gripper_open",
+            "ok": true
+          },
+          {
+            "pred": "settled",
+            "ok": true
+          }
+        ],
+        "ticks": 15,
+        "required_ticks": 15
+      },
+      "seed": 200210,
+      "trace": "runs\\P2\\traces\\expert_place_on_cell_00200210.jsonl"
+    },
+    {
+      "success": true,
+      "reason": "goal_reached",
+      "ticks": 487,
+      "resets": 2,
+      "commands_completed": 3,
+      "check": {
+        "ok": true,
+        "per_predicate": [
+          {
+            "pred": "at",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "gripper_open",
+            "ok": true
+          },
+          {
+            "pred": "settled",
+            "ok": true
+          }
+        ],
+        "ticks": 15,
+        "required_ticks": 15
+      },
+      "seed": 200212,
+      "trace": "runs\\P2\\traces\\expert_place_on_cell_00200212.jsonl"
+    },
+    {
+      "success": true,
+      "reason": "goal_reached",
+      "ticks": 491,
+      "resets": 3,
+      "commands_completed": 3,
+      "check": {
+        "ok": true,
+        "per_predicate": [
+          {
+            "pred": "at",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "gripper_open",
+            "ok": true
+          },
+          {
+            "pred": "settled",
+            "ok": true
+          }
+        ],
+        "ticks": 15,
+        "required_ticks": 15
+      },
+      "seed": 200213,
+      "trace": "runs\\P2\\traces\\expert_place_on_cell_00200213.jsonl"
+    },
+    {
+      "success": false,
+      "reason": "timeout",
+      "ticks": 1200,
+      "resets": 52,
+      "commands_completed": 1,
+      "check": {
+        "ok": false,
+        "per_predicate": [
+          {
+            "pred": "at",
+            "ok": false
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "gripper_open",
+            "ok": true
+          },
+          {
+            "pred": "settled",
+            "ok": true
+          }
+        ],
+        "ticks": 15,
+        "required_ticks": 15
+      },
+      "seed": 200214,
+      "trace": "runs\\P2\\traces\\expert_place_on_cell_00200214.jsonl"
+    },
+    {
+      "success": true,
+      "reason": "goal_reached",
+      "ticks": 436,
+      "resets": 2,
+      "commands_completed": 3,
+      "check": {
+        "ok": true,
+        "per_predicate": [
+          {
+            "pred": "at",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "gripper_open",
+            "ok": true
+          },
+          {
+            "pred": "settled",
+            "ok": true
+          }
+        ],
+        "ticks": 15,
+        "required_ticks": 15
+      },
+      "seed": 200215,
+      "trace": "runs\\P2\\traces\\expert_place_on_cell_00200215.jsonl"
+    },
+    {
+      "success": true,
+      "reason": "goal_reached",
+      "ticks": 417,
+      "resets": 2,
+      "commands_completed": 3,
+      "check": {
+        "ok": true,
+        "per_predicate": [
+          {
+            "pred": "at",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "gripper_open",
+            "ok": true
+          },
+          {
+            "pred": "settled",
+            "ok": true
+          }
+        ],
+        "ticks": 15,
+        "required_ticks": 15
+      },
+      "seed": 200216,
+      "trace": "runs\\P2\\traces\\expert_place_on_cell_00200216.jsonl"
+    },
+    {
+      "success": true,
+      "reason": "goal_reached",
+      "ticks": 440,
+      "resets": 4,
+      "commands_completed": 3,
+      "check": {
+        "ok": true,
+        "per_predicate": [
+          {
+            "pred": "at",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "gripper_open",
+            "ok": true
+          },
+          {
+            "pred": "settled",
+            "ok": true
+          }
+        ],
+        "ticks": 15,
+        "required_ticks": 15
+      },
+      "seed": 200217,
+      "trace": "runs\\P2\\traces\\expert_place_on_cell_00200217.jsonl"
+    },
+    {
+      "success": true,
+      "reason": "goal_reached",
+      "ticks": 462,
+      "resets": 2,
+      "commands_completed": 3,
+      "check": {
+        "ok": true,
+        "per_predicate": [
+          {
+            "pred": "at",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "gripper_open",
+            "ok": true
+          },
+          {
+            "pred": "settled",
+            "ok": true
+          }
+        ],
+        "ticks": 15,
+        "required_ticks": 15
+      },
+      "seed": 200219,
+      "trace": "runs\\P2\\traces\\expert_place_on_cell_00200219.jsonl"
+    },
+    {
+      "success": true,
+      "reason": "goal_reached",
+      "ticks": 442,
+      "resets": 2,
+      "commands_completed": 3,
+      "check": {
+        "ok": true,
+        "per_predicate": [
+          {
+            "pred": "at",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "gripper_open",
+            "ok": true
+          },
+          {
+            "pred": "settled",
+            "ok": true
+          }
+        ],
+        "ticks": 15,
+        "required_ticks": 15
+      },
+      "seed": 200220,
+      "trace": "runs\\P2\\traces\\expert_place_on_cell_00200220.jsonl"
+    },
+    {
+      "success": true,
+      "reason": "goal_reached",
+      "ticks": 464,
+      "resets": 2,
+      "commands_completed": 3,
+      "check": {
+        "ok": true,
+        "per_predicate": [
+          {
+            "pred": "at",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "gripper_open",
+            "ok": true
+          },
+          {
+            "pred": "settled",
+            "ok": true
+          }
+        ],
+        "ticks": 15,
+        "required_ticks": 15
+      },
+      "seed": 200221,
+      "trace": "runs\\P2\\traces\\expert_place_on_cell_00200221.jsonl"
+    },
+    {
+      "success": true,
+      "reason": "goal_reached",
+      "ticks": 414,
+      "resets": 2,
+      "commands_completed": 3,
+      "check": {
+        "ok": true,
+        "per_predicate": [
+          {
+            "pred": "at",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "gripper_open",
+            "ok": true
+          },
+          {
+            "pred": "settled",
+            "ok": true
+          }
+        ],
+        "ticks": 15,
+        "required_ticks": 15
+      },
+      "seed": 200223,
+      "trace": "runs\\P2\\traces\\expert_place_on_cell_00200223.jsonl"
+    },
+    {
+      "success": true,
+      "reason": "goal_reached",
+      "ticks": 419,
+      "resets": 2,
+      "commands_completed": 3,
+      "check": {
+        "ok": true,
+        "per_predicate": [
+          {
+            "pred": "at",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "gripper_open",
+            "ok": true
+          },
+          {
+            "pred": "settled",
+            "ok": true
+          }
+        ],
+        "ticks": 15,
+        "required_ticks": 15
+      },
+      "seed": 200224,
+      "trace": "runs\\P2\\traces\\expert_place_on_cell_00200224.jsonl"
+    },
+    {
+      "success": true,
+      "reason": "goal_reached",
+      "ticks": 490,
+      "resets": 3,
+      "commands_completed": 3,
+      "check": {
+        "ok": true,
+        "per_predicate": [
+          {
+            "pred": "at",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "gripper_open",
+            "ok": true
+          },
+          {
+            "pred": "settled",
+            "ok": true
+          }
+        ],
+        "ticks": 15,
+        "required_ticks": 15
+      },
+      "seed": 200225,
+      "trace": "runs\\P2\\traces\\expert_place_on_cell_00200225.jsonl"
+    },
+    {
+      "success": true,
+      "reason": "goal_reached",
+      "ticks": 398,
+      "resets": 3,
+      "commands_completed": 3,
+      "check": {
+        "ok": true,
+        "per_predicate": [
+          {
+            "pred": "at",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "gripper_open",
+            "ok": true
+          },
+          {
+            "pred": "settled",
+            "ok": true
+          }
+        ],
+        "ticks": 15,
+        "required_ticks": 15
+      },
+      "seed": 200227,
+      "trace": "runs\\P2\\traces\\expert_place_on_cell_00200227.jsonl"
+    },
+    {
+      "success": true,
+      "reason": "goal_reached",
+      "ticks": 443,
+      "resets": 3,
+      "commands_completed": 3,
+      "check": {
+        "ok": true,
+        "per_predicate": [
+          {
+            "pred": "at",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "gripper_open",
+            "ok": true
+          },
+          {
+            "pred": "settled",
+            "ok": true
+          }
+        ],
+        "ticks": 15,
+        "required_ticks": 15
+      },
+      "seed": 200229,
+      "trace": "runs\\P2\\traces\\expert_place_on_cell_00200229.jsonl"
+    },
+    {
+      "success": true,
+      "reason": "goal_reached",
+      "ticks": 434,
+      "resets": 2,
+      "commands_completed": 3,
+      "check": {
+        "ok": true,
+        "per_predicate": [
+          {
+            "pred": "at",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "gripper_open",
+            "ok": true
+          },
+          {
+            "pred": "settled",
+            "ok": true
+          }
+        ],
+        "ticks": 15,
+        "required_ticks": 15
+      },
+      "seed": 200230,
+      "trace": "runs\\P2\\traces\\expert_place_on_cell_00200230.jsonl"
+    },
+    {
+      "success": true,
+      "reason": "goal_reached",
+      "ticks": 447,
+      "resets": 7,
+      "commands_completed": 3,
+      "check": {
+        "ok": true,
+        "per_predicate": [
+          {
+            "pred": "at",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "gripper_open",
+            "ok": true
+          },
+          {
+            "pred": "settled",
+            "ok": true
+          }
+        ],
+        "ticks": 15,
+        "required_ticks": 15
+      },
+      "seed": 200231,
+      "trace": "runs\\P2\\traces\\expert_place_on_cell_00200231.jsonl"
+    },
+    {
+      "success": true,
+      "reason": "goal_reached",
+      "ticks": 441,
+      "resets": 5,
+      "commands_completed": 3,
+      "check": {
+        "ok": true,
+        "per_predicate": [
+          {
+            "pred": "at",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "gripper_open",
+            "ok": true
+          },
+          {
+            "pred": "settled",
+            "ok": true
+          }
+        ],
+        "ticks": 15,
+        "required_ticks": 15
+      },
+      "seed": 200232,
+      "trace": "runs\\P2\\traces\\expert_place_on_cell_00200232.jsonl"
+    },
+    {
+      "success": true,
+      "reason": "goal_reached",
+      "ticks": 431,
+      "resets": 2,
+      "commands_completed": 3,
+      "check": {
+        "ok": true,
+        "per_predicate": [
+          {
+            "pred": "at",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "gripper_open",
+            "ok": true
+          },
+          {
+            "pred": "settled",
+            "ok": true
+          }
+        ],
+        "ticks": 15,
+        "required_ticks": 15
+      },
+      "seed": 200234,
+      "trace": "runs\\P2\\traces\\expert_place_on_cell_00200234.jsonl"
+    },
+    {
+      "success": true,
+      "reason": "goal_reached",
+      "ticks": 414,
+      "resets": 2,
+      "commands_completed": 3,
+      "check": {
+        "ok": true,
+        "per_predicate": [
+          {
+            "pred": "at",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "gripper_open",
+            "ok": true
+          },
+          {
+            "pred": "settled",
+            "ok": true
+          }
+        ],
+        "ticks": 15,
+        "required_ticks": 15
+      },
+      "seed": 200235,
+      "trace": "runs\\P2\\traces\\expert_place_on_cell_00200235.jsonl"
+    },
+    {
+      "success": true,
+      "reason": "goal_reached",
+      "ticks": 455,
+      "resets": 3,
+      "commands_completed": 3,
+      "check": {
+        "ok": true,
+        "per_predicate": [
+          {
+            "pred": "at",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "gripper_open",
+            "ok": true
+          },
+          {
+            "pred": "settled",
+            "ok": true
+          }
+        ],
+        "ticks": 15,
+        "required_ticks": 15
+      },
+      "seed": 200236,
+      "trace": "runs\\P2\\traces\\expert_place_on_cell_00200236.jsonl"
+    },
+    {
+      "success": true,
+      "reason": "goal_reached",
+      "ticks": 419,
+      "resets": 2,
+      "commands_completed": 3,
+      "check": {
+        "ok": true,
+        "per_predicate": [
+          {
+            "pred": "at",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "gripper_open",
+            "ok": true
+          },
+          {
+            "pred": "settled",
+            "ok": true
+          }
+        ],
+        "ticks": 15,
+        "required_ticks": 15
+      },
+      "seed": 200237,
+      "trace": "runs\\P2\\traces\\expert_place_on_cell_00200237.jsonl"
+    },
+    {
+      "success": true,
+      "reason": "goal_reached",
+      "ticks": 417,
+      "resets": 2,
+      "commands_completed": 3,
+      "check": {
+        "ok": true,
+        "per_predicate": [
+          {
+            "pred": "at",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "gripper_open",
+            "ok": true
+          },
+          {
+            "pred": "settled",
+            "ok": true
+          }
+        ],
+        "ticks": 15,
+        "required_ticks": 15
+      },
+      "seed": 200238,
+      "trace": "runs\\P2\\traces\\expert_place_on_cell_00200238.jsonl"
+    },
+    {
+      "success": true,
+      "reason": "goal_reached",
+      "ticks": 418,
+      "resets": 1,
+      "commands_completed": 3,
+      "check": {
+        "ok": true,
+        "per_predicate": [
+          {
+            "pred": "at",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "gripper_open",
+            "ok": true
+          },
+          {
+            "pred": "settled",
+            "ok": true
+          }
+        ],
+        "ticks": 15,
+        "required_ticks": 15
+      },
+      "seed": 200240,
+      "trace": "runs\\P2\\traces\\expert_place_on_cell_00200240.jsonl"
+    },
+    {
+      "success": true,
+      "reason": "goal_reached",
+      "ticks": 436,
+      "resets": 2,
+      "commands_completed": 3,
+      "check": {
+        "ok": true,
+        "per_predicate": [
+          {
+            "pred": "at",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "gripper_open",
+            "ok": true
+          },
+          {
+            "pred": "settled",
+            "ok": true
+          }
+        ],
+        "ticks": 15,
+        "required_ticks": 15
+      },
+      "seed": 200241,
+      "trace": "runs\\P2\\traces\\expert_place_on_cell_00200241.jsonl"
+    },
+    {
+      "success": true,
+      "reason": "goal_reached",
+      "ticks": 434,
+      "resets": 2,
+      "commands_completed": 3,
+      "check": {
+        "ok": true,
+        "per_predicate": [
+          {
+            "pred": "at",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "gripper_open",
+            "ok": true
+          },
+          {
+            "pred": "settled",
+            "ok": true
+          }
+        ],
+        "ticks": 15,
+        "required_ticks": 15
+      },
+      "seed": 200242,
+      "trace": "runs\\P2\\traces\\expert_place_on_cell_00200242.jsonl"
+    },
+    {
+      "success": true,
+      "reason": "goal_reached",
+      "ticks": 439,
+      "resets": 2,
+      "commands_completed": 3,
+      "check": {
+        "ok": true,
+        "per_predicate": [
+          {
+            "pred": "at",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "gripper_open",
+            "ok": true
+          },
+          {
+            "pred": "settled",
+            "ok": true
+          }
+        ],
+        "ticks": 15,
+        "required_ticks": 15
+      },
+      "seed": 200244,
+      "trace": "runs\\P2\\traces\\expert_place_on_cell_00200244.jsonl"
+    },
+    {
+      "success": true,
+      "reason": "goal_reached",
+      "ticks": 401,
+      "resets": 2,
+      "commands_completed": 3,
+      "check": {
+        "ok": true,
+        "per_predicate": [
+          {
+            "pred": "at",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "gripper_open",
+            "ok": true
+          },
+          {
+            "pred": "settled",
+            "ok": true
+          }
+        ],
+        "ticks": 15,
+        "required_ticks": 15
+      },
+      "seed": 200245,
+      "trace": "runs\\P2\\traces\\expert_place_on_cell_00200245.jsonl"
+    },
+    {
+      "success": true,
+      "reason": "goal_reached",
+      "ticks": 440,
+      "resets": 2,
+      "commands_completed": 3,
+      "check": {
+        "ok": true,
+        "per_predicate": [
+          {
+            "pred": "at",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "gripper_open",
+            "ok": true
+          },
+          {
+            "pred": "settled",
+            "ok": true
+          }
+        ],
+        "ticks": 15,
+        "required_ticks": 15
+      },
+      "seed": 200246,
+      "trace": "runs\\P2\\traces\\expert_place_on_cell_00200246.jsonl"
+    },
+    {
+      "success": true,
+      "reason": "goal_reached",
+      "ticks": 468,
+      "resets": 2,
+      "commands_completed": 3,
+      "check": {
+        "ok": true,
+        "per_predicate": [
+          {
+            "pred": "at",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "gripper_open",
+            "ok": true
+          },
+          {
+            "pred": "settled",
+            "ok": true
+          }
+        ],
+        "ticks": 15,
+        "required_ticks": 15
+      },
+      "seed": 200247,
+      "trace": "runs\\P2\\traces\\expert_place_on_cell_00200247.jsonl"
+    },
+    {
+      "success": true,
+      "reason": "goal_reached",
+      "ticks": 430,
+      "resets": 2,
+      "commands_completed": 3,
+      "check": {
+        "ok": true,
+        "per_predicate": [
+          {
+            "pred": "at",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "gripper_open",
+            "ok": true
+          },
+          {
+            "pred": "settled",
+            "ok": true
+          }
+        ],
+        "ticks": 15,
+        "required_ticks": 15
+      },
+      "seed": 200248,
+      "trace": "runs\\P2\\traces\\expert_place_on_cell_00200248.jsonl"
+    },
+    {
+      "success": true,
+      "reason": "goal_reached",
+      "ticks": 420,
+      "resets": 2,
+      "commands_completed": 3,
+      "check": {
+        "ok": true,
+        "per_predicate": [
+          {
+            "pred": "at",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "gripper_open",
+            "ok": true
+          },
+          {
+            "pred": "settled",
+            "ok": true
+          }
+        ],
+        "ticks": 15,
+        "required_ticks": 15
+      },
+      "seed": 200251,
+      "trace": "runs\\P2\\traces\\expert_place_on_cell_00200251.jsonl"
+    },
+    {
+      "success": true,
+      "reason": "goal_reached",
+      "ticks": 451,
+      "resets": 3,
+      "commands_completed": 3,
+      "check": {
+        "ok": true,
+        "per_predicate": [
+          {
+            "pred": "at",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "gripper_open",
+            "ok": true
+          },
+          {
+            "pred": "settled",
+            "ok": true
+          }
+        ],
+        "ticks": 15,
+        "required_ticks": 15
+      },
+      "seed": 200252,
+      "trace": "runs\\P2\\traces\\expert_place_on_cell_00200252.jsonl"
+    },
+    {
+      "success": false,
+      "reason": "timeout",
+      "ticks": 1200,
+      "resets": 409,
+      "commands_completed": 1,
+      "check": {
+        "ok": false,
+        "per_predicate": [
+          {
+            "pred": "at",
+            "ok": false
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "gripper_open",
+            "ok": true
+          },
+          {
+            "pred": "settled",
+            "ok": true
+          }
+        ],
+        "ticks": 15,
+        "required_ticks": 15
+      },
+      "seed": 200253,
+      "trace": "runs\\P2\\traces\\expert_place_on_cell_00200253.jsonl"
+    },
+    {
+      "success": true,
+      "reason": "goal_reached",
+      "ticks": 454,
+      "resets": 2,
+      "commands_completed": 3,
+      "check": {
+        "ok": true,
+        "per_predicate": [
+          {
+            "pred": "at",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "gripper_open",
+            "ok": true
+          },
+          {
+            "pred": "settled",
+            "ok": true
+          }
+        ],
+        "ticks": 15,
+        "required_ticks": 15
+      },
+      "seed": 200255,
+      "trace": "runs\\P2\\traces\\expert_place_on_cell_00200255.jsonl"
+    },
+    {
+      "success": true,
+      "reason": "goal_reached",
+      "ticks": 467,
+      "resets": 4,
+      "commands_completed": 3,
+      "check": {
+        "ok": true,
+        "per_predicate": [
+          {
+            "pred": "at",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "gripper_open",
+            "ok": true
+          },
+          {
+            "pred": "settled",
+            "ok": true
+          }
+        ],
+        "ticks": 15,
+        "required_ticks": 15
+      },
+      "seed": 200256,
+      "trace": "runs\\P2\\traces\\expert_place_on_cell_00200256.jsonl"
+    },
+    {
+      "success": true,
+      "reason": "goal_reached",
+      "ticks": 415,
+      "resets": 3,
+      "commands_completed": 3,
+      "check": {
+        "ok": true,
+        "per_predicate": [
+          {
+            "pred": "at",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "gripper_open",
+            "ok": true
+          },
+          {
+            "pred": "settled",
+            "ok": true
+          }
+        ],
+        "ticks": 15,
+        "required_ticks": 15
+      },
+      "seed": 200258,
+      "trace": "runs\\P2\\traces\\expert_place_on_cell_00200258.jsonl"
+    },
+    {
+      "success": true,
+      "reason": "goal_reached",
+      "ticks": 434,
+      "resets": 2,
+      "commands_completed": 3,
+      "check": {
+        "ok": true,
+        "per_predicate": [
+          {
+            "pred": "at",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "gripper_open",
+            "ok": true
+          },
+          {
+            "pred": "settled",
+            "ok": true
+          }
+        ],
+        "ticks": 15,
+        "required_ticks": 15
+      },
+      "seed": 200259,
+      "trace": "runs\\P2\\traces\\expert_place_on_cell_00200259.jsonl"
+    },
+    {
+      "success": true,
+      "reason": "goal_reached",
+      "ticks": 440,
+      "resets": 2,
+      "commands_completed": 3,
+      "check": {
+        "ok": true,
+        "per_predicate": [
+          {
+            "pred": "at",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "not_moved",
+            "ok": true
+          },
+          {
+            "pred": "gripper_open",
+            "ok": true
+          },
+          {
+            "pred": "settled",
+            "ok": true
+          }
+        ],
+        "ticks": 15,
+        "required_ticks": 15
+      },
+      "seed": 200261,
+      "trace": "runs\\P2\\traces\\expert_place_on_cell_00200261.jsonl"
+    }
+  ]
+}

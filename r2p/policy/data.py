@@ -17,6 +17,35 @@ from r2p.traces import read_trace
 from .runtime import expand_features
 
 
+def trace_commands(task, ticks, meta, config):
+    """Replay the inference scheduler on recorded observations, without phases.
+
+    Expert phase durations differ from state-based completion. In particular,
+    inference completes pick before the expert's lift/settle segment finishes.
+    Training must start the next command's clock at that same observable event.
+    """
+    if config.get("command_alignment") != "state_tracker":
+        return [tick["command"] for tick in ticks]
+    from .eval import CommandTracker
+
+    deployment = meta.get("deployment") or {}
+    tracker = CommandTracker(task, ticks[0]["poses"],
+                             pick_lift_m=.03 if deployment else .04)
+    start_q = meta.get("start_q", ticks[0]["q"])
+    result = []
+    for i, tick in enumerate(ticks):
+        if i:
+            previous = ticks[i-1].get("q_exec", ticks[i-1]["q_target"])
+            threshold = deployment.get("gripper_open_threshold_rad", .15)
+            opened = previous[5] > threshold
+            if deployment:
+                opened = opened and tick["q"][5] > threshold
+            tracker.update({"objects": tick["poses"], "gripper_open": bool(opened)},
+                           tick["q"], start_q)
+        result.append(tracker.command)
+    return result
+
+
 @dataclass
 class Augmentation:
     joint_offset_std: float = np.deg2rad(1.5)
@@ -62,6 +91,7 @@ class TraceDataset:
                                     "source": meta["source"], "ticks": len(ticks)})
             starts.append(meta.get("start_q", ticks[0]["q"]))
             targets = np.asarray([t["q_target"] for t in ticks], float)
+            aligned_commands = trace_commands(task, ticks, meta, config)
             smoothed = targets.copy()
             radius = self.aug.smooth_ticks//2
             for i, tick in enumerate(ticks):
@@ -71,22 +101,28 @@ class TraceDataset:
             base = len(raw)
             command_start = 0
             for i, tick in enumerate(ticks):
-                command = tick.get("command")
+                command = aligned_commands[i]
                 if not command:
                     raise ValueError(f"Unsegmented trace {path}: every tick needs a command")
                 q = np.asarray(tick.get("q_commanded", targets[i-1] if i else starts[-1]), float).copy()
+                if config.get("commanded_q_source") == "previous_executed":
+                    # Older expert q_commanded fields already contain a reset
+                    # triggered by gripper contact. Recover the actual command
+                    # (including DART), then apply today's arm-only reset once.
+                    q = np.asarray(ticks[i-1].get("q_exec", ticks[i-1]["q_target"])
+                                   if i else starts[-1], float).copy()
                 measured = np.asarray(tick["q"], float)
                 # Arm joints only: a gripper squeezing a cap always sits >4 deg from its squeeze target.
                 if np.max(np.abs(q[:5]-measured[:5])) > np.deg2rad(4):
                     q = measured.copy()
-                if i == 0 or command != ticks[i-1]["command"]:
+                if i == 0 or command != aligned_commands[i-1]:
                     command_start = i
                 row = np.r_[q, encode_slots(task, tick["poses"]).ravel(), command_onehot(task, command)]
                 if config.get("temporal_context") == "command_age_s":
                     row = np.r_[row, tick["t"]-ticks[command_start]["t"]]
                 raw.append(row)
                 end = i
-                while end+1 < min(len(ticks), i+HORIZON) and ticks[end+1]["command"] == command:
+                while end+1 < min(len(ticks), i+HORIZON) and aligned_commands[end+1] == command:
                     end += 1
                 indices = np.minimum(np.arange(i, i+HORIZON), end)
                 labels.append(smoothed[indices].ravel())

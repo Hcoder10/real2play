@@ -86,6 +86,9 @@ def train(task, traces, name, steps=1000, device="cpu", *, seeds=(0,), batch_siz
             optimizer.step()
             if step == 0 or step == steps-1 or (step+1) % 100 == 0:
                 history.append({"step": step+1, "loss": float(loss.detach().cpu())})
+            if (step+1) % 1000 == 0:
+                print(json.dumps({"member": member, "step": step+1,
+                                  "loss": history[-1]["loss"]}), flush=True)
         model.eval()
         weights.update({f"member{member}.{key}": value.detach().cpu().numpy() for key, value in model.state_dict().items()})
         losses.append({"seed": seed, "loss": history})
@@ -114,6 +117,7 @@ def main():
     p.add_argument("--task", required=True)
     p.add_argument("--traces", required=True)
     p.add_argument("--name", required=True)
+    p.add_argument("--out-dir", type=Path)
     p.add_argument("--steps", type=int, default=1000)
     p.add_argument("--device", default="cpu")
     p.add_argument("--seeds", type=int, nargs="+", default=[0])
@@ -124,10 +128,16 @@ def main():
     p.add_argument("--blocks", type=int, default=3)
     p.add_argument("--eval-max-ticks", type=int)
     p.add_argument("--smoke-only", action="store_true")
+    p.add_argument("--no-augmentation", action="store_true",
+                   help="Fit recorded observations exactly, for CPU proof or a clean-data retrain")
     a = p.parse_args()
+    augmentation = (Augmentation(joint_offset_std=0, position_std=0, stale_probability=0,
+                                aim_radial_m=0, aim_lateral_m=0, smooth_ticks=1)
+                    if a.no_augmentation else None)
     path = train(a.task, a.traces, a.name, a.steps, a.device, seeds=a.seeds, batch_size=a.batch_size,
                  eval_n=a.eval_n, memory_fraction=a.memory_fraction, width=a.width, blocks=a.blocks,
-                 eval_max_ticks=a.eval_max_ticks, smoke_only=a.smoke_only)
+                 eval_max_ticks=a.eval_max_ticks, smoke_only=a.smoke_only, augmentation=augmentation,
+                 out_dir=a.out_dir)
     print(json.dumps({"export": str(path), "eval": json.loads((path/"config.json").read_text())["eval"]}, indent=2))
 
 

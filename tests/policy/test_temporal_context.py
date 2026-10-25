@@ -39,6 +39,9 @@ def test_trace_clock_matches_runtime_and_restarts_at_command_boundary(tmp_path):
     task = load_task("cube_in_bowl")
     config = export_config(task, "clock")
     scene = sample_scene(task, np.random.default_rng(3))
+    # This test isolates explicit recorded command boundaries. Scheduler parity
+    # on physical state transitions is covered separately below.
+    config.pop("command_alignment")
     poses = {o["id"]: o for o in scene["objects"]}
     rows = [{"t": i/30, "q": HOME_Q, "q_commanded": HOME_Q, "q_target": HOME_Q,
              "poses": poses, "grip_closed": False, "phase": "hold",
@@ -59,6 +62,68 @@ def test_trace_clock_matches_runtime_and_restarts_at_command_boundary(tmp_path):
     legacy.pop("temporal_context")
     old_dataset = TraceDataset(task, path, legacy)
     assert old_dataset.features.shape[1] == dataset.features.shape[1]-1
+
+
+def test_dataset_recovers_executed_q_before_arm_only_reset(tmp_path):
+    task = load_task("cube_in_bowl")
+    config = export_config(task, "executed_q")
+    scene = sample_scene(task, np.random.default_rng(3))
+    poses = {o["id"]: o for o in scene["objects"]}
+    closed = HOME_Q.copy()
+    closed[5] = -.12
+    measured = closed.copy()
+    measured[5] = .2  # Contact blocks the jaw; old recorder reset the full input.
+    rows = [{"t": i/30, "q": measured.copy(), "q_commanded": measured.copy(),
+             "q_target": closed.copy(), "q_exec": closed.copy(), "poses": poses,
+             "grip_closed": True, "phase": "close", "command": commands(task)[0]}
+            for i in range(3)]
+    # Actual arm divergence must still reset all input joints to measurement.
+    rows[2]["q"][0] += .2
+    path = tmp_path/"contact.jsonl"
+    write_trace(path, {"task": task, "source": "expert", "start_q": HOME_Q}, rows)
+    dataset = TraceDataset(task, path, config)
+    np.testing.assert_allclose(dataset.raw[1, :6], closed, atol=1e-7)
+    np.testing.assert_allclose(dataset.raw[2, :6], rows[2]["q"], atol=1e-7)
+
+
+def test_training_command_clock_and_chunks_follow_inference_tracker(tmp_path):
+    from r2p.policy.data import Augmentation, trace_commands
+    from r2p.policy.eval import CommandTracker
+
+    task = load_task("cube_in_bowl")
+    config = export_config(task, "scheduler_parity")
+    scene = sample_scene(task, np.random.default_rng(3))
+    initial = {o["id"]: o for o in scene["objects"]}
+    obj = task["skeleton"][0]["obj"]
+    closed = HOME_Q.copy()
+    closed[5] = -.12
+    rows = []
+    for i in range(10):
+        poses = deepcopy(initial)
+        if i:
+            poses[obj]["xyz"][2] += .05
+        target = closed.copy()
+        target[0] += i*.001
+        rows.append({"t": i/30, "q": closed, "q_commanded": closed,
+                     "q_target": target, "q_exec": target, "poses": poses,
+                     "grip_closed": True, "phase": "lift", "command": commands(task)[0]})
+    meta = {"task": task, "source": "expert", "start_q": HOME_Q}
+    expected = []
+    tracker = CommandTracker(task, initial)
+    for i, row in enumerate(rows):
+        if i:
+            tracker.update({"objects": row["poses"], "gripper_open": False}, row["q"], HOME_Q)
+        expected.append(tracker.command)
+    assert trace_commands(task, rows, meta, config) == expected
+    assert expected[:4] == [commands(task)[0]]*4
+    assert expected[4:] == [commands(task)[1]]*6
+    path = tmp_path/"lift.jsonl"
+    write_trace(path, meta, rows)
+    dataset = TraceDataset(task, path, config, Augmentation(smooth_ticks=1))
+    np.testing.assert_allclose(dataset.raw[:, -1], [0, 1/30, 2/30, 3/30, 0, 1/30, 2/30, 3/30, 4/30, 5/30])
+    # Boundary padding belongs to the same new command as the observation.
+    labels = dataset.labels.reshape(-1, 15, 6)
+    np.testing.assert_allclose(labels[3], np.tile(rows[3]["q_target"], (15, 1)), atol=1e-7)
 
 
 def test_eval_rate_limit_uses_last_sent_even_when_measured_q_resets(monkeypatch):

@@ -14,7 +14,7 @@ import numpy as np
 
 from r2p.traces import read_trace
 from . import load
-from .data import Augmentation, TraceDataset
+from .data import Augmentation, TraceDataset, trace_commands
 from .eval import rollout
 
 
@@ -27,10 +27,18 @@ def teacher_forced(policy, trace):
         labels = dataset.labels[start:start+128].reshape(-1, 15, 6)
         errors.append(np.abs(prediction-labels))
     error = np.concatenate(errors)
-    return {"ticks": len(error), "chunk_mae_rad": float(error.mean()),
+    result = {"ticks": len(error), "chunk_mae_rad": float(error.mean()),
             "first_mae_rad": float(error[:, 0].mean()),
             "first_p95_rad": float(np.quantile(error[:, 0], .95)),
             "first_per_joint_mae_rad": error[:, 0].mean(axis=0).tolist()}
+    if Path(trace).is_file():
+        _, ticks = read_trace(trace)
+        result["per_phase"] = {
+            phase: {"ticks": sum(t["phase"] == phase for t in ticks),
+                    "chunk_mae_rad": float(error[[t["phase"] == phase for t in ticks]].mean()),
+                    "first_mae_rad": float(error[[t["phase"] == phase for t in ticks], 0].mean())}
+            for phase in dict.fromkeys(t["phase"] for t in ticks)}
+    return result
 
 
 def diagnose(export, trace):
@@ -44,17 +52,38 @@ def diagnose(export, trace):
     if policy.config.get("physics") != meta.get("physics_config"):
         raise ValueError("Exact-scene replay requires the trace's physics configuration")
     samples = []
+    reference_q = np.asarray([t["q"] for t in ticks])
+    reference_commands = np.asarray(trace_commands(policy.config["task_spec"], ticks, meta, policy.config))
+    phase_ticks = defaultdict(int)
+    last_phase = None
+    transitions = []
 
     def observe(row):
+        nonlocal last_phase
         phases[row["command"]].append(row["tick"])
+        candidates = np.flatnonzero(reference_commands == row["command"])
+        # An audit estimate only: no phase label is supplied to the policy.
+        if len(candidates):
+            nearest = candidates[np.argmin(np.sum((reference_q[candidates]-row["q"])**2, axis=1))]
+            phase = ticks[nearest]["phase"]
+        else:
+            phase = "unrepresented_command"
+        phase_ticks[phase] += 1
+        if phase != last_phase:
+            transitions.append({"tick": row["tick"], "phase": phase})
+            last_phase = phase
         if row["tick"] % 100 == 0:
             samples.append({"tick": row["tick"], "command": row["command"],
+                            "nearest_reference_phase": phase,
                             "q": row["q"].tolist(), "q_input": row["q_input"].tolist(),
                             "target": row["target"].tolist(), "resets": row["resets"],
                             "objects": row["state"]["objects"]})
 
     report["closed_loop"] = rollout(policy, meta["scene"], seed=meta.get("seed") or 0, on_step=observe)
     report["command_ticks"] = {k: len(v) for k, v in phases.items()}
+    report["nearest_reference_phase_ticks"] = dict(phase_ticks)
+    report["nearest_reference_phase_transitions"] = transitions
+    report["final_nearest_reference_phase"] = last_phase
     report["samples"] = samples
     return report
 
