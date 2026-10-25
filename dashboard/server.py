@@ -63,7 +63,12 @@ def make_server(data, host="127.0.0.1", port=8800):
             path = urllib.parse.urlparse(self.path).path
             try:
                 if path in {"/", "/runs"}:
-                    self.send((static / "index.html").read_bytes(), "text/html; charset=utf-8")
+                    html = (static / "index.html").read_text(encoding="utf-8").replace("</head>",
+                        '<link rel="stylesheet" href="/static/argon.css"><script src="/static/argon.js" defer></script></head>')
+                    self.send(html.encode("utf-8"), "text/html; charset=utf-8")
+                elif path == "/api/argon":
+                    from dashboard.argon import snapshot as argon_snapshot
+                    self.send(json.dumps(argon_snapshot(data.root), allow_nan=False).encode())
                 elif path == "/api/state":
                     self.send(json.dumps(snapshot(), allow_nan=False).encode())
                 elif path == "/api/runs":
