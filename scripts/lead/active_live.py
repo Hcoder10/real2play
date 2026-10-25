@@ -31,7 +31,7 @@ class ArgonCapPerceiver:
     """estimate(frame, q) -> {"poses": {piece: {xyz, source: vision, seen}}, "masks": {piece: disk}} for every
     `every`-th frame (an Argon call each); cached for `hold_s` so the mover's reset check sees the fresh survey."""
 
-    def __init__(self, cam, piece_id, near_xy, every=10, hold_s=1.5):
+    def __init__(self, cam, piece_id, near_xy, every=40, hold_s=1.5):
         self.cam, self.piece, self.near = cam, piece_id, np.asarray(near_xy, float)
         self.every, self.hold_s, self.n, self.last, self.calls = every, hold_s, 0, None, 0
 
@@ -126,6 +126,13 @@ if __name__ == "__main__":
 
     def guarded_execute(experiment, destination, **kw):
         result = resurvey_then_execute(experiment, destination, **kw)
+        st = mover.request(mover.url + "/state")
+        jaw = mover.validator.arm.tips(mover.measured_q(st))[2]
+        cells = np.asarray(list(board["cells"].values()))
+        if np.min(np.linalg.norm(cells - jaw[:2], axis=1)) < 0.09:
+            # The arm over or beside the board corrupts the outline detection (a hold in mid-air "moved" it 66 mm).
+            print(f"[camera] arm near the board after {experiment.kind}; sheet check skipped", flush=True)
+            return result
         readings = []
         for _ in range(3):
             c = grid_centre(mover.capture()[0])
