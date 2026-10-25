@@ -1,6 +1,6 @@
 local Tasks=require(if script then script.Parent.Generated.Tasks else "./Generated/Tasks")
 local Layout=Tasks.tasks.place_on_cell.board
-local T={tolerance=.018}
+local T={tolerance=.018,pieceSize=Tasks.tasks.place_on_cell.objects[1].size_m}
 T.lines={{1,2,3},{4,5,6},{7,8,9},{1,4,7},{2,5,8},{3,6,9},{1,5,9},{3,5,7}}
 function T.new() return table.create(9,0) end
 function T.result(board)
@@ -47,7 +47,12 @@ function T.xy(cell)
     return {p[1],p[2]}
 end
 function T.cell(xyz,board)
-    for _,i in ipairs(T.legal(board)) do local p=T.xy(i); if math.sqrt((xyz[1]-p[1])^2+(xyz[2]-p[2])^2)<=T.tolerance then return i end end
-    return nil
+    if T.result(board)~=nil then return nil end
+    local nearest=nil; local distance=T.tolerance^2
+    for i=1,9 do
+        local p=T.xy(i); local d=(xyz[1]-p[1])^2+(xyz[2]-p[2])^2
+        if d<=distance and (nearest==nil or d<distance) then nearest=i; distance=d end
+    end
+    return if nearest and board[nearest]==0 then nearest else nil
 end
 return T

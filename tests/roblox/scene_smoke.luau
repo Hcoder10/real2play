@@ -1,8 +1,13 @@
 local deadline=os.clock()+60
 while not _G.R2P_HARNESS and os.clock()<deadline do task.wait(.1) end
-assert(_G.R2P_HARNESS,"harness unavailable")
+local harness=assert(_G.R2P_HARNESS,"harness unavailable")
 local Twin=game:GetService("ReplicatedStorage").Twin
 local Scene=require(Twin.Scene)
+local Robot=require(Twin.Generated.Robot)
+local arm=harness.stations[1].arm
+for i,hinge in ipairs(arm.hinges) do hinge.TargetAngle=math.deg(Robot.home_q[i])+5 end
+arm:reset(Robot.home_q)
+for i,hinge in ipairs(arm.hinges) do assert(hinge.Enabled and math.abs(hinge.TargetAngle-math.deg(Robot.home_q[i]))<1e-5,"reset retained a previous round's motor target") end
 local origin=Vector3.new(0,20,0)
 local definitions={
     {id="ball",shape="sphere",size_m={.04},xyz={.1,0,.1},yaw_deg=25,mass_kg=.04},
@@ -28,4 +33,4 @@ for _,o in ipairs(definitions) do
     checks+=9
 end
 model:Destroy()
-return {pass=true,shape_pose_mass_checks=checks}
+return {pass=true,shape_pose_mass_checks=checks,reset_joints=6}

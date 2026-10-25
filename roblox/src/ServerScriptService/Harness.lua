@@ -120,7 +120,7 @@ function H.start()
             end
         end
         station.onUpload=function(s,ok,detail,owner)
-            local player=owner or s.owner
+            local player=owner -- credit the captured round owner, even if the seat changed
             if player then
                 if ok then Progress.get(player).sent+=1; task.spawn(Progress.save,player) end
                 send(player,{kind="upload",stats=Progress.get(player),uploaded=ok,upload_reason=if ok then "" else detail})

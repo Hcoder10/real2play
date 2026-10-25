@@ -44,8 +44,10 @@ function S:step(state,dt)
         local clearance=if def.shape=="box" and size[3]<.02 then .0015 else .0035
         local z=math.max(clearance,xyz[3]-size[3]/2+clearance)
         local thin=def.shape=="box" and size[3]<.02
+        if thin then self.yaw=nil end -- allow the fifth arm axis to keep thin pieces level
         target={xyz[1],xyz[2],if self.stage==1 then (if thin then .09 else .10) elseif self.stage==4 then (if thin then .07 else .10) else z}
         grip=if self.stage<3 then math.clamp((math.min(size[1],size[2])+.018-.017)/.081,.35,.95) else -.16
+        if thin and self.stage<3 then grip=math.max(grip,.55) end
         if self.stage==1 and (M.norm(M.sub(state.site_xyz,target))<.008 or self.age>6) then self:advance()
         elseif self.stage==2 and (M.norm(M.sub(state.site_xyz,target))<.005 or self.age>4) then self:advance()
         elseif self.stage==3 and self.age>(if thin then 1.15 else .85) then self:advance()
@@ -54,6 +56,13 @@ function S:step(state,dt)
             if (self.retry or 0)<2 then self.retry=(self.retry or 0)+1; self.stage=1; self.age=0; self.pickYaw=nil else self:next() end
         end
     elseif skill=="place_in" or skill=="place_on" or skill=="place_at" then
+        self.releaseHold=skill=="place_at"
+        local previousStep=self.task.skeleton[self.index-1]
+        if skill=="place_at" and previousStep and previousStep.skill=="pick" and p.xyz[3]-C.size(def,p.size_m)[3]/2<.012 and state.site_xyz[3]>.04 and self.age>1.5 and (self.carryRetries or 0)<2 then
+            self.carryRetries=(self.carryRetries or 0)+1; self.index-=1; self.stage=1; self.age=0; self.pickYaw=nil; self.placeOffset=nil
+            local retry=S.compensate(self.q); retry[6]=.55
+            return retry,self.commands[self.index],"recover_lost_piece",false
+        end
         local dst=step.target or step.xy; local d=if type(dst)=="string" then poses[dst] else {xyz={dst[1],dst[2],0}}
         if not d then self:next(); return self.q,command,"absent_target",false end
         local height=.022
@@ -115,7 +124,11 @@ function S:step(state,dt)
             end
         end
         grip=if self.stage==5 and state.site_xyz[3]>.06 then .6 else .02
-    elseif skill=="release" then target=self.goal; grip=.8; if self.age>.8 then self:next() end
+    elseif skill=="release" then
+        -- Opening changes the jaw midpoint. Keeping that midpoint fixed would
+        -- translate the fixed finger into a just-placed thin piece.
+        if self.releaseHold then target=nil; grip=.55; self.q[6]=grip else target=self.goal; grip=.8 end
+        if self.age>.8 then self:next(); self.releaseHold=false end
     elseif skill=="home" then self.q=table.clone(Robot.home_q); if self.age>1.5 then self:next() end
     elseif skill=="wait" then if self.age>=step.s then self:next() end
     end
@@ -133,7 +146,11 @@ function S:step(state,dt)
             while roll>Robot.range[5][2] do roll-=math.pi end
             while roll<Robot.range[5][1] do roll+=math.pi end
         end
+        local previous=self.q
         self.q=K.ik(self.goal,self.q,roll,12)
+        if def and def.shape=="box" and C.size(def,p and p.size_m)[3]<.02 then
+            for joint=1,5 do self.q[joint]=previous[joint]+math.clamp(self.q[joint]-previous[joint],-math.rad(3),math.rad(3)) end
+        end
     end
     local targetQ=S.compensate(self.q); targetQ[6]=grip
     return targetQ,command,phase,self.done

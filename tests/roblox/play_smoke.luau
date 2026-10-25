@@ -43,7 +43,8 @@ while station.match and station.match.alive and moves<5 do
     station:setInput({move={0,0,0},roll=0,grip=false})
     -- A 16 mm offset must count for the game's declared 18 mm tolerance, even
     -- though the standalone placement skill asks for a tighter 12 mm target.
-    piece.CFrame=CFrame.new(station.origin+A.vector({xy[1]+.016,xy[2],.007})); piece.AssemblyLinearVelocity=Vector3.zero; piece.AssemblyAngularVelocity=Vector3.zero
+    local offset=.016/math.sqrt(2)
+    piece.CFrame=CFrame.new(station.origin+A.vector({xy[1]+offset,xy[2]+offset,.007})); piece.AssemblyLinearVelocity=Vector3.zero; piece.AssemblyAngularVelocity=Vector3.zero
     deadline=os.clock()+8
     while station.trace==trace and not trace.finished and os.clock()<deadline do task.wait(.05) end
     assert(trace.finished and trace.meta.success,"placement hold did not finish: "..tostring(trace.meta.fail_reason))
@@ -53,8 +54,9 @@ end
 assert(station.match and not station.match.alive,"tic-tac-toe match did not finish")
 assert(Rules.result(station.match.board)~=nil,"board not terminal")
 local owned=true
-for _,p in ipairs(H.world:GetDescendants()) do if p:IsA("BasePart") and p:CanSetNetworkOwnership() and p:GetNetworkOwner()~=nil then owned=false end end
-assert(owned,"a twin part became client-owned")
+local offenders={}
+for _,p in ipairs(H.world:GetDescendants()) do if p:IsA("BasePart") and p:CanSetNetworkOwnership() and (p:GetNetworkOwner()~=nil or p:GetNetworkOwnershipAuto()) then owned=false; table.insert(offenders,p:GetFullName()) end end
+assert(owned,"twin ownership became automatic or client-owned: "..table.concat(offenders,", "))
 local outcome=Rules.result(station.match.board)
 humanoid.Sit=false
 deadline=os.clock()+5

@@ -85,7 +85,8 @@ function S:start(name,seed,source,options)
     self.tictactoe=options.tictactoe; self.board=options.board; self.candidate=nil; self.hold=0
     self.operator=if self.source=="bot" then Skill.new(self.task) else nil
     self.trace=Trace.new({task=self.task,task_name=name,source=self.source,player=if self.owner then self.owner.UserId else 0,level=name,
-        seed=seed,scene=L.copy(self.scene),rig=Physics.rig,physics_sha256=Physics.sha256,mode=self.mode or "solo",round_limit_s=self.limit,
+        seed=seed,scene=L.copy(self.scene),rig=Physics.rig,physics_sha256=Physics.sha256,robot_mjcf_sha256=Robot.mjcf_sha256,
+        mode=self.mode or "solo",round_limit_s=self.limit,
         tutorial=options.tutorial==true,board=options.board and table.clone(options.board)},not self.attract)
     self.trace:phase(self.commandList[1],"approach")
     self.label.Text=if self.attract then "Watch the robot" else (if self.owner then self.owner.DisplayName else "Robot practice")
@@ -121,12 +122,14 @@ function S:phaseUpdate(state)
 end
 function S:patchCell(cell)
     local xy=TTT.xy(cell); local p=self.roots.cell
+    local dimensions
+    for _,o in ipairs(self.task.objects) do if o.id=="cell" then dimensions=o.size_m end end
     if p then p.CFrame=CFrame.new(self.origin+A.vector({xy[1],xy[2],.0005})) end
     for _,o in ipairs(self.scene.objects) do if o.id=="cell" then o.xyz={xy[1],xy[2],.0005} end end
     for _,o in ipairs(self.trace.meta.scene.objects) do if o.id=="cell" then o.xyz={xy[1],xy[2],.0005} end end
     -- The chosen target is late-bound; every training slot must contain that target.
     for _,tick in ipairs(self.trace.ticks) do
-        tick.poses.cell={xyz={xy[1],xy[2],.0005},yaw_deg=0,size_m={.045,.045,.001}}
+        tick.poses.cell={xyz={xy[1],xy[2],.0005},yaw_deg=0,size_m=dimensions}
         tick.slots=L.slots(self.task,tick.poses)
     end
 end

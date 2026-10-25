@@ -93,6 +93,9 @@ function A:tips()
 end
 function A:reset(q)
     local f=K.fk(q); self.sim=JointSim.new(Physics,q); self.last=table.clone(q)
+    for _,hinge in ipairs(self.hinges) do hinge.Enabled=false end
     for i,root in ipairs(self.roots) do root.CFrame=A.frame(f[i].p,f[i].r,self.origin); root.AssemblyLinearVelocity=Vector3.zero; root.AssemblyAngularVelocity=Vector3.zero end
+    for i,hinge in ipairs(self.hinges) do hinge.TargetAngle=math.deg(q[i]); hinge.Enabled=true end
+    A.own(self.model) -- reconnecting constraints may restore automatic ownership
 end
 return A

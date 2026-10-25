@@ -32,8 +32,13 @@ for i=1,9 do
     local p=T.xy(i); local expected=Layout.cells["r"..math.floor((i-1)/3).."c"..((i-1)%3)]
     check(p[1]==expected[1] and p[2]==expected[2],"rules diverged from canonical board layout")
     check(T.cell({p[1],p[2],.007},T.new())==i)
-    check(T.cell({p[1],p[2]+.01799,.007},T.new())==i)
-    check(T.cell({p[1],p[2]+.01801,.007},T.new())==nil)
 end
+local corner=T.xy(1)
+check(T.cell({corner[1]-.01799,corner[2],.007},T.new())==1)
+check(T.cell({corner[1]-.01801,corner[2],.007},T.new())==nil)
+local neighbour=T.xy(2); local near={corner[1],corner[2]+(neighbour[2]-corner[2])*.6,.007}
+check(T.cell(near,T.new())==2,"overlapping tolerances must select the nearest centre")
+local occupied=T.new(); occupied[2]=1
+check(T.cell(near,occupied)==nil,"must not assign an occupied nearest square to its free neighbour")
 check(T.cell({.1,.1,0},T.new())==nil)
 print("tic-tac-toe: "..n.." checks; exhaustive reachable game tree and perfect-play defense passed")

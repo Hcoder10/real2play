@@ -11,7 +11,8 @@ local owned=true; local ticks={}
 for i=1,8 do
     local s=H.stations[i]; ticks[i]=math.floor(s.elapsed*30+.5)
     assert(ticks[i]>30,"station did not advance independently")
-    for _,p in ipairs(s.model:GetDescendants()) do if p:IsA("BasePart") and p:CanSetNetworkOwnership() and p:GetNetworkOwner()~=nil then owned=false end end
+    assert(s.trace.enabled==false and #s.trace.ticks==0,"attract demonstration recorded training ticks")
+    for _,p in ipairs(s.model:GetDescendants()) do if p:IsA("BasePart") and p:CanSetNetworkOwnership() and (p:GetNetworkOwner()~=nil or p:GetNetworkOwnershipAuto()) then owned=false end end
 end
 assert(owned,"client ownership detected")
 return {pass=true,active_tables=8,server_owned=owned,control_ticks=ticks,frames=frames,wall_s=os.clock()-start,heartbeat_s=elapsed}

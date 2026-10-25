@@ -26,6 +26,13 @@ for _,name in ipairs(L.order) do
         assert(#q==6 and type(command)=="string")
     end
 end
+local release=Skill.new(L.tasks.place_on_cell)
+release.index=3; release.releaseHold=true; release.q={-.8,-.2,.7,1.0,.8,.2}
+local fixed,_,mid=K.tips(release.q); release.goal=mid
+local target,command=release:step({objects={},site_xyz=mid,q=release.q},1/30)
+local after=K.tips(release.q)
+assert(command=="release" and target[6]>.15,"release must open the jaw")
+for axis=1,3 do assert(math.abs(after[axis]-fixed[axis])<1e-10,"opening must not translate the fixed finger into the placed piece"); n+=1 end
 local stats=S.new()
 local result=S.round(stats,"a",true,10,40,1)
 assert(result.stars==3 and stats.stars==3 and stats.combo==1)

@@ -122,7 +122,7 @@ class TraceStore:
             if complete:
                 meta = dict(parts[0]["meta"])
                 trailer = parts[final[0]].get("meta_final", {})
-                for name in ("schema", "task", "task_name", "source", "player", "level", "seed", "scene", "rig", "physics_sha256"):
+                for name in ("schema", "task", "task_name", "source", "player", "level", "seed", "scene", "rig", "physics_sha256", "robot_mjcf_sha256", "finger_contact_sha256"):
                     if name in trailer and name in meta and trailer[name] != meta[name]:
                         raise ValueError(f"meta_final cannot change {name}")
                 meta.update(trailer)
