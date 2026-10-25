@@ -1,0 +1,87 @@
+{
+ "schema": "r2p_physics/1",
+ "rig": "so101_bench",
+ "version": 2,
+ "hz": 30,
+ "substeps": 32,
+ "gravity": [
+  0,
+  0,
+  -9.81
+ ],
+ "latency_ticks": 1,
+ "sag_gain": [
+  0,
+  0.05,
+  0.03333333333333333,
+  0.05,
+  0,
+  0
+ ],
+ "joints": {
+  "shoulder_pan": {
+   "kp": 35,
+   "kv": 0.7,
+   "armature": 0.005,
+   "frictionloss": 0.002,
+   "torque_limit": 3.35
+  },
+  "shoulder_lift": {
+   "kp": 20,
+   "kv": 0.8,
+   "armature": 0.005,
+   "frictionloss": 0.002,
+   "torque_limit": 3.35
+  },
+  "elbow_flex": {
+   "kp": 30,
+   "kv": 0.7,
+   "armature": 0.005,
+   "frictionloss": 0.002,
+   "torque_limit": 3.35
+  },
+  "wrist_flex": {
+   "kp": 20,
+   "kv": 0.4,
+   "armature": 0.003,
+   "frictionloss": 0.001,
+   "torque_limit": 3.35
+  },
+  "wrist_roll": {
+   "kp": 25,
+   "kv": 0.35,
+   "armature": 0.002,
+   "frictionloss": 0.001,
+   "torque_limit": 3.35
+  },
+  "gripper": {
+   "kp": 20,
+   "kv": 0.25,
+   "armature": 0.002,
+   "frictionloss": 0.001,
+   "torque_limit": 0.8
+  }
+ },
+ "object": {
+  "mass_kg": 0.003,
+  "friction": 0.6
+ },
+ "contact": {
+  "solref": [
+   0.015,
+   1
+  ],
+  "solimp": [
+   0.95,
+   0.99,
+   0.001
+  ],
+  "friction": [
+   0.8,
+   0.005,
+   0.0001
+  ],
+  "impratio": 10
+ },
+ "notes": "Argon step-loop calibrated (step_01): {\"z_offset_mm\": -1.5, \"xy_offset_mm\": [10.0, 11.0], \"notes\": \"Successfully picked cap2 and placed it in center cell r1c1. Closing gripper from 19.7 to ~11.0 (squeezing 33mm cap at load ~284) shifts jaw_xyz_m by [-7.6mm, +3.3mm] toward the fixed (+y) jaw; placing at closed-jaw [0.165, 0.020, 0.019] lands squarely in r1c1.\"}"
+}
