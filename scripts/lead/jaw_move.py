@@ -65,12 +65,14 @@ def armd(path, body=None):
 def plan(xyz, grip, q_owner, arm, jm, physics, lo=None, hi=None):
     if lo is not None:  # armd's calibrated owner limits, as model-space bounds (position wins over fingers-down)
         a, b = jm.to_model(np.asarray(lo, float)), jm.to_model(np.asarray(hi, float))
-        arm.range[:5] = np.sort(np.c_[a, b], axis=1)[:5] + [[.01, -.01]]
+        arm.range[:5] = np.sort(np.c_[a, b], axis=1)[:5] + [[.04, -.04]]   # > the repo daemon's 2 deg guard margin
     q0 = jm.to_model(np.asarray(q_owner, float))
-    # Wrist roll stays where the visual calibration observed it (owner ~82 deg); other rolls are unverified.
+    # Wrist roll: free within +-85 deg of the calibrated rest roll (owner ~82 deg). It was locked here while the roll
+    # calibration was suspect; the open-jaw Argon fit (vcal_oct25b, 6.5 px) fixed it, and the lock made most of the
+    # workspace unreachable (Argon Lab's first plans refused with IK errors). The repo daemon refuses >100 deg excursion.
     roll = jm.to_model(np.r_[0, 0, 0, 0, ROLL_OWNER, 0])[4]
-    arm.range[4] = [roll - 1e-3, roll + 1e-3]
-    q0[4] = roll
+    arm.range[4] = [max(arm.range[4][0] + .04, roll - np.deg2rad(85)), min(arm.range[4][1] - .04, roll + np.deg2rad(85))]
+    q0[4] = float(np.clip(q0[4], *arm.range[4]))
     g = jm.to_model(np.r_[q_owner[:5], grip])[5]
     best = None
     for seed in (q0, np.r_[HOME_Q[:4], roll, g]):  # the folded rest pose is a poor seed: also start from home
@@ -80,6 +82,7 @@ def plan(xyz, grip, q_owner, arm, jm, physics, lo=None, hi=None):
             best = (q, err)
     q, err = best
     qc = JawIK(arm).compensate(q, physics)
+    qc[:5] = np.clip(qc[:5], arm.range[:5, 0], arm.range[:5, 1])   # sag compensation must not cross the margins
     return jm.to_owner(qc), err, q
 
 
