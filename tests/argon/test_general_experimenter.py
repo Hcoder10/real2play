@@ -1,0 +1,149 @@
+from copy import deepcopy
+from dataclasses import replace
+import json
+import time
+from types import SimpleNamespace
+
+import numpy as np
+import pytest
+
+from r2p import gemini
+from r2p.tasks import load_task, sample_scene
+from r2p.real2sim.active import UnsafeExperiment, start_q
+from r2p.real2sim.experiments import (TaskExperiment, Validator, choose_experiment,
+    excited_parameters, experiment_menu, json_experiment, resolve)
+from r2p.real2sim.general_active import materialize, parameter_space, fit_parameters, replay_scene
+from r2p.real2sim.experiment_recording import DualCameraRecorder, SurveyedMover
+from r2p.sim.twin import load_physics
+
+
+@pytest.fixture(scope="module")
+def bowl():
+    task = load_task("cube_in_bowl")
+    return task, sample_scene(task, np.random.default_rng(4))
+
+
+@pytest.mark.parametrize("name,contact", [("cube_in_bowl", "pick_lift_place"), ("place_on_cell", "pick_lift_place"),
+    ("push_to_target", "push"), ("stack_two_cubes", "pick_lift_place"),
+    ("pick_place_stick", "pick_lift_place"), ("two_cubes_in_bowl", "pick_lift_place")])
+def test_menu_is_derived_from_all_shipped_tasks(name, contact):
+    task = load_task(name); scene = sample_scene(task, np.random.default_rng(4))
+    menu = experiment_menu(task, scene)
+    assert {e.kind for e in menu} == {"hold_pose", "joint_sweep", contact}
+    assert all(resolve(task, scene, e) for e in menu)
+    if name == "cube_in_bowl":
+        assert any(np.linalg.norm(e.offset_xy) > .01 for e in menu)
+        assert any("object:bowl:friction" in excited_parameters(task, e) for e in menu)
+    if name == "push_to_target":
+        assert all(e.location == "target" for e in menu if e.kind == "push")
+    if name == "two_cubes_in_bowl":
+        assert {task["skeleton"][e.step]["obj"] for e in menu} == {"cube_a", "cube_b"}
+
+
+def test_scene_change_moves_menu_geometry(bowl):
+    task, scene = bowl
+    changed = deepcopy(scene); changed["objects"][0]["xyz"][1] += .015
+    e = experiment_menu(task, changed)[0]
+    assert resolve(task, changed, e)[3][1] == pytest.approx(scene["objects"][0]["xyz"][1]+.015)
+
+
+@pytest.mark.parametrize("change", [{"step": True}, {"speed": float("nan")}, {"speed": 100},
+    {"kind": "push"}, {"offset_xy": [.2, 0]}, {"step": 999}, {"kind": "joint_sweep", "joint": 5}])
+def test_invalid_or_unrelated_proposal_refused(bowl, change):
+    task, scene = bowl
+    value = {"kind": "pick_lift_place", "step": 1, **change}
+    with pytest.raises((UnsafeExperiment, ValueError)):
+        e = TaskExperiment.parse(value)
+        resolve(task, scene, e)
+
+
+def test_complete_path_speed_verticality_and_target_protection(bowl):
+    task, scene = bowl; validator = Validator(task); q0 = start_q()
+    e = TaskExperiment("pick_lift_place", 1)
+    plan = validator.plan(e, scene, q0)
+    speed = np.max(abs(np.diff(np.vstack((q0, plan.targets)), axis=0)))*30
+    assert speed <= np.deg2rad(e.speed)+1e-8
+    assert validator.arm.tips(plan.targets[-1])[2][2] >= validator.safety.safe_z-.003
+    low = [(p, validator.arm.tips(q)[2]) for p, q in zip(plan.phases, plan.targets) if p in ("lower", "lift", "place", "retreat")]
+    for (phase_a, a), (phase_b, b) in zip(low, low[1:]):
+        if phase_a == phase_b and min(a[2], b[2]) < .035:
+            assert np.linalg.norm(a[:2]-b[:2]) < .001
+    blocked = deepcopy(scene)
+    blocked["objects"].append({"id": "protected", "role": "target", "shape": "box", "size_m": [.03]*3,
+                                "xyz": scene["objects"][0]["xyz"], "fixed": True})
+    assert not validator.verdict(e, blocked, q0)["safe"]
+    near = deepcopy(scene); near["objects"][0]["xyz"] = [.11, 0, .019]
+    assert not validator.verdict(e, near, q0)["safe"]
+
+
+def test_argon_receives_refusal_and_can_design_new_valid_variant(bowl):
+    task, scene = bowl
+    class FastValidator:
+        safety = Validator(task).safety
+        def verdict(self, e, scene, q0): return {"safe": True}
+        def plan(self, e, scene, q0): return resolve(task, scene, e)
+    requests = []
+    class Client:
+        def call(self, parts, **kwargs):
+            requests.append((json.loads(parts[0]), kwargs))
+            answer = {"kind": "push", "step": 1} if len(requests) == 1 else {
+                "kind": "hold_pose", "step": 1, "height_m": .103}
+            return json.dumps(answer), {}
+    e, info = choose_experiment(Client(), task, scene, {}, {}, [{"training_only": 1}], set(), FastValidator(), start_q())
+    assert e.height_m == .103 and info["source"] == "main"
+    assert requests[1][0]["refusals"][-1]["reason"] == "Push not required by this task skill"
+    assert all(k["role"] == "main" and k["thinking"] == "high" for _, k in requests)
+    assert requests[0][0]["task"] == task and requests[0][0]["scene"] == scene
+    class Quota:
+        def call(self, *a, **kw): raise gemini.QuotaError("daily quota")
+    with pytest.raises(gemini.QuotaError):
+        choose_experiment(Quota(), task, scene, {}, {}, [], set(), FastValidator(), start_q())
+
+
+def test_parameter_bounds_and_materials_are_per_object(bowl):
+    task, scene = bowl; physics = load_physics()
+    values, bounds = parameter_space(task, scene, physics)
+    assert bounds["object:bowl:mass_kg"][1] > .25
+    p, s = materialize(physics, scene, {**values, "object:cube:mass_kg": .04})
+    assert s["objects"][0]["mass_kg"] == .04 and s["objects"][1]["mass_kg"] == .25
+    with pytest.raises(ValueError, match="training experiments only"):
+        fit_parameters([SimpleNamespace(split="heldout")], task, physics, scene, values)
+    surveyed = deepcopy(scene); surveyed["objects"][0]["xyz"][0] += .02
+    observation = SimpleNamespace(session=SimpleNamespace(meta={"scene": surveyed}))
+    assert replay_scene(observation, s)["objects"][0]["xyz"] == surveyed["objects"][0]["xyz"]
+
+
+def test_dual_recording_persists_frames_and_failure(tmp_path):
+    def capture():
+        t = time.monotonic()
+        return np.zeros((32, 32, 3), np.uint8), t, {"sequence": t}
+    recorder = DualCameraRecorder(tmp_path/"cameras", capture, capture, hz=50)
+    recorder.start(); time.sleep(.06); recorder.check(); recorder.close()
+    result = json.loads((recorder.path/"cameras.json").read_text())
+    assert all(len(rows) >= 2 for rows in result["frames"].values())
+    assert all((recorder.path/rows[0]["file"]).exists() for rows in result["frames"].values())
+    recorder.errors.append("wrist disconnected")
+    with pytest.raises(UnsafeExperiment, match="wrist disconnected"):
+        recorder.check()
+
+
+def test_sheet_rotation_and_missing_survey_fail_before_motion(bowl):
+    task, scene = bowl
+    base = SimpleNamespace(scene=deepcopy(scene), capture=lambda: (None, 0, {}), url="test",
+        request=lambda url: {}, measured_q=lambda state: start_q())
+    points = {"a": [0., 0.], "b": [.1, 0.], "c": [0., .1]}
+    wrapper = SurveyedMover(base, survey=lambda *a: {}, sheet_geometry=lambda frame: points)
+    wrapper._guard(None)
+    points["b"][1] += .005
+    with pytest.raises(UnsafeExperiment, match="Sheet moved"):
+        wrapper.prepare()
+    points["b"][1] = 0
+    with pytest.raises(UnsafeExperiment, match="Fresh survey missing"):
+        wrapper.prepare()
+
+
+def test_incomplete_video_campaign_is_explicit(tmp_path):
+    from r2p.real2sim.twin_videos import build_videos
+    result = build_videos(tmp_path)
+    assert result["status"] == "waiting_for_campaign"
+    assert result["missing"] and result["recorded_sessions"] == 0
