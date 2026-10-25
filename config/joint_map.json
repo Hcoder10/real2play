@@ -1,5 +1,5 @@
 {
- "active": "vcal_oct25",
+ "active": "vcal_oct25b",
  "verified": false,
  "candidates": {
   "identity": {
@@ -101,6 +101,40 @@
     "open_rad": 1.745
    },
    "source": "Oct 25: gemini-4-argon visual calibration (14 poses, LOO median 8.8 px ~5 mm); physically checked above r1c1."
+  },
+  "vcal_oct25b": {
+   "joints": {
+    "shoulder_pan": {
+     "sign": 1,
+     "offset_deg": -2.18,
+     "measured": false
+    },
+    "shoulder_lift": {
+     "sign": 1,
+     "offset_deg": -11.2,
+     "measured": false
+    },
+    "elbow_flex": {
+     "sign": 1,
+     "offset_deg": 1.66,
+     "measured": false
+    },
+    "wrist_flex": {
+     "sign": 1,
+     "offset_deg": -18.93,
+     "measured": false
+    },
+    "wrist_roll": {
+     "sign": 1,
+     "offset_deg": -164.4,
+     "measured": false
+    }
+   },
+   "gripper": {
+    "closed_rad": -0.17,
+    "open_rad": 2.699
+   },
+   "source": "Oct 25 13:2x: vcal_oct25 + wrist roll and gripper opening fitted from gemini-4-argon pointing at the fixed finger and moving jaw with the jaw open at 15/35/55 (3 frames, 6 points, 6.5 px rms vs 130 px before); the closed-jaw calibration could not see roll (fixed tip lies near the roll axis; finger swap ambiguity)."
   }
  }
 }
