@@ -27,9 +27,13 @@ def main():
     p.add_argument('--out',required=True); p.add_argument('--steps',type=int,default=60000)
     p.add_argument('--seeds',type=int,nargs='+',default=[0,1,2]); p.add_argument('--workers',type=int,default=20)
     p.add_argument('--limit',type=int); p.add_argument('--width',type=int,default=512); p.add_argument('--blocks',type=int,default=3)
+    p.add_argument('--final-lr',type=float,default=3e-4,help='Optional linear decay after half the updates; default retains P2 constant LR')
     a=p.parse_args(); task=load_task(a.task); out=Path(a.out); out.mkdir(parents=True,exist_ok=True)
     cfg=export_config(task,out.name,seeds=a.seeds,width=a.width,blocks=a.blocks)
-    files=sorted(Path(a.traces).glob('*.jsonl'))[:a.limit]; cache=out/'dataset'; cache.mkdir(exist_ok=True)
+    cfg['qualification']={'ready_for_real':False,'reason':'Training export awaits recorded twin evaluations and guarded rehearsal.'}
+    files=sorted(Path(a.traces).glob('*.jsonl'))
+    if a.limit: files=[f for f in files if time.time()-f.stat().st_mtime>5][:a.limit]
+    cache=out/'dataset'; cache.mkdir(exist_ok=True)
     jobs=[(task,str(f),cfg,str(cache/(f.stem+'.npz'))) for f in files]
     print('preparing',len(jobs),'traces',flush=True)
     rows=[]
@@ -63,7 +67,8 @@ def main():
     weights={}; losses=[]; started=time.time()
     for member,seed in enumerate(a.seeds):
         torch.manual_seed(seed); model=StatePolicy(cfg['input_dim'],width=a.width,blocks=a.blocks).to(device)
-        opt=torch.optim.AdamW(model.parameters(),lr=3e-4,weight_decay=1e-4,capturable=True)
+        learning_rate=torch.tensor(3e-4,device=device)
+        opt=torch.optim.AdamW(model.parameters(),lr=learning_rate,weight_decay=1e-4,capturable=True)
         def step():
             idx=torch.randint(len(tx),(256,),device=device)
             prediction=model(tx[idx]); loss=torch.nn.functional.smooth_l1_loss(prediction,ty[idx])
@@ -78,6 +83,9 @@ def main():
         with torch.cuda.graph(graph): loss=step()
         history=[]
         for i in range(a.steps-4):
+            if i%1000==0:
+                progress=max(0.,(i+4-a.steps/2)/(a.steps/2))
+                learning_rate.fill_(3e-4+(a.final_lr-3e-4)*progress)
             graph.replay()
             if (i+5)%1000==0:
                 value=float(loss); history.append({'step':i+5,'loss':value})
@@ -86,6 +94,7 @@ def main():
         weights.update({f'member{member}.{k}':v.detach().cpu().numpy() for k,v in model.state_dict().items()})
         losses.append({'seed':seed,'loss':history})
         cfg['training']={'steps':a.steps,'batch_size':256,'augmentation':False,'recipe':'P2; resident CUDA batches; uniform sampling',
+                         'learning_rate':3e-4,'final_learning_rate':a.final_lr,
                          'traces':[v for row in rows for v in row['provenance']], 'samples':len(tx),'losses':losses,
                          'lease_id':os.environ['LANDLORD_LEASE_ID']}
         # Each completed member is immediately a recoverable, explicitly unevaluated export.

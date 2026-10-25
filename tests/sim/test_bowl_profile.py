@@ -31,3 +31,16 @@ def test_padded_bowl_slots_are_valid_for_real_runner():
     cfg=export_config(task,'bowl_test')
     assert cfg['K']==4 and len(task['objects'])==3
     validate_export(SimpleNamespace(config=cfg),task)
+
+def test_bowl_home_preserves_open_release_above_contact_threshold():
+    profile=json.loads((ROOT/'scripts/robot/Z1_BOWL_PROFILE_V3.json').read_text())
+    task=load_task(ROOT/'scripts/robot/Z1_BOWL_TASK.json')
+    expert=Expert(task,deployment=profile)
+    with TaskTwin(sample_scene(task,np.random.default_rng(0)),q0=profile['start_q']) as twin:
+        expert._bind(twin)
+        expert.move=lambda *args,**kwargs:None
+        targets=[]
+        expert._tick=lambda q:targets.append(np.asarray(q).copy())
+        expert.home()
+    assert targets[-1][5]==profile['gripper_open_rad']
+    assert targets[-1][5]>expert.deployment['gripper_open_threshold_rad']

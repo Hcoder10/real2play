@@ -8,7 +8,7 @@ import numpy as np
 from r2p.tasks import sample_scene, slot_size
 
 
-def load_placement_setup(calibration, task, path):
+def load_placement_setup(calibration, task, path, *, gripper_open_threshold_rad=.35):
     from r2p.perception import TaskPerceiver
     payload = json.loads(Path(path).read_text(encoding="utf-8"))
     saved = payload["task"]
@@ -18,7 +18,8 @@ def load_placement_setup(calibration, task, path):
         raise ValueError("saved appearance setup has different objects/sizes/colors; capture a new setup")
     # C2 deliberately validates exact task+camera equality on load. Load its
     # original task, then explicitly replace only surveyed placement geometry.
-    perceiver = TaskPerceiver(calibration, saved, detector=None)
+    perceiver = TaskPerceiver(calibration, saved, detector=None,
+                             gripper_open_threshold_rad=gripper_open_threshold_rad)
     perceiver.load_setup(path)
     perceiver.task = deepcopy(task)
     perceiver.objects = {o["id"]: deepcopy(o) for o in task["objects"]}

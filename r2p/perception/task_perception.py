@@ -72,11 +72,15 @@ def _known_pose(obj):
 
 
 class TaskPerceiver:
-    def __init__(self, cam_model, task, detector=None, *, clock=time.monotonic, arm=None):
+    def __init__(self, cam_model, task, detector=None, *, clock=time.monotonic, arm=None,
+                 gripper_open_threshold_rad=.35):
         if not isinstance(task, dict):
             from r2p.tasks import load_task
             task = load_task(task)
         self.cam = cam_model
+        self.gripper_open_threshold_rad = float(gripper_open_threshold_rad)
+        if not np.isfinite(self.gripper_open_threshold_rad):
+            raise ValueError("gripper threshold must be finite")
         self.task = copy.deepcopy(task)
         self.objects = {obj["id"]: copy.deepcopy(obj) for obj in task["objects"]}
         for oid, obj in self.objects.items():
@@ -247,7 +251,7 @@ class TaskPerceiver:
         if q.shape != (6,) or not np.isfinite(q).all():
             raise ValueError("q must contain six finite MJCF radians")
         mid, grip_R, gap = self._gripper(q)
-        closed = bool(q[5] < .35)
+        closed = bool(q[5] < self.gripper_open_threshold_rad)
         if self._held is not None and not closed:
             oid = self._held[0]
             pose = self.poses[oid]

@@ -45,6 +45,7 @@ def main():
             'success':sum(r['success'] for r in rows)/len(rows),'episodes':sorted(rows,key=lambda r:r['seed']),
             'failures':dict(Counter(r['reason'] for r in rows if not r['success'])),
             'seconds':time.time()-started,'weights_sha256':hashlib.sha256((directory/'weights.npz').read_bytes()).hexdigest(),
+            'joint_step_rad':(cfg.get('deployment') or {}).get('joint_step_rad',.10),
             'physics_sha256':cfg['physics_sha256']}
     if not a.video_dir and not a.no_record:
         cfg['eval'][a.noise]=report; cfg['eval']['n']=len(rows)

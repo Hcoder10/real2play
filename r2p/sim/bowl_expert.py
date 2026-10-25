@@ -332,6 +332,7 @@ class Expert:
         start = (self.nominal_command if self.deployment else self.twin.commanded_q).copy()
         self.phase = "home"
         target = self.ik.compensate(self.start_q if self.deployment else HOME_Q, self.twin.physics)
+        target[5] = self.release_grip
         ticks = max(60, int(np.ceil(np.max(np.abs(target-start))/self.deployment["joint_step_rad"]))) if self.deployment else 60
         for i in range(ticks):
             u = (i+1)/ticks

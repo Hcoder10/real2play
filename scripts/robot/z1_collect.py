@@ -25,7 +25,10 @@ def episode(job):
            'final': result['final']}
     if save and (row['success'] or seed < 6):
         folder = Path(output)/('success' if row['success'] else 'failure')
-        write_trace(folder/f'expert_{seed:08d}.jsonl', result['meta'], ticks)
+        path = folder/f'expert_{seed:08d}.jsonl'
+        temporary = path.with_suffix('.jsonl.tmp')
+        write_trace(temporary, result['meta'], ticks)
+        temporary.replace(path)
     return row
 
 def main():

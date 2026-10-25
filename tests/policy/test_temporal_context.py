@@ -131,11 +131,14 @@ def test_training_command_clock_and_chunks_follow_inference_tracker(tmp_path):
     assert trace_commands(task, rows, meta, config) == [commands(task)[0]]*len(rows)
 
 
-def test_eval_rate_limit_uses_last_sent_even_when_measured_q_resets(monkeypatch):
+@pytest.mark.parametrize('step', [.10, np.deg2rad(4)/30])
+def test_eval_rate_limit_uses_last_sent_even_when_measured_q_resets(monkeypatch, step):
     import r2p.policy.eval as evaluation
 
     task = load_task("cube_in_bowl")
     config = export_config(task, "blocked_gripper")
+    if step != .10:
+        config['deployment'] = {'joint_step_rad': step}
     scene = sample_scene(task, np.random.default_rng(3))
     poses = {o["id"]: o for o in scene["objects"]}
 
@@ -172,4 +175,4 @@ def test_eval_rate_limit_uses_last_sent_even_when_measured_q_resets(monkeypatch)
     # A squeezing (blocked) gripper is contact, not divergence: no observation resets (arm joints only), and the
     # gripper target is still rate-limited from the last SENT target.
     assert result["resets"] == 0
-    np.testing.assert_allclose([row["target"][5] for row in rows], [.8, .7, .6, .5])
+    np.testing.assert_allclose([row["target"][5] for row in rows], .9-step*np.arange(1, 5))

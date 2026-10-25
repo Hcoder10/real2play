@@ -26,9 +26,12 @@ def main():
     a=p.parse_args()
     from r2p.policy import load
     policy=load(a.export); cfg=load_config(a.config); profile=load_profile(a.bench_profile)
+    if a.real and policy.config.get('qualification',{}).get('ready_for_real') is False:
+        raise ValueError('Export failed qualification: '+policy.config['qualification'].get('reason','see its recorded rehearsal'))
     task=load_task(a.task); joint_map=load_joint_map(cfg); limits=validate_profile(profile,joint_map)
     if task['name']!='bowl_bench': raise ValueError('Expected bowl_bench')
     if a.timeout<=0 or not np.isfinite(a.timeout): raise ValueError('timeout must be positive and finite')
+    if a.rehearse and a.transport!='direct': raise ValueError('Bowl rehearsal currently exercises the direct transport only')
     diagnostics=audit(policy,task,profile,joint_map,cfg)
     print(json.dumps({'motion':False,'audit':diagnostics},indent=2),flush=True)
     a.record.mkdir(parents=True,exist_ok=True)
@@ -60,7 +63,8 @@ def main():
         camera=open_camera(cfg['camera']); robot=None; perceiver=None
         try:
             calibration=CameraModel.load(config_path(cfg['camera']['calibration']))
-            perceiver=load_placement_setup(calibration,task,a.perception_setup)
+            perceiver=load_placement_setup(calibration,task,a.perception_setup,
+                gripper_open_threshold_rad=policy.config['gripper_open_threshold_rad'])
             initial_q=joint_map.to_model(profile['owner_state']['rest'])
             poses=perceiver.estimate(camera.read(),initial_q)['poses']
             for obj in task['objects']:

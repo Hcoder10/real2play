@@ -93,6 +93,10 @@ def rollout(policy, scene, *, seed=0, noise="clean", max_ticks=None, on_step=Non
     pose_bias = rng.normal(0, .002*scale, (policy.config["K"], 3))
     pending = deque([start_q.copy()] if scale and rng.random() < scale else [])
     budget = max_ticks if max_ticks is not None else int(task["limits"]["episode_s"]*HZ)
+    deployment = policy.config.get("deployment") or {}
+    action_step = float(deployment.get("joint_step_rad", .10))
+    if not np.isfinite(action_step) or action_step <= 0:
+        raise ValueError("deployment joint_step_rad must be positive and finite")
     if budget < 1:
         raise ValueError("max_ticks must be positive")
     with TaskTwin(scene, physics=policy.config.get("physics", "so101_bench"), q0=start_q) as twin:
@@ -129,7 +133,7 @@ def rollout(policy, scene, *, seed=0, noise="clean", max_ticks=None, on_step=Non
             # Match the runner's bounded absolute-command execution.
             # Observation resets must not reset the actuator's rate-limit origin.
             # The real Session likewise projects from last_sent, not q_obs.
-            target = last_sent+np.clip(target-last_sent, -.10, .10)
+            target = last_sent+np.clip(target-last_sent, -action_step, action_step)
             target = np.clip(target, *arm.range.T)
             last_sent = target.copy()
             pending.append(target.copy())
