@@ -2,6 +2,15 @@
   "schema": "argon_task/1",
   "name": "place_on_cell",
   "instruction": "Place the supply piece on the highlighted cell without moving other pieces.",
+  "board": {
+    "center_xy": [0.245, 0.0],
+    "cell_m": 0.045,
+    "cells": {
+      "r0c0": [0.200, -0.045], "r0c1": [0.200, 0.0], "r0c2": [0.200, 0.045],
+      "r1c0": [0.245, -0.045], "r1c1": [0.245, 0.0], "r1c2": [0.245, 0.045],
+      "r2c0": [0.290, -0.045], "r2c1": [0.290, 0.0], "r2c2": [0.290, 0.045]
+    }
+  },
   "objects": [
     {
       "id": "piece",

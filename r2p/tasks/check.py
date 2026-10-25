@@ -1,7 +1,6 @@
 """Shared geometric success semantics for the reference twin, perception and Luau port."""
 from __future__ import annotations
 
-import copy
 import math
 import numpy as np
 

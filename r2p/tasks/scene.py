@@ -5,11 +5,13 @@ import copy
 import math
 import numpy as np
 
-from .spec import validate
+from .spec import SHAPES, validate
 
 
 def slot_size(shape: str, size_m, axis: str = "z") -> list[float]:
     s = list(map(float, size_m))
+    if shape not in SHAPES or len(s) != SHAPES[shape] or any(not math.isfinite(v) or v <= 0 for v in s):
+        raise ValueError("size_m must contain the shape's positive finite dimensions")
     if shape in ("box", "plate"):
         return s
     if shape == "sphere":
@@ -164,12 +166,17 @@ def sample_scene(task, rng, tries=500) -> dict:
                 obj["container"] = True
                 obj.setdefault("wall_m", 0.005)
             obj.pop("xy", None)
+            ancestors = set()
+            ancestor = obj.get("on")
+            while ancestor in placed:
+                ancestors.add(ancestor)
+                ancestor = placed[ancestor].get("on")
             for other in placed.values():
                 distance = math.dist(obj["xyz"][:2], other["xyz"][:2])
                 both_discrete = "xy_choice" in rule and "xy_choice" in rnd.get(other["id"], {})
                 if both_discrete:
                     collision = distance < 1e-9
-                elif not obj.get("collide", True) or not other.get("collide", True) or obj.get("on") == other["id"]:
+                elif not obj.get("collide", True) or not other.get("collide", True) or other["id"] in ancestors:
                     collision = False
                 else:
                     collision = distance < _radius(obj) + _radius(other) + sep

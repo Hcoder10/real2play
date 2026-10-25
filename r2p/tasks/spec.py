@@ -201,7 +201,7 @@ def validate(task) -> list[str]:
     for oid, obj in by_id.items():
         entry = rnd.get(oid, {})
         entry = entry if isinstance(entry, dict) else {}
-        if not any(key in obj for key in ("xy", "xyz", "on")) and not any(key in entry for key in ("r", "x", "xy_choice")):
+        if entry.get("p_present") != 0 and not any(key in obj for key in ("xy", "xyz", "on")) and not any(key in entry for key in ("r", "x", "xy_choice")):
             errors.append(f"{oid} needs xy/xyz/on or a randomized position")
         if "on" in obj:
             ref(obj["on"], f"{oid}.on")
