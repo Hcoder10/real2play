@@ -43,3 +43,18 @@ r2p/orchestrator.py + `python -m r2p argon --task place_on_cell [--dry-run] [--a
   and is the test. Then one live Argon planning call (no motion) to show the plan it produces for the current bench.
 - Dashboard: add an "ARGON" strip (dashboard/) that shows the orchestrator's ledger (stage, tool, why, metric) live.
 Report: the commands, a dry-run transcript excerpt, the live Argon plan, commits.
+
+## Owner addendum: use Gemini managed agents
+- The orchestrator must use Gemini managed agents where they genuinely fit. Design: the controller is Argon on the
+  Interactions API with server-side state (previous_interaction_id) and function calling into our local tools (it must
+  reach the arm and camera on this laptop). Every compute-only step runs as an Antigravity managed agent
+  (agent="antigravity-preview-09-2026", agent_config model gemini-4-argon, via r2p/agents.py from agent J): build_game
+  (exists), author_task (exists), and NEW: analyze_experiments (give the agent the active-twin residual tables,
+  side-by-side real|sim images summary and r2p/sim/twin.py + config/physics; it proposes and tests a physics/twin patch
+  in its sandbox against the recorded experiments; we apply only behind our held-out gate), and train_plan (the agent
+  writes/validates the training config and data mix). Each returns files + tests; we verify locally.
+- Optional `--controller managed`: run the controller itself as an Antigravity managed agent that reaches our tools
+  through an MCP server (implement scripts/argon/tools_mcp.py exposing the TOOLS over MCP); this needs a public tunnel,
+  which is an owner action: never start a tunnel yourself; document the exact command and default to the local
+  Interactions controller.
+- The dashboard ARGON strip shows which steps ran as managed agents (agent id, duration, tests passed).
