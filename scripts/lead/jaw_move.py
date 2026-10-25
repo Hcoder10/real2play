@@ -14,6 +14,7 @@ import numpy as np
 
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT))
+from r2p.frames import HOME_Q  # noqa: E402
 from r2p.model import Arm, JointMap  # noqa: E402
 from r2p.sim.ik import JawIK  # noqa: E402
 
@@ -37,10 +38,54 @@ def plan(xyz, grip, q_owner, arm, jm, physics, lo=None, hi=None):
     arm.range[4] = [roll - 1e-3, roll + 1e-3]
     q0[4] = roll
     g = jm.to_model(np.r_[q_owner[:5], grip])[5]
-    q = JawIK(arm).solve(xyz, q=q0, grip=g)
-    err = np.linalg.norm(arm.tips(q)[2] - xyz)
+    best = None
+    for seed in (q0, np.r_[HOME_Q[:4], roll, g]):  # the folded rest pose is a poor seed: also start from home
+        q = JawIK(arm).solve(xyz, q=seed, grip=g)
+        err = np.linalg.norm(arm.tips(q)[2] - xyz)
+        if best is None or err < best[1]:
+            best = (q, err)
+    q, err = best
     qc = JawIK(arm).compensate(q, physics)
     return jm.to_owner(qc), err, q
+
+
+class JawMoveError(RuntimeError):
+    pass
+
+
+def goto(xyz, grip=None, *, min_finger=None, iters=3):
+    """Jaw midpoint to spec xyz (our IK, roll locked, sag compensated, re-aimed by the encoder-measured miss)."""
+    st = armd("/state")
+    arm, jm = Arm(), JointMap.load(ROOT / "config" / "joint_map.json")
+    physics = json.loads((ROOT / "config" / "physics" / "so101_bench.json").read_text())
+    grip = st["q"][5] if grip is None else grip
+    goal = np.asarray(xyz, float)
+    aim = goal.copy()
+    for _ in range(iters):
+        own, err, q = plan(aim, grip, st["q"], arm, jm, physics, st["lo"], st["hi"])
+        if err > 0.004:
+            raise JawMoveError(f"IK error {err * 1000:.1f} mm at {goal.round(3).tolist()}")
+        own[5] = grip
+        g = arm.geometry(jm.to_model(own))  # our own table clearance with OUR (camera-fitted) map
+        if min_finger is not None and min(g["finger"], g["gripper"] - 0.01) < min_finger:
+            raise JawMoveError(f"our clearance check: finger {g['finger'] * 1000:.1f} mm < {min_finger * 1000:.1f} mm")
+        body = {"cmd": "joints", "owner": [round(float(v), 2) for v in own]}
+        if min_finger is not None:
+            body["min_finger"] = min_finger
+        r = armd("/cmd", body)
+        st = armd("/state")
+        mid = arm.tips(jm.to_model(np.array(st["q"])))[2]
+        if not r.get("ok"):
+            raise JawMoveError(f"armd: {r.get('refused') or r.get('abort') or r}")
+        if np.linalg.norm(mid - goal) < 0.002:
+            break
+        aim = aim + np.clip(goal - mid, -0.015, 0.015)
+    return {"target": goal.tolist(), "fk_measured_mid": mid.round(4).tolist(),
+            "miss_mm": round(float(np.linalg.norm(mid - goal) * 1000), 1)}
+
+
+def gripper(value):
+    return armd("/cmd", {"cmd": "gripper", "value": value})
 
 
 if __name__ == "__main__":
@@ -51,32 +96,10 @@ if __name__ == "__main__":
     ap.add_argument("--iters", type=int, default=3)
     ap.add_argument("--min-finger", type=float, help="allow fingers this close to the table (m), checked by us AND armd")
     a = ap.parse_args()
-    st = armd("/state")
     if a.grip_only is not None:
-        print(armd("/cmd", {"cmd": "gripper", "value": a.grip_only}))
+        print(gripper(a.grip_only))
         sys.exit()
-    arm, jm = Arm(), JointMap.load(ROOT / "config" / "joint_map.json")
-    physics = json.loads((ROOT / "config" / "physics" / "so101_bench.json").read_text())
-    grip = st["q"][5] if a.grip is None else a.grip
-    goal = np.array(a.xyz)
-    aim = goal.copy()
-    for it in range(a.iters):  # re-aim by the encoder-measured miss (servo tracking under load)
-        own, err, q = plan(aim, grip, st["q"], arm, jm, physics, st["lo"], st["hi"])
-        if err > 0.004:
-            sys.exit(f"IK error {err * 1000:.1f} mm: refusing")
-        own[5] = grip
-        g = arm.geometry(jm.to_model(own))  # our own table clearance with OUR (camera-fitted) map
-        if a.min_finger is not None and min(g["finger"], g["gripper"] - 0.01) < a.min_finger:
-            sys.exit(f"our clearance check: finger {g['finger'] * 1000:.1f} mm < {a.min_finger * 1000:.1f} mm")
-        body = {"cmd": "joints", "owner": [round(float(v), 2) for v in own]}
-        if a.min_finger is not None:
-            body["min_finger"] = a.min_finger
-        r = armd("/cmd", body)
-        st = armd("/state")
-        mid = arm.tips(jm.to_model(np.array(st["q"])))[2]
-        if not r.get("ok") or np.linalg.norm(mid - goal) < 0.002:
-            break
-        aim = aim + np.clip(goal - mid, -0.015, 0.015)
-    print(json.dumps({"ok": r.get("ok"), "refused": r.get("refused") or r.get("abort"), "target": a.xyz,
-                      "fk_measured_mid": mid.round(4).tolist(),
-                      "miss_mm": round(float(np.linalg.norm(mid - a.xyz) * 1000), 1)}))
+    try:
+        print(json.dumps(goto(a.xyz, a.grip, min_finger=a.min_finger, iters=a.iters)))
+    except JawMoveError as e:
+        sys.exit(str(e))
