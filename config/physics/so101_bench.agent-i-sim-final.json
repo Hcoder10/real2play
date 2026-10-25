@@ -1,0 +1,372 @@
+{
+  "schema": "r2p_physics/1",
+  "rig": "so101_bench",
+  "version": 2,
+  "hz": 30,
+  "substeps": 32,
+  "gravity": [
+    0,
+    0,
+    -9.81
+  ],
+  "latency_ticks": 1,
+  "sag_gain": [
+    0.0,
+    0.03703703707382221,
+    0.024691358049214802,
+    0.03703703707382221,
+    0.0,
+    0.0
+  ],
+  "joints": {
+    "shoulder_pan": {
+      "kp": 47.249999953071324,
+      "kv": 0.6999999993818986,
+      "armature": 0.005,
+      "frictionloss": 0.002,
+      "torque_limit": 3.35
+    },
+    "shoulder_lift": {
+      "kp": 26.999999973183613,
+      "kv": 0.7999999992935984,
+      "armature": 0.005,
+      "frictionloss": 0.002,
+      "torque_limit": 3.35
+    },
+    "elbow_flex": {
+      "kp": 40.49999995977542,
+      "kv": 0.6999999993818986,
+      "armature": 0.005,
+      "frictionloss": 0.002,
+      "torque_limit": 3.35
+    },
+    "wrist_flex": {
+      "kp": 26.999999973183613,
+      "kv": 0.3999999996467992,
+      "armature": 0.003,
+      "frictionloss": 0.001,
+      "torque_limit": 3.35
+    },
+    "wrist_roll": {
+      "kp": 33.749999966479514,
+      "kv": 0.3499999996909493,
+      "armature": 0.002,
+      "frictionloss": 0.001,
+      "torque_limit": 3.35
+    },
+    "gripper": {
+      "kp": 26.999999973183613,
+      "kv": 0.2499999997792495,
+      "armature": 0.002,
+      "frictionloss": 0.001,
+      "torque_limit": 0.8
+    }
+  },
+  "object": {
+    "mass_kg": 0.004008152488336558,
+    "friction": 0.4507612404404206
+  },
+  "contact": {
+    "solref": [
+      0.015,
+      1
+    ],
+    "solimp": [
+      0.95,
+      0.99,
+      0.001
+    ],
+    "friction": [
+      0.8,
+      0.005,
+      0.0001
+    ],
+    "impratio": 10
+  },
+  "notes": "Provisional compliance calibration, not an identified hardware twin. Gravity acts through the official link inertias and finite position-servo stiffness; no Cartesian sag offset is injected. kp units Nm/rad, kv Nm*s/rad, armature kg*m^2, frictionloss and torque_limit Nm. See README.md for measured sag and refit protocol.",
+  "active_twin": {
+    "run": "C:\\Users\\sarta\\real2play\\runs\\active_twin\\agent-i-sim-final",
+    "activated": false,
+    "synthetic": true,
+    "parameters": {
+      "stiffness_scale": 1.3499999986591806,
+      "damping_scale": 0.999999999116998,
+      "cap_friction": 0.4507612404404206,
+      "cap_mass_kg": 0.004008152488336558,
+      "table_friction": 0.25
+    },
+    "uncertainty": {
+      "stiffness_scale": {
+        "std": 0.05622786957280771,
+        "identified": true,
+        "bounds": [
+          0.6,
+          1.8
+        ]
+      },
+      "damping_scale": {
+        "std": 0.5630343269197112,
+        "identified": true,
+        "bounds": [
+          0.5,
+          1.8
+        ]
+      },
+      "cap_friction": {
+        "std": 0.015766217684920075,
+        "identified": true,
+        "bounds": [
+          0.2,
+          0.9
+        ]
+      },
+      "cap_mass_kg": {
+        "std": 0.0001437818783307241,
+        "identified": true,
+        "bounds": [
+          0.002,
+          0.008
+        ]
+      },
+      "table_friction": {
+        "std": null,
+        "identified": false,
+        "bounds": [
+          0.15,
+          0.8
+        ]
+      }
+    },
+    "before": {
+      "joint_deg": 0.13861471468196523,
+      "jaw_mm": 1.2928425084861541,
+      "sag_mm": 1.1613781211890353,
+      "object_mm": 1.1099612099617537,
+      "iou": 0.9910862875779237,
+      "error": 1.1634703504435109,
+      "objects": {
+        "piece": {
+          "iou": 0.96955642530985
+        },
+        "r0c0": {
+          "iou": 0.98879618729998
+        },
+        "r0c1": {
+          "iou": 0.990467068053275
+        },
+        "r0c2": {
+          "iou": 0.9780523614013367
+        },
+        "r1c0": {
+          "iou": 0.9866666666666667
+        },
+        "r1c1": {
+          "iou": 0.9978843911377645
+        },
+        "r1c2": {
+          "iou": 0.9994397759103641
+        },
+        "r2c0": {
+          "iou": 1.0
+        },
+        "r2c1": {
+          "iou": 1.0
+        },
+        "r2c2": {
+          "iou": 1.0
+        }
+      },
+      "rows": [
+        {
+          "experiment": {
+            "kind": "hold_pose",
+            "xyz": [
+              0.225,
+              -0.1,
+              0.13
+            ],
+            "joint": null,
+            "amplitude_deg": 5.0,
+            "speed": 8.0,
+            "obj": null,
+            "direction_deg": 0.0,
+            "distance_m": 0.025,
+            "xy": null,
+            "lift_m": 0.07,
+            "duration_s": 1.0
+          },
+          "session": "C:\\Users\\sarta\\real2play\\runs\\active_twin\\agent-i-sim-final\\heldout_00",
+          "split": "heldout",
+          "joint_deg": 0.14293045336977508,
+          "jaw_mm": 1.3952630491291047,
+          "sag_mm": 1.3540569557514388,
+          "object_mm": 0.09281792536355764,
+          "object_deg": null,
+          "iou": 0.9930294333342192
+        },
+        {
+          "experiment": {
+            "kind": "joint_sweep",
+            "xyz": null,
+            "joint": 1,
+            "amplitude_deg": 4,
+            "speed": 10,
+            "obj": null,
+            "direction_deg": 0.0,
+            "distance_m": 0.025,
+            "xy": null,
+            "lift_m": 0.07,
+            "duration_s": 1.0
+          },
+          "session": "C:\\Users\\sarta\\real2play\\runs\\active_twin\\agent-i-sim-final\\heldout_01",
+          "split": "heldout",
+          "joint_deg": 0.13460452755719898,
+          "jaw_mm": 1.1471363251128275,
+          "sag_mm": 1.0933289507619572,
+          "object_mm": 0.09281799576588454,
+          "object_deg": null,
+          "iou": 0.9980335497835497
+        },
+        {
+          "experiment": {
+            "kind": "push",
+            "xyz": null,
+            "joint": null,
+            "amplitude_deg": 5.0,
+            "speed": 10,
+            "obj": "piece",
+            "direction_deg": 0,
+            "distance_m": 0.035,
+            "xy": null,
+            "lift_m": 0.07,
+            "duration_s": 1.0
+          },
+          "session": "C:\\Users\\sarta\\real2play\\runs\\active_twin\\agent-i-sim-final\\heldout_02",
+          "split": "heldout",
+          "joint_deg": 0.13830916311892166,
+          "jaw_mm": 1.3361281512165304,
+          "sag_mm": 1.0367484570537098,
+          "object_mm": 3.144247708755819,
+          "object_deg": null,
+          "iou": 0.9821958796160021
+        }
+      ]
+    },
+    "after": {
+      "joint_deg": 0.0002614709940256092,
+      "jaw_mm": 0.002755840820172462,
+      "sag_mm": 0.0012909985647290524,
+      "object_mm": 0.2861312461359588,
+      "iou": 0.9980129834631679,
+      "error": 0.06310114469899339,
+      "objects": {
+        "piece": {
+          "iou": 0.9923520568539018
+        },
+        "r0c0": {
+          "iou": 1.0
+        },
+        "r0c1": {
+          "iou": 1.0
+        },
+        "r0c2": {
+          "iou": 0.9888888888888889
+        },
+        "r1c0": {
+          "iou": 1.0
+        },
+        "r1c1": {
+          "iou": 1.0
+        },
+        "r1c2": {
+          "iou": 0.9988888888888888
+        },
+        "r2c0": {
+          "iou": 1.0
+        },
+        "r2c1": {
+          "iou": 1.0
+        },
+        "r2c2": {
+          "iou": 1.0
+        }
+      },
+      "rows": [
+        {
+          "experiment": {
+            "kind": "hold_pose",
+            "xyz": [
+              0.225,
+              -0.1,
+              0.13
+            ],
+            "joint": null,
+            "amplitude_deg": 5.0,
+            "speed": 8.0,
+            "obj": null,
+            "direction_deg": 0.0,
+            "distance_m": 0.025,
+            "xy": null,
+            "lift_m": 0.07,
+            "duration_s": 1.0
+          },
+          "session": "C:\\Users\\sarta\\real2play\\runs\\active_twin\\agent-i-sim-final\\heldout_00",
+          "split": "heldout",
+          "joint_deg": 4.0745627907525285e-10,
+          "jaw_mm": 3.944327708088276e-09,
+          "sag_mm": 3.847186671849068e-09,
+          "object_mm": 0.09281807084768866,
+          "object_deg": null,
+          "iou": 1.0
+        },
+        {
+          "experiment": {
+            "kind": "joint_sweep",
+            "xyz": null,
+            "joint": 1,
+            "amplitude_deg": 4,
+            "speed": 10,
+            "obj": null,
+            "direction_deg": 0.0,
+            "distance_m": 0.025,
+            "xy": null,
+            "lift_m": 0.07,
+            "duration_s": 1.0
+          },
+          "session": "C:\\Users\\sarta\\real2play\\runs\\active_twin\\agent-i-sim-final\\heldout_01",
+          "split": "heldout",
+          "joint_deg": 3.682823456142155e-10,
+          "jaw_mm": 3.1853001378994455e-09,
+          "sag_mm": 3.034362337589278e-09,
+          "object_mm": 0.09281799442973342,
+          "object_deg": null,
+          "iou": 1.0
+        },
+        {
+          "experiment": {
+            "kind": "push",
+            "xyz": null,
+            "joint": null,
+            "amplitude_deg": 5.0,
+            "speed": 10,
+            "obj": "piece",
+            "direction_deg": 0,
+            "distance_m": 0.035,
+            "xy": null,
+            "lift_m": 0.07,
+            "duration_s": 1.0
+          },
+          "session": "C:\\Users\\sarta\\real2play\\runs\\active_twin\\agent-i-sim-final\\heldout_02",
+          "split": "heldout",
+          "joint_deg": 0.0007844122063382029,
+          "jaw_mm": 0.00826751533088954,
+          "sag_mm": 0.0038729888126381477,
+          "object_mm": 0.6727576731304543,
+          "object_deg": null,
+          "iou": 0.994038950389504
+        }
+      ]
+    },
+    "scene_path": "C:\\Users\\sarta\\real2play\\runs\\active_twin\\agent-i-sim-final\\candidate_scene.json"
+  }
+}

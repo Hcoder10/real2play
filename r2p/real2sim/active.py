@@ -119,6 +119,8 @@ class Safety:
     max_z: float = .25
     reach: tuple[float, float] = (.10, .32)
     speed_cap: float = 20
+    trajectory_speed_cap: float = 20
+    joint_margin_deg: float = 0
     grid_margin: float = .024  # finger envelope beyond a cell edge
     max_duration_s: float = 90
     clearance: dict = field(default_factory=lambda: {"link": .005, "gripper": .004, "finger": .003})
@@ -151,24 +153,40 @@ def bench_scene(task=None):
         objects.append(item)
     # Lower-friction tabletop makes cap friction observable; MuJoCo combines
     # contacts by max(friction). The live table value must be independently fit.
-    return {"task": task["name"], "objects": objects, "table": {"friction": .25}}
+    return {"task": task["name"], "objects": objects, "table": {"friction": .25},
+            "board": deepcopy(task.get("board", {}))}
+
+
+def scene_task(scene):
+    """Freeze surveyed grid geometry with the scene, including older recordings."""
+    task = load_task(scene.get("task", "place_on_cell"))
+    cells = [o for o in scene["objects"] if re.fullmatch(r"r[0-2]c[0-2]", o["id"])]
+    if scene.get("board"):
+        task["board"] = deepcopy(scene["board"])
+    elif len(cells) == 9:
+        task["board"] = {"cell_m": max(o["size_m"][0] for o in cells),
+                         "cells": {o["id"]: o["xyz"][:2] for o in cells}}
+    return task
 
 
 def experiment_menu(scene):
     obj = next(o for o in scene["objects"] if not o.get("fixed", False))
     x, y = obj["xyz"][:2]
-    return [Experiment("hold_pose", xyz=(.18, -.09, .12)),
+    lane = round(y, 2)
+    return [Experiment("hold_pose", xyz=(.18, lane, .12)),
             Experiment("joint_sweep", joint=1, amplitude_deg=7, speed=12),
             Experiment("push", obj=obj["id"], direction_deg=0, distance_m=.025, speed=12),
-            Experiment("hold_pose", xyz=(.25, -.09, .11)),
+            Experiment("hold_pose", xyz=(.25, lane, .11)),
             Experiment("joint_sweep", joint=2, amplitude_deg=8, speed=16),
             Experiment("push", obj=obj["id"], direction_deg=180, distance_m=.018, speed=8),
             Experiment("pick_lift_place", obj=obj["id"], xy=(x+.025, y), lift_m=.08)]
 
 
 def heldout_menu(scene):
-    oid = next(o["id"] for o in scene["objects"] if not o.get("fixed", False))
-    return [Experiment("hold_pose", xyz=(.225, -.10, .13)),
+    obj = next(o for o in scene["objects"] if not o.get("fixed", False))
+    oid = obj["id"]
+    lane = round(obj["xyz"][1]-.01, 2)
+    return [Experiment("hold_pose", xyz=(.225, lane, .13)),
             Experiment("joint_sweep", joint=1, amplitude_deg=4, speed=10),
             Experiment("push", obj=oid, direction_deg=0, distance_m=.035, speed=10)]
 
@@ -203,7 +221,7 @@ class Validator:
         def joint(goal, phase, dwell=0):
             nonlocal q
             goal = np.asarray(goal, float)
-            n = max(1, math.ceil(np.max(abs(goal-q)) / np.deg2rad(e.speed) * HZ))
+            n = max(1, math.ceil(np.max(abs(goal-q)) / np.deg2rad(min(e.speed, s.trajectory_speed_cap)) * HZ))
             for alpha in np.linspace(0, 1, n+1)[1:]:
                 targets.append(q + alpha*(goal-q))
                 phases.append(phase)
@@ -215,7 +233,7 @@ class Validator:
         def xyz(p, phase, grip=None, dwell=0):
             p = np.asarray(p, float)
             self._point(p)
-            goal = _solve(self.arm, p, q, q[5] if grip is None else grip)
+            goal = _solve(self.arm, p, q, q[5] if grip is None else grip, margin_deg=s.joint_margin_deg)
             if np.linalg.norm(self.arm.tips(goal)[2]-p) > .003:
                 raise UnsafeExperiment("IK residual exceeds 3 mm")
             points.append(p.tolist())
@@ -263,7 +281,7 @@ class Validator:
         xyz([last[0], last[1], max(s.safe_z, last[2])], "safe_finish", dwell=.5)
         if len(targets)/HZ > s.max_duration_s:
             raise UnsafeExperiment("Experiment exceeds duration cap")
-        limits = self.arm.range
+        limits = self.arm.range + np.deg2rad([s.joint_margin_deg, -s.joint_margin_deg])
         # Validate the complete interpolated path, not just IK endpoints.
         for index, target in enumerate([qstart, *targets]):
             if np.any(target < limits[:, 0]+1e-7) or np.any(target > limits[:, 1]-1e-7):
@@ -294,7 +312,7 @@ class Validator:
             return {"safe": False, "reason": str(exc)}
 
 
-def _solve(arm, xyz, q, grip):
+def _solve(arm, xyz, q, grip, *, margin_deg=0):
     """Position-priority bounded IK; table/mesh validation remains mandatory."""
     initial = np.asarray(q, float).copy()
     initial[5] = grip
@@ -303,7 +321,8 @@ def _solve(arm, xyz, q, grip):
         a, b, mid = arm.tips(candidate)
         axis = arm.jac_tip(candidate)[2]
         return np.r_[mid-xyz, .004*(axis-[0, 0, -1]), .02*(a[2]-b[2])]
-    limits = arm.range[:5] + [1e-5, -1e-5]
+    margin = np.deg2rad(margin_deg)+1e-5
+    limits = arm.range[:5] + [margin, -margin]
     result = least_squares(residual, np.clip(initial[:5], *limits.T), bounds=limits.T,
                            max_nfev=100, ftol=1e-8, xtol=1e-8, gtol=1e-8)
     return np.r_[result.x, grip]
@@ -362,7 +381,7 @@ class SimMover:
         self.__truth_physics = load_physics(truth_physics or "so101_bench")
         self.__truth_scene = deepcopy(truth_scene or self.scene)
         self.camera = camera or CameraModel.look_at(position=(.43, -.42, .43), target=(.18, -.06, .035), image_size=(320, 240))
-        self.validator = validator or Validator()
+        self.validator = validator or Validator(scene_task(self.scene))
         self.q0 = start_q()
 
     def execute(self, experiment, destination, *, split="train"):
@@ -414,14 +433,24 @@ class ArmdMover:
     campaign. Abort holds in place: blind automatic retreat is unsafe.
     """
     def __init__(self, scene, camera, *, url="http://127.0.0.1:8793", camera_url="http://127.0.0.1:8792",
-                 joint_map=None, validator=None, perceiver=None, request=http_json, capture=None):
+                 joint_map=None, validator=None, perceiver=None, request=http_json, capture=None,
+                 reset_timeout_s=60):
         self.scene, self.camera = deepcopy(scene), camera
         self.url, self.camera_url = url.rstrip("/"), camera_url.rstrip("/")
         self.joint_map = joint_map or JointMap.load(ROOT / "config/joint_map.json")
-        self.validator = validator or Validator()
+        self.validator = validator or Validator(scene_task(self.scene))
         self.perceiver, self.request, self.capture = perceiver, request, capture or self._capture
+        if not math.isfinite(reset_timeout_s) or not 0 <= reset_timeout_s <= 300:
+            raise ValueError("reset_timeout_s must be 0..300")
+        self.reset_timeout_s = reset_timeout_s
         self.initial_state = self.request(self.url+"/state")
         self.modern = "owner_deg" in self.initial_state and "q_target" in self.initial_state
+        if self.modern and validator is None:
+            # The repository daemon reserves two degrees at joint limits and
+            # caps near-table motion at 8 deg/s. Plan within both limits rather
+            # than relying on streaming projection to change the experiment.
+            self.validator.safety.joint_margin_deg = 2
+            self.validator.safety.trajectory_speed_cap = 8
         if not self.modern:
             if self.initial_state.get("joint_map") != self.joint_map.name:
                 raise UnsafeExperiment("Daemon and client joint maps differ")
@@ -455,15 +484,30 @@ class ArmdMover:
             raise UnsafeExperiment("Legacy armd blocks /state during moves and exposes no q_target; cannot record >=10 Hz. Use the repository streaming daemon; no POST sent.")
         if self.perceiver is None:
             raise UnsafeExperiment("Live recording needs a calibrated, saved perception setup")
-        frame, captured, _ = self.capture()
-        observed = self.perceiver.estimate(frame, self.measured_q(state))
-        for obj in self.scene["objects"]:
-            if obj.get("fixed"):
-                continue
-            pose = observed["poses"].get(obj["id"], {})
-            if (pose.get("source") != "vision" or not pose.get("seen") or
-                    np.linalg.norm(np.asarray(pose.get("xyz", [9,9,9]))-obj["xyz"]) > .004):
+        deadline = time.monotonic()+self.reset_timeout_s
+        announced = False
+        while True:
+            frame, captured, _ = self.capture()
+            observed = self.perceiver.estimate(frame, self.measured_q(state))
+            reset = True
+            for obj in self.scene["objects"]:
+                if obj.get("fixed"):
+                    continue
+                pose = observed["poses"].get(obj["id"], {})
+                reset &= (pose.get("source") == "vision" and bool(pose.get("seen")) and
+                          np.linalg.norm(np.asarray(pose.get("xyz", [9,9,9]))-obj["xyz"]) <= .004)
+            if reset:
+                break
+            if time.monotonic() >= deadline:
                 raise UnsafeExperiment("Supply reset/vision check failed; restore surveyed scene before continuing")
+            if not announced:
+                print("Waiting for observed supply reset to surveyed positions; no motion commands are being sent.", flush=True)
+                announced = True
+            time.sleep(min(.2, max(0, deadline-time.monotonic())))
+            state = self.request(self.url+"/state")
+        # An operator may have changed the arm while restoring the supply.
+        state = self.request(self.url+"/state")
+        plan = self.validator.plan(experiment, self.scene, self.measured_q(state))
         started = time.monotonic()
         stop = threading.Event()
         sensors, captures, errors, commands = [], [], [], []
@@ -833,6 +877,8 @@ def run_campaign(mover, *, budget=6, out_dir=None, physics="so101_bench", client
         raise ValueError("Run name must contain only letters, numbers, underscore, hyphen")
     out.mkdir(parents=True, exist_ok=False)
     base_physics, base_scene = load_physics(physics), deepcopy(mover.scene)
+    gemini.atomic_json(out/"prior_physics.json", base_physics)
+    gemini.atomic_json(out/"prior_scene.json", base_scene)
     parameters = initial_parameters(base_scene)
     uncertainty = {k: {"std": None, "identified": False, "bounds": list(v)} for k, v in PARAMETERS.items()}
     client = client or (offline_client() if isinstance(mover, SimMover) else gemini.Gemini(max_requests=30, retries=1))

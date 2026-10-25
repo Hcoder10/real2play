@@ -22,7 +22,22 @@ from r2p.sim.twin import load_physics
 
 @pytest.fixture(scope="module")
 def setup():
-    return bench_scene(), Validator(), start_q()
+    task = frozen_task()
+    return bench_scene(task), Validator(task), start_q()
+
+
+def frozen_task():
+    """The brief's surveyed benchmark; independent of concurrent bench moves."""
+    cells = {f"r{i}c{j}": xy for i, row in enumerate([
+        [[.1313, -.0226], [.1292, .0133], [.1271, .0492]],
+        [[.1674, -.0205], [.1653, .0154], [.1632, .0513]],
+        [[.2035, -.0184], [.2014, .0176], [.1993, .0535]],
+    ]) for j, xy in enumerate(row)}
+    return {"name": "place_on_cell", "board": {"cell_m": .0361, "cells": cells}, "objects": [
+        {"id": "piece", "role": "manipulated", "shape": "cylinder", "size_m": [.034, .017],
+         "color": "white", "mass_kg": .004, "friction": .5, "xy": [.15, -.092]},
+        *[{"id": oid, "role": "target", "shape": "plate", "size_m": [.0361, .0361, .001],
+           "color": "gray", "fixed": True, "collide": False, "xy": xy} for oid, xy in cells.items()]]}
 
 
 @pytest.mark.parametrize("experiment", [
@@ -70,7 +85,7 @@ def test_legacy_armd_is_read_only_and_frame_is_not_shifted(setup, tmp_path):
         requests.append((url, payload))
         assert payload is None
         return state
-    mover = ArmdMover(scene, CameraModel.look_at(), joint_map=jm, request=read_only)
+    mover = ArmdMover(scene, CameraModel.look_at(), joint_map=jm, request=read_only, validator=Validator(frozen_task()))
     np.testing.assert_allclose(mover.measured_q(state), q0)
     with pytest.raises(UnsafeExperiment, match="blocks /state"):
         mover.execute(experiment_menu(scene)[0], tmp_path/"forbidden")
@@ -118,15 +133,15 @@ def test_final_camera_pose_uses_its_own_timestamp(monkeypatch):
 
 
 def test_sim_campaign_recovers_hidden_truth_without_fit_leak(tmp_path, monkeypatch):
-    scene, physics = bench_scene(), load_physics()
+    scene, physics = bench_scene(frozen_task()), load_physics()
     truth = {**initial_parameters(scene), "stiffness_scale": 1.35, "cap_friction": .45}
     truth_physics, truth_scene = materialize(physics, scene, truth)
-    mover = SimMover(scene, truth_physics=truth_physics, truth_scene=truth_scene)
+    mover = SimMover(scene, truth_physics=truth_physics, truth_scene=truth_scene, validator=Validator(frozen_task()))
     def no_network(*args, **kwargs):
         raise AssertionError("Tests cannot call network")
     monkeypatch.setattr("urllib.request.urlopen", no_network)
     result = run_campaign(mover, budget=6, out_dir=tmp_path/"campaign", candidate_dir=tmp_path/"physics",
-                          client=offline_client(), max_nfev=7)
+                          client=offline_client(), max_nfev=7, physics=physics)
     assert result["status"] == "complete"
     assert result["experiments_used"] == 6
     assert result["heldout"]["error"] < result["before"]["error"]*.5
@@ -158,11 +173,15 @@ def test_invalid_budget_never_moves(tmp_path):
 
 def test_streaming_mover_records_sensor_and_capture_times(tmp_path, setup):
     scene, validator, q0 = setup
+    from r2p.real2sim.active import _solve
+    q0 = _solve(validator.arm, validator.arm.tips(q0)[2], q0, .9, margin_deg=2)
     q = q0.copy()
     commands = []
+    observations = 0
     def request(url, payload=None):
         nonlocal q
         if payload is not None:
+            assert observations >= 2, "Must wait for observed supply reset before posting"
             commands.append(payload)
             if "joints" in payload:
                 q = np.asarray(payload["joints"])
@@ -173,22 +192,34 @@ def test_streaming_mover_records_sensor_and_capture_times(tmp_path, setup):
         return np.zeros((48, 64, 3), np.uint8), now, {"sequence": now, "timestamp_source": "injected_capture"}
     class Perceiver:
         def estimate(self, frame, joints):
+            nonlocal observations
+            observations += 1
+            if observations == 1:
+                return {"poses": {}, "masks": {}}
             cap = scene["objects"][0]
             return {"poses": {cap["id"]: {"xyz": cap["xyz"], "yaw_deg": 0, "source": "vision", "seen": True}},
                     "masks": {cap["id"]: np.ones((48, 64), np.uint8)}}
-    mover = ArmdMover(scene, camera, request=request, capture=capture, perceiver=Perceiver())
+    mover = ArmdMover(scene, camera, request=request, capture=capture, perceiver=Perceiver(),
+                      validator=Validator(frozen_task(), Safety(joint_margin_deg=2, trajectory_speed_cap=8)))
     e = Experiment("hold_pose", xyz=tuple(validator.arm.tips(q0)[2]), duration_s=.3)
     observation = mover.execute(e, tmp_path/"stream")
     session = load_session(observation.session.path)
     assert session.meta["resampled"] and session.meta["sensor_hz"] >= 10
     assert session.meta["capture_timestamps"]
     assert len(session.frames) > 2 and all(c.get("stream") for c in commands)
+    targets = np.asarray([c["joints"] for c in commands])
+    margin = np.deg2rad(2)
+    assert np.all(targets >= validator.arm.range[:, 0]+margin)
+    assert np.all(targets <= validator.arm.range[:, 1]-margin)
+    assert np.max(abs(np.diff(np.vstack((q0, targets)), axis=0))) * 30 <= np.deg2rad(8)+1e-8
     assert (tmp_path/"stream_raw.json").exists()
     np.testing.assert_allclose(np.diff([t["t"] for t in session.ticks]), 1/30)
 
 
 def test_streaming_refusal_holds_without_blind_retreat(tmp_path, setup):
     scene, validator, q0 = setup
+    from r2p.real2sim.active import _solve
+    q0 = _solve(validator.arm, validator.arm.tips(q0)[2], q0, .9, margin_deg=2)
     commands = []
     def request(url, payload=None):
         if payload is not None:
@@ -199,8 +230,42 @@ def test_streaming_refusal_holds_without_blind_retreat(tmp_path, setup):
         def estimate(self, *args):
             return {"poses": {"piece": {"xyz": scene["objects"][0]["xyz"], "source": "vision", "seen": True}}}
     mover = ArmdMover(scene, CameraModel.look_at(image_size=(64, 48)), request=request, perceiver=Perceiver(),
-                      capture=lambda: (np.zeros((48, 64, 3), np.uint8), time.monotonic(), {}))
+                      capture=lambda: (np.zeros((48, 64, 3), np.uint8), time.monotonic(), {}),
+                      validator=Validator(frozen_task(), Safety(joint_margin_deg=2, trajectory_speed_cap=8)))
     with pytest.raises(UnsafeExperiment, match="refused/aborted"):
         mover.execute(experiment_menu(scene)[0], tmp_path/"refused")
     assert len(commands) == 2 and commands[-1] == {"hold": True}
     assert not (tmp_path/"refused").exists()
+
+
+def test_missing_supply_reset_never_posts(tmp_path, setup):
+    from r2p.real2sim.active import _solve
+    scene, validator, q0 = setup
+    q0 = _solve(validator.arm, validator.arm.tips(q0)[2], q0, .9, margin_deg=2)
+    def request(url, payload=None):
+        assert payload is None, "No actuator command while supply reset is unconfirmed"
+        return {"q": q0.tolist(), "owner_deg": q0.tolist(), "q_target": q0.tolist()}
+    class LostPerceiver:
+        def estimate(self, *args):
+            return {"poses": {}}
+    mover = ArmdMover(scene, CameraModel.look_at(image_size=(64, 48)), request=request,
+                      perceiver=LostPerceiver(), reset_timeout_s=0,
+                      capture=lambda: (np.zeros((48, 64, 3), np.uint8), time.monotonic(), {}),
+                      validator=Validator(frozen_task(), Safety(joint_margin_deg=2, trajectory_speed_cap=8)))
+    with pytest.raises(UnsafeExperiment, match="Supply reset/vision"):
+        mover.execute(experiment_menu(scene)[0], tmp_path/"unreset")
+    assert not (tmp_path/"unreset").exists()
+
+
+def test_menu_follows_moved_supply_and_scene_freezes_grid():
+    task = frozen_task()
+    task["objects"][0]["xy"] = [.175, -.125]
+    for obj in task["objects"][1:]:
+        obj["xy"] = [obj["xy"][0], obj["xy"][1]-.03]
+        task["board"]["cells"][obj["id"]] = obj["xy"]
+    scene = bench_scene(task)
+    mover = SimMover(scene)
+    assert mover.validator.task["board"] == scene["board"]
+    hold = experiment_menu(scene)[0]
+    assert hold.xyz[1] == -.12
+    assert mover.validator.verdict(hold, scene, mover.q0)["safe"]

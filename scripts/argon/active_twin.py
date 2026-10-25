@@ -32,6 +32,7 @@ def main(argv=None):
     parser.add_argument("--argon", choices=("fake", "live"), default=None)
     parser.add_argument("--request-budget", type=int, default=30, help="Hard wire-request budget for live Argon")
     parser.add_argument("--max-nfev", type=int, default=9)
+    parser.add_argument("--reset-timeout", type=float, default=60, help="Seconds to wait for a visually confirmed live supply reset")
     args = parser.parse_args(argv)
     task = load_task("place_on_cell")
     scene = json.loads(args.scene.read_text(encoding="utf-8")) if args.scene else bench_scene(task)
@@ -48,7 +49,8 @@ def main(argv=None):
         perceiver = None
         if args.perception_setup and not args.plan_only:
             perceiver = TaskPerceiver(camera, task).load_setup(args.perception_setup)
-        mover = ArmdMover(scene, camera, url=args.armd_url, camera_url=args.camera_url, perceiver=perceiver)
+        mover = ArmdMover(scene, camera, url=args.armd_url, camera_url=args.camera_url, perceiver=perceiver,
+                          reset_timeout_s=args.reset_timeout)
         q0 = mover.measured_q(mover.initial_state)
     out = args.out or ROOT/"runs/active_twin"/args.run
     if args.plan_only:
@@ -65,7 +67,8 @@ def main(argv=None):
     mode = args.argon or ("fake" if args.mover == "sim" else "live")
     client = offline_client() if mode == "fake" else gemini.Gemini(max_requests=args.request_budget, retries=1)
     try:
-        result = run_campaign(mover, budget=args.budget, out_dir=out, client=client, max_nfev=args.max_nfev)
+        result = run_campaign(mover, budget=args.budget, out_dir=out, physics=physics,
+                              client=client, max_nfev=args.max_nfev)
         print(json.dumps({"run": str(out), "before": result["before"]["error"], "after": result["heldout"]["error"],
                           "parameters": result["parameters"], "candidate": result["candidate_physics"],
                           "activated": False}, indent=2))
