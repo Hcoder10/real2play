@@ -6,7 +6,7 @@ import cv2
 import numpy as np
 import pytest
 
-from r2p.perception.camera import CameraModel, HttpCamera, StillCamera, open_camera
+from r2p.perception.camera import CameraModel, HttpCamera, LiveCamera, StillCamera, open_camera
 
 
 def test_distorted_deprojection_accuracy_and_json(tmp_path):
@@ -58,6 +58,52 @@ def test_still_and_http_camera(tmp_path):
         with HttpCamera({"url": f"http://127.0.0.1:{server.server_port}/frame/0.jpg", "width": 160, "height": 90}) as camera:
             assert camera.read().shape == (90, 160, 3)
             assert camera.age_s >= 1.25
+    finally:
+        server.shutdown()
+        server.server_close()
+        worker.join()
+
+
+def test_live_background_capture_uses_configured_backend_without_hardware(monkeypatch):
+    captured = []
+    class FakeCapture:
+        released = False
+        def __init__(self, index, backend):
+            captured.append((index, backend))
+        def isOpened(self):
+            return True
+        def set(self, *args):
+            pass
+        def read(self):
+            return True, np.full((30, 40, 3), 90, np.uint8)
+        def release(self):
+            self.released = True
+    monkeypatch.setattr(cv2, "VideoCapture", FakeCapture)
+    with LiveCamera({"index": 3, "backend": "ANY", "width": 80, "height": 60}) as camera:
+        assert camera.read().shape == (60, 80, 3)
+        assert camera.age_s < 1
+        assert camera._thread.is_alive()
+    assert captured == [(3, cv2.CAP_ANY)]
+    assert camera.capture.released
+    assert not camera._thread.is_alive()
+
+
+def test_camserver_list_and_frame_routes():
+    from urllib.request import urlopen
+    from scripts.perception.camserver import make_handler
+    camera = StillCamera(np.full((720, 1280, 3), 80, np.uint8))
+    camera.error = None
+    server = ThreadingHTTPServer(("127.0.0.1", 0), make_handler({2: camera}))
+    worker = threading.Thread(target=server.serve_forever, daemon=True)
+    worker.start()
+    try:
+        base = f"http://127.0.0.1:{server.server_port}"
+        with urlopen(base+"/list") as response:
+            assert json.load(response)[0]["index"] == 2
+        with urlopen(base+"/frame/2.jpg") as response:
+            image = cv2.imdecode(np.frombuffer(response.read(), np.uint8), cv2.IMREAD_COLOR)
+            assert image.shape == (720, 1280, 3)
+            assert float(response.headers["X-Frame-Age"]) == 0
     finally:
         server.shutdown()
         server.server_close()

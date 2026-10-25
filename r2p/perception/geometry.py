@@ -64,12 +64,14 @@ def fit_pose(cam, obj, mask, bottom=0.0, previous=None):
     size = dimensions(obj)
     z = bottom + size[2]/2
     points = silhouette_points(obj)
+    scale_bounds = obj.get("_size_scale_range")
     angles = np.linspace(0, 2*np.pi, 24, endpoint=False)
     directions = np.column_stack((np.cos(angles), np.sin(angles)))
     observed = np.max(hull @ directions.T, axis=0)
     center = cam.deproject(hull.mean(axis=0), h=z)[:2]
     def residual(p):
-        pixels = cam.project(points @ rotation(p[2]).T + [p[0], p[1], z])
+        scale = p[3] if len(p) > 3 else 1.
+        pixels = cam.project(scale*points @ rotation(p[2]).T + [p[0], p[1], bottom+scale*size[2]/2])
         return np.max(pixels @ directions.T, axis=0) - observed
     round_shape = obj.get("shape") in ("bowl", "sphere") or (obj.get("shape") == "cylinder" and obj.get("axis", "z") == "z")
     directed = is_screwdriver(obj)
@@ -84,6 +86,9 @@ def fit_pose(cam, obj, mask, bottom=0.0, previous=None):
         if is_screwdriver(obj):
             xy += (rotation(yaw) @ [.2*size[0], 0, 0])[:2]
         p = np.array([*xy, yaw])
+        if scale_bounds is not None:
+            scale = (previous["size_m"][0]/obj["size_m"][0]) if warm else 1.
+            p = np.append(p, np.clip(scale, *scale_bounds))
         penalty = 0.
         if directed and hint is not None:
             angle_error = (yaw-hint+180)%360-180
@@ -91,17 +96,23 @@ def fit_pose(cam, obj, mask, bottom=0.0, previous=None):
         seeds.append((float(np.mean(residual(p)**2))+penalty, p))
     candidates = []
     for _, p in sorted(seeds, key=lambda item: item[0])[:1 if warm else 2]:
-        if round_shape:
+        if round_shape and scale_bounds is None:
             fit = least_squares(lambda xy: residual([*xy, 0]), p[:2], diff_step=1e-4, max_nfev=18)
             result = np.array([*fit.x, 0])
         else:
-            fit = least_squares(residual, p, diff_step=1e-4, x_scale=[.1, .1, 45], max_nfev=22)
+            kwargs = {} if scale_bounds is None else {"bounds": ([-np.inf, -np.inf, -np.inf, scale_bounds[0]],
+                                                                   [np.inf, np.inf, np.inf, scale_bounds[1]])}
+            fit = least_squares(residual, p, diff_step=1e-4, x_scale=[.1, .1, 45]+([1] if scale_bounds else []),
+                                max_nfev=22, **kwargs)
             result = fit.x
         penalty = 0. if not directed or hint is None else .0001*((result[2]-hint+180)%360-180)**2
         candidates.append((float(np.mean(residual(result)**2))+penalty, result))
     error, best = min(candidates, key=lambda item: item[0])
     # The handle gives a directed stick; store the specified undirected yaw.
     yaw = float((best[2]+90) % 180-90) if not round_shape else 0.0
-    return {"xyz": [float(best[0]), float(best[1]), float(z)], "yaw_deg": yaw,
+    scale = float(best[3]) if len(best) > 3 else 1.
+    half_angle = np.deg2rad(best[2])/2
+    return {"xyz": [float(best[0]), float(best[1]), float(bottom+size[2]*scale/2)], "yaw_deg": yaw,
+            "quat": [float(np.cos(half_angle)), 0., 0., float(np.sin(half_angle))],
             "directed_yaw_deg": float((best[2]+180)%360-180),
-            "size_m": obj.get("size_m"), "fit_px": float(np.sqrt(error))}
+            "size_m": (np.asarray(obj["size_m"])*scale).tolist(), "fit_px": float(np.sqrt(error))}

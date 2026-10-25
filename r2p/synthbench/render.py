@@ -125,7 +125,6 @@ class CpuRenderer:
             if board:
                 cfg = BoardConfig(origin_xyz=(.07, .13, 0))
                 printed = render_board(cam, cfg)
-                corners = cfg.to_spec([[0, 0, 0], [*cfg.dimensions, 0]])
                 # Warp support mask independently; board's white cells must remain white.
                 w, h = cfg.dimensions
                 polygon = cam.project(cfg.to_spec([[0, 0, 0], [w, 0, 0], [w, h, 0], [0, h, 0]]))
@@ -182,7 +181,11 @@ class CpuRenderer:
                 & (pixels[..., 0].max(axis=1) >= 0) & (pixels[..., 0].min(axis=1) < cam.width)
                 & (pixels[..., 1].max(axis=1) >= 0) & (pixels[..., 1].min(axis=1) < cam.height))
         order = np.flatnonzero(keep)
-        order = order[np.argsort(-camera_xyz[order, :, 2].mean(axis=1))]
+        depth = camera_xyz[:, :, 2].mean(axis=1)
+        # A selectable non-colliding target is a decal over the fixed board cells.
+        overlays = {ids[obj["id"]] for obj in objects if obj.get("collide") is False and "xy" not in obj}
+        depth -= np.isin(geom_ids, list(overlays))*.0001
+        order = order[np.argsort(-depth[order], kind="stable")]
         pixel_int = np.rint(pixels).astype(np.int32)
         for i in order:
             cv2.fillConvexPoly(frame, pixel_int[i], tuple(map(int, colors[i])), lineType=cv2.LINE_8)

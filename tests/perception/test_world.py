@@ -39,3 +39,34 @@ def test_rigid_attach_rotation_release_and_jaw_floor():
         assert world.held is None
         assert np.isclose(world.poses()[oid]["xyz"][2], .019)
         assert world.truth_check()["ok"] is False
+
+
+def test_release_container_floor_support_top_and_finger_push():
+    with World("cube_in_bowl", np.random.default_rng(2)) as world:
+        bowl = world.poses()["bowl"]["xyz"]
+        world.set_pose("cube", [*bowl[:2], .10])
+        world._release("cube")
+        assert np.isclose(world.poses()["cube"]["xyz"][2], .005+.019)
+        assert world.truth_check()["ok"]
+        world.set_pose("cube", [.25, -.08, .019])
+        world._push(np.array([.21, -.08, .019]), np.array([.25, -.08, .019]))
+        before = world.poses()["cube"]["xyz"][0]
+        world._push(np.array([.24, -.08, .019]), np.array([.27, -.08, .019]))
+        assert world.poses()["cube"]["xyz"][0] > before
+    with World("stack_two_cubes", np.random.default_rng(2)) as world:
+        world.set_pose("base", [.25, .03, .019])
+        world.set_pose("top", [.25, .03, .10])
+        world._release("top")
+        assert np.isclose(world.poses()["top"]["xyz"][2], .057)
+        assert world.truth_check()["ok"]
+
+
+def test_not_moved_truth_has_initial_evidence():
+    with World("place_on_cell", np.random.default_rng(4)) as world:
+        xy = world.poses()["cell"]["xyz"][:2]
+        world.set_pose("piece", [*xy, .007])
+        assert world.truth_check()["ok"]
+        oid = next(oid for oid in world.poses() if oid.startswith("other"))
+        original = world.poses()[oid]["xyz"]
+        world.set_pose(oid, [original[0]+.02, *original[1:]])
+        assert not world.truth_check()["ok"]

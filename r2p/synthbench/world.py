@@ -7,6 +7,7 @@ from __future__ import annotations
 
 import copy
 import numpy as np
+from scipy.spatial.transform import Rotation
 
 from r2p.frames import HOME_Q
 from r2p.model import Arm
@@ -35,13 +36,17 @@ class World:
         self.t = 0.0
         self._renderer = None
         self.last_masks = {}
+        self.initial = self.poses()
 
     def q(self):
         return self._q.copy()
 
     def poses(self):
-        return {oid: {k: copy.deepcopy(v) for k, v in pose.items() if k != "R"}
-                for oid, pose in self._poses.items()}
+        result = {}
+        for oid, pose in self._poses.items():
+            result[oid] = {k: copy.deepcopy(v) for k, v in pose.items() if k != "R"}
+            result[oid]["quat"] = np.roll(Rotation.from_matrix(pose["R"]).as_quat(), 1).tolist()
+        return result
 
     @property
     def truth(self):
@@ -94,7 +99,7 @@ class World:
         if target.shape != (6,) or not np.isfinite(target).all():
             raise ValueError("Expected six finite absolute joint targets")
         target = np.clip(target, self.arm.range[:, 0], self.arm.range[:, 1])
-        old_mid, _, _ = self._gripper(self._q)
+        old_pads = self.arm.tips(self._q)[:2]
         closed = bool(target[5] < .35)
         if self.held is not None:
             oid, offset, local_R, width = self.held
@@ -124,7 +129,11 @@ class World:
             self._poses[oid].update(xyz=(mid+R@offset).tolist(), R=global_R,
                                    yaw_deg=float(np.rad2deg(np.arctan2(global_R[1, 0], global_R[0, 0]))))
         else:
-            self._push(old_mid, mid)
+            # Push at the actual two fingertip pads, not an invisible surface
+            # across the open gap between them.
+            new_pads = self.arm.tips(target)[:2]
+            for old_pad, new_pad in zip(old_pads, new_pads):
+                self._push(old_pad, new_pad)
         self._q, self._closed = target, closed
         self.t += 1/30
         return self.poses()
@@ -141,6 +150,8 @@ class World:
             size = dimensions(obj)
             if min(old_mid[2], mid[2]) > pose["xyz"][2]+size[2]/2+.008:
                 continue
+            if max(old_mid[2], mid[2]) < pose["xyz"][2]-size[2]/2-.006:
+                continue
             xy = np.asarray(pose["xyz"][:2])
             delta = movement[:2]
             fraction = np.clip(np.dot(xy-old_mid[:2], delta)/np.dot(delta, delta), 0, 1)
@@ -156,7 +167,8 @@ class World:
     def truth_check(self):
         from r2p.tasks import check
         return check(self.task, {"objects": self.poses(), "gripper_open": not self._closed,
-                                 "site_xyz": self._gripper(self._q)[0].tolist()})
+                                 "site_xyz": self._gripper(self._q)[0].tolist(), "initial": self.initial,
+                                 "holding": [] if self.held is None else [self.held[0]]})
 
     def render_layers(self, **kwargs):
         if self._renderer is None:

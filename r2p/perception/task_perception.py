@@ -27,7 +27,11 @@ class GeminiDetector:
                   "[{\"id\":task_object_id,\"box_2d\":[ymin,xmin,ymax,xmax]}]}. "
                   "Coordinates are 0..1000, relative to the full image. Omit absent objects. Task: "
                   + json.dumps(task))
-        response, _ = gemini.call([prompt, gemini.image_part(frame)], role=role, tag="perception_boxes")
+        schema = {"type": "object", "required": ["objects"], "properties": {"objects": {
+            "type": "array", "items": {"type": "object", "required": ["id", "box_2d"], "properties": {
+                "id": {"type": "string"}, "box_2d": {"type": "array", "minItems": 4, "maxItems": 4,
+                                                        "items": {"type": "number", "minimum": 0, "maximum": 1000}}}}}}}
+        response, _ = gemini.call([prompt, gemini.image_part(frame)], role=role, tag="perception_boxes", schema=schema)
         if isinstance(response, str):
             response = response.strip()
             if response.startswith("```"):
@@ -37,6 +41,10 @@ class GeminiDetector:
         boxes = {}
         for obj in response["objects"]:
             y0, x0, y1, x1 = obj["box_2d"]
+            if not (0 <= x0 < x1 <= 1000 and 0 <= y0 < y1 <= 1000):
+                raise ValueError(f"Invalid detector box for {obj['id']}")
+            if str(obj["id"]) in boxes:
+                raise ValueError(f"Duplicate detector id: {obj['id']}")
             boxes[str(obj["id"])] = [x0*w/1000, y0*h/1000, x1*w/1000, y1*h/1000]
         return boxes
 
@@ -59,12 +67,17 @@ class TaskPerceiver:
             task = load_task(task)
         self.cam = cam_model
         self.task = copy.deepcopy(task)
-        self.objects = {obj["id"]: obj for obj in task["objects"]}
+        self.objects = {obj["id"]: copy.deepcopy(obj) for obj in task["objects"]}
+        for oid, obj in self.objects.items():
+            scale = task.get("randomize", {}).get(oid, {}).get("size_scale")
+            if isinstance(scale, (list, tuple)) and scale[0] < scale[1]:
+                obj["_size_scale_range"] = list(scale)
         self.detector = detector if detector is not None else GeminiDetector()
         self.clock = clock
         self.arm = arm
         self.models = {}
         self.poses = {}
+        self.initial = {}
         self.centers = {}
         self.areas = {}
         self.last_seen = {}
@@ -120,9 +133,12 @@ class TaskPerceiver:
             if self._held is not None and self._held[0] == oid:
                 continue
             if model is not None:
-                self.models[oid] = model
+                if not self.objects[oid].get("fixed"):
+                    self.models[oid] = model
                 self.centers[oid] = center
                 self.areas[oid] = area
+            if self.objects[oid].get("fixed") and pose.get("seen"):
+                pose["source"] = "known"
             self.poses[oid] = pose
             self.last_seen[oid] = now
 
@@ -137,6 +153,7 @@ class TaskPerceiver:
         self._apply_setup(fitted, now)
         for oid in self.objects:
             self.last_seen.setdefault(oid, now)
+        self.initial = copy.deepcopy(self.poses)
         self._setup = True
         return {"poses": copy.deepcopy(self.poses)}
 
@@ -157,9 +174,9 @@ class TaskPerceiver:
         def work():
             try:
                 fitted = self._fit_setup(image, self._detect(image, "main"))
-                pending = (fitted, None)
+                pending = (fitted, None, now)
             except Exception as exc:
-                pending = ({}, f"{type(exc).__name__}: {exc}")
+                pending = ({}, f"{type(exc).__name__}: {exc}", now)
             with self._pending_lock:
                 if not self._closed:
                     self._pending = pending
@@ -205,7 +222,8 @@ class TaskPerceiver:
         with self._pending_lock:
             pending, self._pending = self._pending, None
         if pending is not None:
-            fitted, self.redetect_error = pending
+            fitted, self.redetect_error, captured_at = pending
+            fitted = {oid: value for oid, value in fitted.items() if self.last_seen.get(oid, -float("inf")) < captured_at}
             self._apply_setup(fitted, now)
         q = np.asarray(q, float)
         if q.shape != (6,) or not np.isfinite(q).all():
@@ -213,6 +231,14 @@ class TaskPerceiver:
         mid, grip_R, gap = self._gripper(q)
         closed = bool(q[5] < .35)
         if self._held is not None and not closed:
+            oid = self._held[0]
+            pose = self.poses[oid]
+            bottoms = self._support_candidates(oid)
+            bottom = max((h for h in bottoms if h <= pose["xyz"][2]+.02), default=0.)
+            pose["xyz"][2] = bottom + dimensions(self.objects[oid])[2]/2
+            angle = np.deg2rad(pose["yaw_deg"])/2
+            pose["quat"] = [float(np.cos(angle)), 0., 0., float(np.sin(angle))]
+            pose["source"] = "known" if _known_pose(self.objects[oid]) is not None else "released"
             self._held = None
         if closed and not self._was_closed and self._held is None:
             options = [(np.linalg.norm(np.asarray(p["xyz"])-mid), oid) for oid, p in self.poses.items()
@@ -230,15 +256,17 @@ class TaskPerceiver:
             if self._held is not None and self._held[0] == oid:
                 _, offset, local_R = self._held
                 R = grip_R @ local_R
+                from scipy.spatial.transform import Rotation
+                quat = np.roll(Rotation.from_matrix(R).as_quat(), 1).tolist()
                 self.poses[oid].update(xyz=(mid + grip_R @ offset).tolist(),
                                        yaw_deg=float((np.rad2deg(np.arctan2(R[1, 0], R[0, 0]))+90)%180-90),
-                                       seen=True, source="fk")
+                                       quat=quat, seen=True, source="fk")
                 self.centers[oid] = self.cam.project(self.poses[oid]["xyz"]).tolist()
                 self.last_seen[oid] = now
                 continue
-            if _known_pose(obj) is not None:
+            if _known_pose(obj) is not None or (obj.get("fixed") and oid in self.poses):
                 # Explicit known locations are authoritative, never colour tracked.
-                self.poses[oid] = _known_pose(obj)
+                self.poses[oid] = self.poses.get(oid) or _known_pose(obj)
                 self.last_seen[oid] = now
                 continue
             if oid not in self.models:
@@ -274,11 +302,14 @@ class TaskPerceiver:
                 distractors = (labels != 0) & (labels != choice)
                 self.models[oid].learn_background(indices, distractors, selected)
         lost = [oid for oid in self.objects if now-self.last_seen.get(oid, now) > 1.0
-                and _known_pose(self.objects[oid]) is None]
+                and _known_pose(self.objects[oid]) is None
+                and not (self.objects[oid].get("fixed") and oid in self.poses)
+                and (oid in self.poses or self.task.get("randomize", {}).get(oid, {}).get("p_present", 1) >= 1)]
         if lost:
             self._start_redetect(frame, now)
         result = {"poses": copy.deepcopy(self.poses), "masks": masks, "lost": lost,
                   "gripper_open": not closed, "site_xyz": mid.tolist(), "jaw_gap_m": gap,
+                  "holding": [] if self._held is None else [self._held[0]],
                   "redetect_count": self.redetect_count, "redetect_error": self.redetect_error,
                   "latency_ms": 1000*(time.perf_counter()-started)}
         self.last_result = result
@@ -291,14 +322,15 @@ class TaskPerceiver:
             raise RuntimeError("Estimate a frame before checking success")
         valid = {oid: p for oid, p in result["poses"].items() if p.get("seen")}
         return check(self.task, {"objects": valid, "gripper_open": result.get("gripper_open", True),
-                                 "site_xyz": result.get("site_xyz", [0, 0, 0]), **state})
+                                 "site_xyz": result.get("site_xyz", [0, 0, 0]),
+                                 "holding": result.get("holding", []), "initial": self.initial, **state})
 
     def save_setup(self, path):
         if not self._setup:
             raise RuntimeError("No setup to save")
         payload = {"schema": "r2p_perception_setup/1", "camera": self.cam.to_dict(), "task": self.task,
                    "models": {oid: model.to_dict() for oid, model in self.models.items()},
-                   "poses": self.poses, "centers": self.centers, "areas": self.areas}
+                   "poses": self.poses, "centers": self.centers, "areas": self.areas, "initial": self.initial}
         path = Path(path)
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_text(json.dumps(payload), encoding="utf-8")
@@ -313,6 +345,7 @@ class TaskPerceiver:
             raise ValueError("Saved setup task or calibration differs from this perceiver")
         self.models = {oid: Appearance.from_dict(model) for oid, model in payload["models"].items()}
         self.poses, self.centers, self.areas = payload["poses"], payload["centers"], payload["areas"]
+        self.initial = payload.get("initial", copy.deepcopy(self.poses))
         self.last_seen = dict.fromkeys(self.objects, self.clock())
         self.replay = self._setup = True
         return self

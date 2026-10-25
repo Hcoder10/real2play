@@ -1,0 +1,20 @@
+{
+  "camera": {
+    "source": "http",
+    "url": "http://127.0.0.1:8792/frame/{index}.jpg",
+    "index": 0,
+    "width": 1280,
+    "height": 720,
+    "fps": 30
+  },
+  "board": {
+    "dictionary": "DICT_4X4_50",
+    "grid": [4, 3],
+    "marker_length_m": 0.04,
+    "separation_m": 0.01,
+    "origin_xyz": [0.12, -0.095, 0.0],
+    "yaw_deg": 0.0
+  },
+  "base_footprint_size_m": [0.10, 0.08],
+  "note": "EXAMPLE ONLY: measure the marker-0 top-left corner in the footprint frame and the actual footprint dimensions. Top row faces the robot. Do not use example offsets as a calibration measurement."
+}
