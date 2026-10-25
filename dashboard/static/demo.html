@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Real2Play — Argon's lab</title>
+  <link rel="stylesheet" href="/static/demo.css"><script defer src="/static/demo.js"></script>
+</head>
+<body>
+<header class="masthead">
+  <a class="brand" href="/">Real2Play<span class="brand-mark" aria-hidden="true">↗</span></a>
+  <p>Gemini experiments. People play. Robots learn.</p>
+  <div class="header-actions"><span id="connection" role="status">Connecting to evidence…</span><button id="fullscreen" type="button">Full screen</button></div>
+</header>
+<nav class="chain-wrap" aria-label="Real to deployment pipeline">
+  <div class="chain-caption"><span>The chain</span><span id="chain-source">Waiting for artifacts</span></div>
+  <ol id="chain"></ol>
+</nav>
+<main class="demo-grid">
+  <section class="panel lab" data-panel="1" aria-labelledby="lab-title">
+    <div class="panel-heading"><h1 id="lab-title">Argon Lab</h1><span id="lab-label" class="tag">Waiting</span><button class="focus-button" data-focus="1" aria-label="Focus Argon Lab">1 ↗</button></div>
+    <div class="lab-meta"><span id="lab-run">No lab run yet</span><span id="lab-status"></span></div>
+    <div class="thought"><span class="thought-label">Argon's latest thought</span><p id="thought">Start a lab experiment to see Argon's observations and next step.</p></div>
+    <div class="comparison">
+      <div class="comparison-label"><span id="reference-label">Real observation</span><span>Editable twin</span></div>
+      <video id="replay" muted autoplay loop playsinline controls preload="metadata" hidden aria-label="Latest recorded reference and simulation replay"></video>
+      <div id="comparison-stills" class="comparison-stills"><div class="media-slot"><img id="lab-scene" alt="Latest scene observation from the lab" hidden><span>No scene observation yet</span></div><div class="media-slot"><img id="lab-preview" alt="Latest simulated scene render" hidden><span>No twin render yet</span></div></div>
+      <div class="comparison-foot"><span id="replay-caption">Awaiting the first real | sim replay</span><span id="lab-age"></span></div>
+    </div>
+    <div class="lab-bottom">
+      <div class="residual-area"><div class="section-line"><h2>Measured residuals</h2><span id="metric-count">No replay yet</span></div><div id="residuals" class="residuals"></div></div>
+      <div class="wrist-observation media-slot"><img id="lab-wrist" alt="Latest wrist observation from the lab" hidden><span>No wrist observation yet</span><small id="lab-wrist-label">Wrist observation</small></div>
+    </div>
+    <div class="lab-log"><div><div class="section-line"><h2>Recent tool calls</h2><span id="tool-count"></span></div><ol id="tools"></ol></div><div><div class="section-line"><h2>Sim edits</h2><span id="edit-count"></span></div><ul id="edits"></ul></div></div>
+  </section>
+  <section class="panel game" data-panel="2" aria-labelledby="game-title">
+    <div class="panel-heading"><h1 id="game-title">Game</h1><span class="tag blue">Roblox</span><button class="focus-button" data-focus="2" aria-label="Focus Game">2 ↗</button></div>
+    <div class="game-content"><div><h2>Play the twin.<br>Teach the robot.</h2><div id="trace-counts" class="trace-counts"></div><p id="receiver" class="muted"></p></div><a id="game-link" target="_blank" rel="noopener noreferrer"><img src="/demo/qr.png" alt="Scan to play the published Real2Play Roblox game"><span>Join the game</span></a></div>
+  </section>
+  <section class="panel train" data-panel="3" aria-labelledby="train-title">
+    <div class="panel-heading"><h1 id="train-title">Replay & train</h1><span id="policy-label" class="tag">Simulation</span><button class="focus-button" data-focus="3" aria-label="Focus Replay and train">3 ↗</button></div>
+    <div class="train-content"><p class="command">Argon plans <span>pick(piece) · place_at(cell)</span></p><div class="evals"><div><span>Clean simulation</span><strong id="clean">—</strong></div><div><span>With real noise</span><strong id="noise">—</strong></div><div class="policy-rate"><strong>30 <small>Hz</small></strong><span>Policy control contract</span></div></div><p id="policy-note" class="muted">Waiting for a recorded policy evaluation.</p></div>
+  </section>
+  <section class="panel deploy" data-panel="4" aria-labelledby="deploy-title">
+    <div class="panel-heading"><h1 id="deploy-title">Deploy</h1><span id="deploy-label" class="tag">Waiting</span><button class="focus-button" data-focus="4" aria-label="Focus Deploy">4 ↗</button></div>
+    <div class="deploy-content"><div class="board-area"><div id="board" class="board" aria-label="Recorded tic-tac-toe board"></div><span id="board-caption">Robot's perspective</span></div><div class="decision"><h2 id="move">Waiting for a move</h2><p id="reason">The next recorded decision appears here.</p><span id="decision-meta" class="muted"></span></div></div>
+    <div class="live-cameras"><div class="media-slot"><img id="phone" alt="Live phone camera at the physical bench" hidden><span>Phone camera unavailable</span><small id="phone-label">Phone · connecting</small></div><div class="media-slot"><img id="wrist" alt="Live wrist camera at the physical bench" hidden><span>Wrist camera unavailable</span><small id="wrist-label">Wrist · connecting</small></div></div>
+  </section>
+</main>
+<footer><span id="footer-note">Read-only evidence · real, simulated and headless sources stay labeled</span><span><kbd>1</kbd>–<kbd>4</kbd> Focus a panel <kbd>Esc</kbd> Overview <kbd>F</kbd> Full screen</span></footer>
+</body>
+</html>

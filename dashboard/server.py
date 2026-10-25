@@ -4,6 +4,7 @@ import argparse
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 import json
 import mimetypes
+import re
 from pathlib import Path
 import sys
 import threading
@@ -16,6 +17,7 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 from dashboard.adapters import DashboardData, read_json, real_evidence, synthetic
+from dashboard.demo import CAMERAS, GAME_URL, DemoData
 
 
 def qr_png(url):
@@ -34,6 +36,9 @@ def make_server(data, host="127.0.0.1", port=8800):
     static = Path(__file__).parent / "static"
     lock = threading.Lock()
     cached = {"at": 0, "value": None}
+    demo = DemoData(data)
+    demo_lock = threading.Lock()
+    demo_cached = {"at": 0, "value": None}
 
     def snapshot():
         with lock:
@@ -59,6 +64,51 @@ def make_server(data, host="127.0.0.1", port=8800):
             except (BrokenPipeError, ConnectionResetError):
                 pass
 
+        def video(self, file):
+            """Stream an allowlisted MP4; browsers use byte ranges for seeking/looping."""
+            size = file.stat().st_size
+            start, end, status = 0, size - 1, 200
+            requested = self.headers.get("Range")
+            if requested:
+                match = re.fullmatch(r"bytes=(\d*)-(\d*)", requested.strip())
+                valid = bool(match and any(match.groups()))
+                if valid:
+                    first, last = match.groups()
+                    if first:
+                        start = int(first)
+                        end = min(int(last), size - 1) if last else size - 1
+                    else:
+                        start = max(0, size - int(last))
+                    valid = 0 <= start <= end < size and (bool(first) or int(last) > 0)
+                if not valid:
+                    self.send_response(416)
+                    self.send_header("Content-Range", f"bytes */{size}")
+                    self.send_header("Content-Length", "0")
+                    self.end_headers()
+                    return
+                status = 206
+            self.send_response(status)
+            self.send_header("Content-Type", "video/mp4")
+            self.send_header("Accept-Ranges", "bytes")
+            self.send_header("Content-Length", str(max(0, end - start + 1)))
+            self.send_header("Cache-Control", "no-cache")
+            self.send_header("X-Content-Type-Options", "nosniff")
+            if status == 206:
+                self.send_header("Content-Range", f"bytes {start}-{end}/{size}")
+            self.end_headers()
+            try:
+                with file.open("rb") as stream:
+                    stream.seek(start)
+                    remaining = end - start + 1
+                    while remaining > 0:
+                        block = stream.read(min(256 * 1024, remaining))
+                        if not block:
+                            break
+                        self.wfile.write(block)
+                        remaining -= len(block)
+            except (BrokenPipeError, ConnectionResetError):
+                pass
+
         def do_GET(self):
             path = urllib.parse.urlparse(self.path).path
             try:
@@ -66,6 +116,22 @@ def make_server(data, host="127.0.0.1", port=8800):
                     html = (static / "index.html").read_text(encoding="utf-8").replace("</head>",
                         '<link rel="stylesheet" href="/static/argon.css"><script src="/static/argon.js" defer></script></head>')
                     self.send(html.encode("utf-8"), "text/html; charset=utf-8")
+                elif path in {"/demo", "/demo/"}:
+                    self.send((static / "demo.html").read_bytes(), "text/html; charset=utf-8")
+                elif path == "/api/demo":
+                    with demo_lock:
+                        if time.monotonic() - demo_cached["at"] > 1:
+                            demo_cached.update(value=demo.snapshot(), at=time.monotonic())
+                        value = demo_cached["value"]
+                    self.send(json.dumps(value, allow_nan=False).encode())
+                elif path == "/demo/qr.png":
+                    self.send(qr_png(data.config.get("game_url") or GAME_URL), "image/png")
+                elif path.startswith("/demo/camera/"):
+                    name = path.rsplit("/", 1)[-1].removesuffix(".jpg")
+                    if name not in CAMERAS:
+                        return self.send(b"Unknown camera", "text/plain", 404)
+                    with urllib.request.urlopen(CAMERAS[name], timeout=1.5) as response:
+                        self.send(response.read(8 * 1024 * 1024), "image/jpeg")
                 elif path == "/api/argon":
                     from dashboard.argon import snapshot as argon_snapshot
                     self.send(json.dumps(argon_snapshot(data.root), allow_nan=False).encode())
@@ -83,6 +149,8 @@ def make_server(data, host="127.0.0.1", port=8800):
                         file = data.assets.get(path.split("/")[-1])
                     if not file:
                         return self.send(b"Not found", "text/plain", 404)
+                    if file.suffix.lower() == ".mp4":
+                        return self.video(file)
                     self.send(file.read_bytes(), mimetypes.guess_type(file.name)[0])
                 elif path == "/camera/frame.jpg":
                     # Recheck provenance; do not proxy a synthetic frame under a stale REAL badge.

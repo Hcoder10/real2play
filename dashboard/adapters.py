@@ -66,9 +66,9 @@ class DashboardData:
             return None
         candidate = Path(value)
         path = (candidate if candidate.is_absolute() else base / candidate).resolve()
-        if not path.is_relative_to(self.root) or path.suffix.lower() not in {".jpg", ".jpeg", ".png", ".webp"} or not path.is_file():
+        if not path.is_relative_to(self.root) or path.suffix.lower() not in {".jpg", ".jpeg", ".png", ".webp", ".mp4"} or not path.is_file():
             return None
-        token = hashlib.sha256(str(path).encode()).hexdigest()[:24]
+        token = hashlib.sha256(f"{path}:{path.stat().st_mtime_ns}".encode()).hexdigest()[:24]
         with self.asset_lock:
             self.assets[token] = path
         return f"/media/{token}"

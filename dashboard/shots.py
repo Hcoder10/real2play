@@ -133,7 +133,7 @@ def endpoint_json(url):
         return json.load(response)
 
 
-def capture(url, out, *, width=1920, height=1080, wait=3, browser=None, cdp_url=None, headful=False):
+def capture(url, out, *, width=1920, height=1080, wait=3, browser=None, cdp_url=None, headful=False, focus=None):
     process = None
     client = None
     profile = None
@@ -167,11 +167,29 @@ def capture(url, out, *, width=1920, height=1080, wait=3, browser=None, cdp_url=
                 raise TimeoutError("Dashboard did not load /api/state within 25 seconds")
             time.sleep(0.15)
         client.evaluate("document.fonts.ready.then(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))))", await_promise=True)
+        if focus:
+            client.call("Input.dispatchKeyEvent", type="keyDown", key=str(focus))
+            client.call("Input.dispatchKeyEvent", type="keyUp", key=str(focus))
         time.sleep(max(0, wait))  # actual wall-clock paint time, not virtual-time emulation
         metrics = client.evaluate("({width:innerWidth,height:innerHeight,scrollWidth:document.documentElement.scrollWidth,scrollHeight:document.documentElement.scrollHeight,panels:[...document.querySelectorAll('.panel-heading h1')].map(e=>e.textContent),mock:document.body.dataset.mock})")
-        metrics["image_badge"] = client.evaluate("document.getElementById('image-label').textContent")
+        metrics["image_badge"] = client.evaluate("document.getElementById('image-label')?.textContent ?? null")
         metrics["dominant_image"] = client.evaluate("[...document.querySelectorAll('.slide')].sort((a,b)=>Number(getComputedStyle(b).opacity)-Number(getComputedStyle(a).opacity))[0]?.getAttribute('aria-label')")
-        metrics["ttt_model_visible"] = client.evaluate("(()=>{const box=document.querySelector('.ttt').getBoundingClientRect(),label=document.getElementById('answer-model').getBoundingClientRect();return label.top>=box.top&&label.bottom<=box.bottom})()")
+        metrics["ttt_model_visible"] = client.evaluate("(()=>{const panel=document.querySelector('.ttt')||document.querySelector('.deploy'),text=document.getElementById('answer-model')||document.getElementById('decision-meta');if(!panel||!text)return null;const box=panel.getBoundingClientRect(),label=text.getBoundingClientRect();return label.top>=box.top&&label.bottom<=box.bottom})()")
+        metrics["focused_panel"] = client.evaluate("document.body.dataset.focus ?? null")
+        metrics["video"] = client.evaluate("(()=>{const v=document.querySelector('video');return v?{source:v.getAttribute('src'),readyState:v.readyState,currentTime:v.currentTime,duration:Number.isFinite(v.duration)?v.duration:null,paused:v.paused,loop:v.loop,error:v.error?.code??null}:null})()")
+        metrics["camera_frames"] = client.evaluate("[...document.querySelectorAll('.live-cameras img')].map(i=>({id:i.id,loaded:i.complete&&i.naturalWidth>0,visible:!i.hidden}))")
+        if client.evaluate("!!document.querySelector('.demo-grid')"):
+            checks = []
+            for panel in ("1", "2", "3", "4"):
+                client.call("Input.dispatchKeyEvent", type="keyDown", key="Escape")
+                client.call("Input.dispatchKeyEvent", type="keyDown", key=panel)
+                checks.append(client.evaluate("({focus:document.body.dataset.focus,visible:[...document.querySelectorAll('.panel')].filter(p=>getComputedStyle(p).display!=='none').map(p=>p.dataset.panel)})"))
+            client.call("Input.dispatchKeyEvent", type="keyDown", key="Escape")
+            if focus:
+                client.call("Input.dispatchKeyEvent", type="keyDown", key=focus)
+            metrics["keyboard_checks"] = checks
+            metrics["overview_restored"] = client.evaluate("!document.body.dataset.focus") if not focus else None
+            client.evaluate("new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)))", await_promise=True)
         result = client.call("Page.captureScreenshot", format="png", captureBeyondViewport=False, fromSurface=True)
         out = Path(out)
         out.parent.mkdir(parents=True, exist_ok=True)
@@ -221,6 +239,7 @@ def main(argv=None):
     parser.add_argument("--browser")
     parser.add_argument("--cdp-url")
     parser.add_argument("--headful", action="store_true")
+    parser.add_argument("--focus", choices=["1", "2", "3", "4"], help="Verify a demo panel keyboard shortcut")
     args = parser.parse_args(argv)
     print(json.dumps(capture(**vars(args)), indent=2))
 

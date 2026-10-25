@@ -1,5 +1,68 @@
 # Agent F: orchestration and dashboard
 
+## Judges' demo view (Agent T)
+
+Open **http://127.0.0.1:8801/demo** for the running Agent T server. Its process is
+separate from the existing `scripts/demo_up.py` process, which owns both port 8800
+and the trace receiver. That shared process was left running. On the next normal
+`demo_up.py` start, this same route is available at **http://127.0.0.1:8800/demo**.
+
+```powershell
+.venv/Scripts/python.exe dashboard/server.py --port 8801
+.venv/Scripts/python.exe -m pytest -q tests/app
+.venv/Scripts/python.exe dashboard/shots.py --url http://127.0.0.1:8801/demo --out dashboard/shots/demo-1920x1080.png
+.venv/Scripts/python.exe dashboard/shots.py --url http://127.0.0.1:8801/demo --focus 1 --out dashboard/shots/demo-lab-focus.png
+```
+
+The 1920×1080 view has no page scrolling. **1–4** focus Argon Lab, Game, Replay &
+train, and Deploy; **Escape** / **0** returns to the overview; **F** or the Full
+screen button enters browser full screen. Smaller screens use a stacked layout.
+The original dashboard and `/runs` remain available. `/demo` always shows actual
+artifact sources, including their synthetic labels; `--mock` applies to the
+original dashboard only.
+
+`/api/demo` reads the newest direct `runs/lab/*/status.json` and its ledger. Nested
+acceptance fixtures are excluded from live discovery. It shows the latest
+`# Thought:`, tool outcomes (including refusals), recorded scene/wrist observations,
+simulation preview, replay video, and joint/jaw/object/image residual sparklines.
+Sim edit counts are accepted tool edits. Line additions/removals are computed when
+the ledger contains both file versions; otherwise the UI says **diff unavailable**.
+The ledger reader is bounded to the last 16 MiB / 500 entries. Unknown measurements
+stay blank; a missing replay shows the latest observation and sim-render stills.
+
+Lab MP4s use `mp4v`, which Chrome cannot decode. If **ffmpeg** is on PATH, one CPU
+worker converts the selected replay to H.264/yuv420p with a fast-start index under
+`dashboard/.cache/videos/`. Original evidence is never modified. Converted videos
+are reused by path/size/mtime; conversion is asynchronous and does not block live
+polling. Missing ffmpeg or failed conversions produce an explicit message and
+retain stills. Allowlisted MP4 tokens support streamed single-byte-range requests,
+suffix ranges, seeking, and looping; invalid ranges return 416.
+
+The chain uses the latest orchestrator status and result ledger when available,
+including explicit **Synthetic orchestrator** labels. Otherwise it derives stages
+from lab, game-build, trace, pipeline-manifest, replay, export-evaluation, and TTT
+artifacts. `done` describes the recorded stage, not a claim of successful physical
+deployment. Synthetic board placement never marks physical deployment complete.
+
+The published game link from the T brief has a locally generated, verified QR.
+Trace counts come from configured trace directories (default `roblox/out/traces`)
+and receiver health at 8770: human, headless simulated, and bot counts are disjoint;
+experts and unknown sources remain separate; test-only traces are excluded.
+Phone and wrist frames are read-only, same-origin proxies for ports 8792 and 8794.
+They do not imply that the adjacent TTT board is real. The board's own provenance,
+model, reason, timestamp, and decision latency (when recorded) remain visible.
+
+Verification artifacts are in `dashboard/shots/demo-*.{png,json}`. The JSON sidecars
+record viewport bounds, JavaScript exceptions, camera loading, video playback and
+the 1–4 / Escape focus checks. `demo-offline-video` is explicitly a simulated test
+fixture; it verifies browser decoding and looping without accessing hardware.
+
+Current source limitations at handoff: the latest real lab run has not yet written
+a comparison replay or residual measurements; the latest orchestrator is synthetic,
+and `out/ttt/status.json` describes a mock placement. These are labeled, not replaced
+with invented live results. No arm command, Gemini call, training, GPU work, or
+receiver restart is performed by this dashboard.
+
 Run from the repository root with the shared Python environment:
 
 ```powershell

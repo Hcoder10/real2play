@@ -1,0 +1,3 @@
+.cache/
+shots/*server.log
+shots/*server.err

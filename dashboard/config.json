@@ -1,7 +1,7 @@
 {
   "host": "127.0.0.1",
   "port": 8800,
-  "game_url": null,
+  "game_url": "https://www.roblox.com/games/86276076528667/SquarianSquares-Place-10252026-1",
   "real2sim_live": "out/live",
   "real2sim_run": null,
   "auto_discover": true,

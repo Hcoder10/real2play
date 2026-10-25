@@ -1,0 +1,72 @@
+{
+  "url": "http://127.0.0.1:8801/demo",
+  "screenshot": "C:\\Users\\sarta\\real2play\\dashboard\\shots\\demo-mobile.png",
+  "wall_clock_wait_s": 2.0,
+  "virtual_time": false,
+  "metrics": {
+    "width": 390,
+    "height": 844,
+    "scrollWidth": 390,
+    "scrollHeight": 2245,
+    "panels": [
+      "Argon Lab",
+      "Game",
+      "Replay & train",
+      "Deploy"
+    ],
+    "mock": "false",
+    "image_badge": null,
+    "dominant_image": null,
+    "ttt_model_visible": true,
+    "focused_panel": null,
+    "video": {
+      "source": null,
+      "readyState": 0,
+      "currentTime": 0,
+      "duration": null,
+      "paused": true,
+      "loop": true,
+      "error": null
+    },
+    "camera_frames": [
+      {
+        "id": "phone",
+        "loaded": true,
+        "visible": true
+      },
+      {
+        "id": "wrist",
+        "loaded": true,
+        "visible": true
+      }
+    ],
+    "keyboard_checks": [
+      {
+        "focus": "1",
+        "visible": [
+          "1"
+        ]
+      },
+      {
+        "focus": "2",
+        "visible": [
+          "2"
+        ]
+      },
+      {
+        "focus": "3",
+        "visible": [
+          "3"
+        ]
+      },
+      {
+        "focus": "4",
+        "visible": [
+          "4"
+        ]
+      }
+    ],
+    "overview_restored": true
+  },
+  "javascript_errors": []
+}

@@ -1,0 +1,26 @@
+{
+  "url": "http://127.0.0.1:8801",
+  "screenshot": "C:\\Users\\sarta\\real2play\\dashboard\\shots\\demo-existing-dashboard.png",
+  "wall_clock_wait_s": 2.0,
+  "virtual_time": false,
+  "metrics": {
+    "width": 1920,
+    "height": 1080,
+    "scrollWidth": 1920,
+    "scrollHeight": 1203,
+    "panels": [
+      "REAL",
+      "REAL2SIM",
+      "GAME",
+      "POLICY"
+    ],
+    "mock": "false",
+    "image_badge": "SIM",
+    "dominant_image": "SIM twin evidence",
+    "ttt_model_visible": true,
+    "focused_panel": null,
+    "video": null,
+    "camera_frames": []
+  },
+  "javascript_errors": []
+}
