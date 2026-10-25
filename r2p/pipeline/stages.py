@@ -176,15 +176,27 @@ class ComponentStages:
         if not dry:
             argv += ["--perception-setup", str(self.path(self.o.perception_setup or "config/perception_setup.json"))]
         if dry:
-            argv.append("--dry-run")
+            argv += ["--dry-run", "--frame-stride", "15", "--timeout", "60" if policy == "stub" else "4"]
         return argv
 
     def recorded_session(self, folder):
         candidates = sorted(folder.rglob("*.jsonl"))
+        errors = []
         for trace in candidates:
-            if (trace_meta(trace).get("schema") == "r2p_trace/1" and
+            try:
+                meta = trace_meta(trace)
+            except (OSError, ValueError, KeyError, StopIteration) as exc:
+                errors.append(f"{trace.name}: {type(exc).__name__}")
+                continue
+            if (meta.get("schema") == "r2p_trace/1" and
                     any((trace.parent / "frames").glob("*.jpg"))):
+                error = meta.get("summary", {}).get("error")
+                if error:
+                    errors.append(str(error))
+                    continue
                 return trace.parent
+        if errors:
+            raise Blocked("No usable recorded attempt: " + "; ".join(errors))
         raise Blocked(f"No recorded r2p_trace/1 session with frames in {folder}; run the printed bench command")
 
     def session(self, name):
@@ -236,9 +248,13 @@ class ComponentStages:
         if session["synthetic"] and callable(loader):
             source = loader(source)
             source.meta = {**source.meta, "session_kind": "synthetic"}
+        extra = {}
+        if self.o.mode == "dry-run" and hasattr(source, "meta") and source.meta.get("scene"):
+            from .smoke import twin_inputs
+            extra = twin_inputs(source)
         result = invoke(function, source=source, session=source, task=self.task(name),
                         out_dir=folder, out=folder, run_dir=folder, max_iters=self.o.twin_iters,
-                        iterations=self.o.twin_iters, synthetic=session["synthetic"])
+                        iterations=self.o.twin_iters, synthetic=session["synthetic"], **extra)
         # Require actual scene evidence, not merely a successful exit code.
         scene = folder / "scene_best.json"
         if isinstance(result, dict):
@@ -254,7 +270,8 @@ class ComponentStages:
         live = folder / "run.json"
         if live.exists() and session["synthetic"]:
             metadata = read_json(live)
-            metadata.update(session_kind="synthetic", synthetic=True)
+            metadata.update(session_kind="synthetic", synthetic=True,
+                            smoke_fixture=bool(extra), model_critique=False if extra else None)
             atomic_json(live, metadata)
         return {"scene": str(scene), "live": str(folder / "run.json"),
                 "artifacts": [self.p.artifact(p) for p in sorted(folder.glob("*.json"))],
@@ -289,7 +306,12 @@ class ComponentStages:
             if previous:
                 prior_attempts.append(read_json(previous))
         if prior_attempts:
-            result = sysid.fit_parameters(prior_attempts, physics, heldout=[attempt], max_nfev=20)
+            fit_options = {}
+            if self.o.mode == "dry-run" and hasattr(sysid, "Parameter"):
+                fit_options = {"parameters": [sysid.Parameter("joints.shoulder_lift.kp", 10, 40)],
+                               "latency_candidates": [physics.get("latency_ticks", 0)]}
+            result = sysid.fit_parameters(prior_attempts, physics, heldout=[attempt],
+                                          max_nfev=2 if self.o.mode == "dry-run" else 20, **fit_options)
             # A failed held-out gate must never update the physics used downstream.
             if result["gate"]["passed"]:
                 physics = result["physics"]
@@ -337,7 +359,11 @@ class ComponentStages:
             if obj["id"] in focus_by_id:
                 fitted = focus_by_id[obj["id"]]
                 obj["xyz"] = fitted["xyz"]
-                randomize[obj["id"]] = {"xy_choice": [fitted["xyz"][:2]], "yaw_deg": [fitted.get("yaw_deg", 0)] * 2}
+                position = ({"xy_choice": [fitted["xyz"][:2]]} if obj.get("collide", True) else
+                            {"x": [fitted["xyz"][0]] * 2, "y": [fitted["xyz"][1]] * 2})
+                randomize[obj["id"]] = {**position, "yaw_deg": [fitted.get("yaw_deg", 0)] * 2}
+            elif randomize.get(obj["id"], {}).get("p_present", 1) < 1:
+                randomize[obj["id"]] = {**randomize[obj["id"]], "p_present": 0}
         attempt = self.p.manifest["rounds"][name]["stages"]["data"]["attempt"]
         batch = folder / f"attempt_{attempt:03d}"
         prior_dir, focus_dir = batch / "prior", batch / "focus"
@@ -355,7 +381,8 @@ class ComponentStages:
         task_name = task["name"]
         for path in sorted((self.root / "roblox/out/traces").rglob("*.jsonl")):
             try:
-                if task_of(trace_meta(path)) == task_name:
+                metadata = trace_meta(path)
+                if task_of(metadata) == task_name and not metadata.get("test_only"):
                     traces.append(path)
             except (OSError, ValueError, KeyError, StopIteration):
                 continue
@@ -398,7 +425,8 @@ class ComponentStages:
 
     def train(self, name):
         folder = self.folder(name, "train")
-        env = validate_lease(self.path(self.o.lease), task=self.p.key, round_name=name)
+        env = ({} if self.o.device == "cpu" else
+               validate_lease(self.path(self.o.lease), task=self.p.key, round_name=name))
         dependency("r2p.policy.train")
         attempt = self.p.manifest["rounds"][name]["stages"]["train"]["attempt"]
         export_name = f"{self.p.key}_{name}_a{attempt}"
@@ -406,18 +434,27 @@ class ComponentStages:
         argv = [sys.executable, "-m", "r2p.pipeline.train_worker", "--task", task_file,
                 "--traces", self.p.result(name, "label")["traces"], "--name", export_name,
                 "--steps", str(self.o.steps), "--device", self.o.device]
+        if self.o.mode == "dry-run":
+            argv += ["--smoke-only", "--width", "32", "--blocks", "1", "--batch-size", "16", "--eval-n", "1", "--eval-max-ticks", "60"]
         self.command(argv, folder, env)
         export = self.root / "exports" / export_name
         required = [export / filename for filename in ("config.json", "norm.json", "weights.npz", "runtime.py")]
         if not all(p.is_file() for p in required):
             raise Blocked(f"Training did not produce the complete policy export at {export}")
         config = read_json(export / "config.json")
+        if self.o.mode == "dry-run":
+            config.update(smoke_only=True, synthetic=True)
+            atomic_json(export / "config.json", config)
         if any(k not in config for k in ("task", "start_q", "obs_layout", "obs_const", "eval")) or config.get("action") != "absolute_q":
             raise Blocked("Policy export is missing its declared task/start_q/obs_layout/obs_const/eval or absolute_q action")
         previous = self.p.result(f"r{int(name[1:])-1}", "gate") if name != "r1" else {}
         incumbent = previous.get("selected", self.o.incumbent or str(self.root / "exports" / f"{self.task(name)['name']}_v1"))
+        if self.o.mode == "dry-run" and not self.o.incumbent and not self.path(incumbent).is_dir():
+            from .smoke import hold_export
+            incumbent = hold_export(self.task(name), self.root / "exports" / f"{self.p.key}_hold_baseline")
         return {"export": str(export), "incumbent": incumbent, "artifacts": [self.p.artifact(p) for p in required],
-                "message": f"Trained {export_name} under lease {env['LANDLORD_LEASE_ID']}"}
+                "smoke_only": self.o.mode == "dry-run",
+                "message": f"Trained {export_name} " + (f"under lease {env['LANDLORD_LEASE_ID']}" if env else "on CPU (no GPU)")}
 
     def eval(self, name):
         from .evaluation import make_plan, evaluate_pair
@@ -429,6 +466,8 @@ class ComponentStages:
         plan = make_plan(self.task(name), read_json(self.p.result(name, "close")["focus_scene"]),
                          self.o.eval_n, self.o.seed + int(name[1:]))
         plan["physics"] = read_json(self.p.result(name, "close")["physics"])
+        if self.o.mode == "dry-run":
+            plan.update(smoke_only=True, max_ticks=60)
         self.write(folder / "scenes.json", plan)
         challenger, incumbent = evaluate_pair(trained["export"], trained["incumbent"], self.task(name), plan)
         outputs = [self.write(folder / "challenger.json", challenger), self.write(folder / "incumbent.json", incumbent),
@@ -459,6 +498,11 @@ class ComponentStages:
                 raise Blocked("Missing C1 runner. Command: " + shlex.join(argv))
             self.command(argv, folder, allow_unsuccessful_attempt=True)
             session = self.recorded_session(out)
+        meta = trace_meta(next(session.glob("*.jsonl")))
+        summary = meta.get("summary", {})
         return {"policy": selected, "session": str(session), "synthetic": self.o.mode == "dry-run",
+                "success": meta.get("success"), "outcome": summary.get("outcome", meta.get("fail_reason")),
+                "summary": summary,
                 "command": argv, "artifacts": [self.p.artifact(p) for p in sorted(session.rglob("*")) if p.is_file()],
-                "message": f"{'SIM DRY RUN' if self.o.mode == 'dry-run' else 'REAL'} attempt recorded: {session}"}
+                "message": f"{'SIM DRY RUN' if self.o.mode == 'dry-run' else 'REAL'} attempt recorded: {session}; "
+                           f"outcome={summary.get('outcome', meta.get('fail_reason'))}, success={meta.get('success')}"}

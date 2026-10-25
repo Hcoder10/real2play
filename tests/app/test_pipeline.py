@@ -219,7 +219,7 @@ def test_lazy_missing_component_and_lease_block(tmp_path):
     from r2p.pipeline.stages import dependency
     with pytest.raises(Blocked, match="Missing dependency"):
         dependency("r2p.component_not_delivered")
-    p = Pipeline(RunOptions(task="task", root=tmp_path))
+    p = Pipeline(RunOptions(task="task", root=tmp_path, device="cuda"))
     with pytest.raises(Blocked, match="rent_apartment"):
         p.adapters.train("r1")
 

@@ -91,8 +91,11 @@ GPU training, or a measured full training/deployment loop.
 
 ## Live dashboard sources
 
-Edit **dashboard/config.json** to pin evidence; the server never silently switches
-to the newest export or twin. Restart after changing config.
+Edit **dashboard/config.json** to pin evidence. The shipped `auto_discover: true`
+selects the latest available twin/export when its pin is empty, preferring recorded
+bench twins over synthetic ones. Explicit pins always win; set `auto_discover: false`
+to require them. Restart after changing config. Tiny dry-run exports are labelled
+SMOKE EVALUATION and are not production success-rate evidence.
 
 | Setting | Value |
 |---|---|
@@ -129,3 +132,19 @@ The HTTP server uses stdlib only. `/api/state`, `/api/runs`, `/qr.png`, the came
 proxy, and allowlisted image tokens serve the static page. It exposes no arbitrary
 file reader or write endpoint. It binds localhost by default; use `--host` explicitly
 if the room display connects over the network.
+
+## One-command demo services
+
+`.venv/Scripts/python.exe scripts/demo_up.py` checks the phone camera with a GET,
+starts the read-only publisher on 8791, dashboard on 8800, and authenticated trace
+receiver on 8770, then prints their URLs. It does not open the arm bus or call armd.
+Ctrl-C stops only these servers. `--check` prints phone health/URLs without starting
+services; `--mock` labels the dashboard preview; `--duration 30` gives a bounded smoke run.
+Set `TRACE_KEY` to match Roblox's upload key. Otherwise a local key is created in
+`out/demo/trace_key.txt`; configure the Roblox server to match before collecting play.
+The launcher fails if a port is occupied and never terminates an existing service.
+
+Live twin discovery includes `out/live/**/run.json` and the pipeline's
+`runs/*/r*/twin/*/run.json`. Game totals ignore `test_only` traces. Camera snapshots
+carry matching frame hashes so a concurrent update cannot relabel a synthetic image
+as real. `out/ttt/status.json` drives the tic-tac-toe board, explanation and model label.

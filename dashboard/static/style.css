@@ -6,4 +6,6 @@
 @media(min-width:1700px) and (min-height:1030px){.real-content{height:350px}.twin-content{height:240px}.twin-charts{height:110px}.game-content,.policy-content{min-height:290px}.scaling svg{height:206px}}
 .real-argon{position:absolute;bottom:58px;left:18px;right:18px;background:#101b28e8;border-left:3px solid var(--aqua);padding:12px 14px;font-size:19px;line-height:1.4}
 .slide{background-size:contain;background-repeat:no-repeat}.slide.crop-left,.slide.crop-right{width:auto;max-width:100%;height:100%;aspect-ratio:4/3;left:50%;right:auto;transform:translateX(-50%);background-size:200% 100%}
+.ttt{display:flex;flex-direction:column;min-height:0}.ttt .board{flex:0 0 150px;width:150px;height:150px;margin:12px auto}.reason{display:flex;flex-direction:column;flex:1;min-height:0}.reason p{flex:1;min-height:0;overflow:auto;overflow-wrap:anywhere}.reason>span{flex-shrink:0}
+@media(max-width:600px){.ttt{display:grid}.ttt .board{width:140px;height:140px;margin:0}.reason{min-height:140px;max-height:220px}.reason p{max-height:160px}}
 @media(prefers-reduced-motion:reduce){.slide{transition:none}}

@@ -29,10 +29,10 @@ class RunOptions:
     force: tuple[str, ...] = ()
     no_cascade: bool = False
     device: str = "cpu"
-    traces: int = 200
+    traces: int | None = None
     workers: int = 1
-    steps: int = 10000
-    eval_n: int = 100
+    steps: int | None = None
+    eval_n: int | None = None
     seed: int = 2026
     incumbent: str | None = None
     lease: str = "runs/lease.json"
@@ -41,6 +41,9 @@ class RunOptions:
 
     def __post_init__(self):
         self.root = Path(self.root).resolve()
+        for field_name, smoke, full in (("traces", 2, 200), ("steps", 5, 10000), ("eval_n", 2, 100)):
+            if getattr(self, field_name) is None:
+                setattr(self, field_name, smoke if self.mode == "dry-run" else full)
         if self.mode not in {"plan", "dry-run", "real"}:
             raise ValueError("mode must be plan, dry-run or real")
         if self.device not in {"cpu", "cuda", "mps"}:
@@ -142,6 +145,11 @@ class Pipeline:
                 raise ValueError(f"Unsupported manifest schema: {self.path}")
             self.manifest.update(mode=self.options.mode, synthetic=self.options.mode == "dry-run",
                                  models=self.options.environment(), status="RUNNING")
+            self.manifest["profile"] = {"smoke_only": self.options.mode == "dry-run", "device": self.options.device,
+                                        "traces_per_round": self.options.traces, "training_steps": self.options.steps,
+                                        "eval_scenes": self.options.eval_n,
+                                        "eval_max_ticks": 60 if self.options.mode == "dry-run" else None,
+                                        "critic": "synthetic-oracle" if self.options.mode == "dry-run" else "Gemini"}
             self.invalidate()
             self.save()
             for number in range(1, self.options.rounds + 1):

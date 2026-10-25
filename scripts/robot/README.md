@@ -94,7 +94,9 @@ and [motor bus API](https://github.com/huggingface/lerobot/blob/v0.6.1/src/lerob
 Use `.venv/Scripts/python.exe scripts/argon/tictactoe.py --check` to solve every
 measured cell without network or motion. The full nominal/compensated joint targets,
 owner units, swept clearance and approach/retreat heights are in `out/ttt/check.json`.
-The defaults are the task's measured supply at `(0.13, 0.13)` and 25 x 25 x 14 mm pieces.
+The supply comes from the task's current measured location; width/height default to
+25/14 mm and can be overridden for the current physical piece. Box and cylinder
+pieces retain the task's shape and color; the board-reader description follows them.
 
 `scripts/argon/tictactoe.py --mock-live --cell r0c1` runs MockRobot against the
 synthetic contact fixture while displaying live phone frames read-only. Its status

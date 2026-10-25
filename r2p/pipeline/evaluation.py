@@ -39,6 +39,8 @@ def rollout(policy, task, scene, noise, seed, noise_spec):
     arm = Arm()
     commanded = start_q.copy()
     total = max(15, int(task.get("limits", {}).get("episode_s", 30) * 30))
+    if noise_spec.get("max_ticks") is not None:
+        total = min(total, int(noise_spec["max_ticks"]))
     rng = np.random.default_rng(seed)
     initial = twin.poses()
     tracker = CommandTracker(task, initial)
@@ -103,6 +105,8 @@ def evaluate_pair(challenger, incumbent, task, plan, *, evaluator=None, loader=N
                 noise_spec = copy.deepcopy(plan["real_noise"])
                 if "physics" in plan:
                     noise_spec["physics"] = copy.deepcopy(plan["physics"])
+                if "max_ticks" in plan:
+                    noise_spec["max_ticks"] = plan["max_ticks"]
                 success = evaluate(policy, copy.deepcopy(task), copy.deepcopy(episode["scene"]), noise,
                                    episode["noise_seed"], noise_spec)
                 rows.append({"scene_id": episode["id"], "noise_seed": episode["noise_seed"], "success": bool(success)})

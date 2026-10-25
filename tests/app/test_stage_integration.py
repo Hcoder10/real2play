@@ -45,12 +45,13 @@ def episode(directory, task, *, source="expert", seed=0, frames=False):
 
 
 @pytest.mark.parametrize("fitted", [False, True])
-def test_two_round_adapters_then_cache_resume(tmp_path, monkeypatch, fitted):
+@pytest.mark.parametrize("task_name", ["cube_in_bowl", "place_on_cell"])
+def test_two_round_adapters_then_cache_resume(tmp_path, monkeypatch, fitted, task_name):
     import r2p.labeling  # Load the real deterministic labeler before replacing its expensive parent component.
     from r2p.pipeline import stages
     from r2p.pipeline import evaluation
-    task = load_task("cube_in_bowl")
-    atomic_json(tmp_path / "tasks/cube_in_bowl/task.json",task)
+    task = load_task(task_name)
+    atomic_json(tmp_path / f"tasks/{task_name}/task.json",task)
     episode(tmp_path / "input",task,frames=True)
     atomic_json(tmp_path / "config/physics/so101_bench.json",{"object":{"mass_kg":.03,"friction":.6},"latency_ticks":1})
     script = tmp_path / "scripts/robot/run_policy.py"
@@ -114,7 +115,7 @@ def test_two_round_adapters_then_cache_resume(tmp_path, monkeypatch, fitted):
     monkeypatch.setattr(evaluation,"evaluate_pair",paired)
     monkeypatch.setattr("urllib.request.urlopen",lambda *a,**kw:pytest.fail("unexpected network access"))
 
-    options = RunOptions(task="cube_in_bowl",root=tmp_path,video="input",mode="dry-run",rounds=2,traces=2,
+    options = RunOptions(task=task_name,root=tmp_path,video="input",mode="dry-run",rounds=2,traces=2,
                          eval_n=3,incumbent=str(incumbent))
     pipeline = Pipeline(options,emit=lambda _:None)
     assert pipeline.run(), read_json(pipeline.path)

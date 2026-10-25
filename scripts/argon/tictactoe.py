@@ -33,7 +33,7 @@ def bench_supply(piece_height):
 def placement(args, cell, board=None):
     task = ttt.placement_task(cell, args.supply_xyz, piece_size=args.piece_size, board=board)
     piece = next(o for o in task["objects"] if o["role"] == "manipulated")
-    piece["size_m"][2] = getattr(args, "piece_height", args.piece_size)
+    piece["size_m"][-1] = getattr(args, "piece_height", args.piece_size)
     return task
 
 
@@ -336,7 +336,7 @@ def main(argv=None):
     parser.add_argument("--games", type=int, default=1)
     parser.add_argument("--piece-size", type=float, default=0.025, help="piece width in metres")
     parser.add_argument("--piece-height", type=float, default=0.014, help="piece height in metres")
-    parser.add_argument("--robot-desc", default="brown cubes")
+    parser.add_argument("--robot-desc", help="Defaults to the current task's piece color and shape")
     parser.add_argument("--human-desc", default="flat metallic coins (pennies or nickels)")
     parser.add_argument("--camera", help="calibrated camera JSON")
     parser.add_argument("--history", help="JSON file containing prior confirmed moves or board")
@@ -353,6 +353,10 @@ def main(argv=None):
     parser.add_argument("--arm-released", action="store_true")
     parser.add_argument("--allow-unverified", action="store_true")
     args = parser.parse_args(argv)
+    if args.robot_desc is None:
+        from r2p.tasks import load_task
+        piece = next(o for o in load_task("place_on_cell")["objects"] if o["role"] == "manipulated")
+        args.robot_desc = f"{piece.get('color', '')} {piece['shape']} pieces"
     if args.games < 1 or not 0.01 <= args.piece_size <= 0.04 or not .005 <= args.piece_height <= .04:
         parser.error("games must be positive; piece-size must be 0.01..0.04 metres")
     if args.supply_xyz is None:

@@ -83,7 +83,7 @@ class TruthWorld:
 
 class ScriptedPolicy:
     """Conservative pick/place probe; absolute chunks respect the bench speed limits."""
-    def __init__(self, task, arm, cfg=None, speed=1.0):
+    def __init__(self, task, arm, cfg=None, speed=1.0, gravity_comp=True):
         from .config import load_config, sag_gain
         from .gravity import GravityComp
         from .guard import Guard
@@ -92,7 +92,7 @@ class ScriptedPolicy:
         self.task, self.arm = task, arm
         self.cfg = cfg or load_config()
         self.speed = speed
-        self.comp = GravityComp(arm, sag_gain(self.cfg))
+        self.comp = GravityComp(arm, sag_gain(self.cfg) if gravity_comp else 0)
         self.start_q = np.clip(HOME_Q, arm.range[:, 0]+np.deg2rad(2), arm.range[:, 1]-np.deg2rad(2))
         self.config = {"name": "stub", "task": task["name"], "start_q": self.start_q.tolist(),
                        "horizon": 15, "action": "absolute_q", "obs_const": {}, "eval": {"n": 0}}
@@ -234,6 +234,15 @@ class SynthAdapter:
 
     def update(self, q, robot):
         command = np.asarray(q).copy()
+        if self.world.held is not None:
+            oid, _, _, width = self.world.held
+            a, b, _ = self.world.arm.tips(command)
+            if np.linalg.norm(b-a) > width + .003:
+                # Contact ends when the pads separate from this piece, not at
+                # a fixed global angle. Holding a small piece until .35 rad
+                # drags it ~9 mm with the moving midpoint during jaw opening.
+                self.world._release(oid)
+                self.world.held = None
         # C2's rendering fixture has a broad proximity latch. Admit that latch
         # only during measured closing pad contact, never on a servo goal alone.
         if self.world.held is None:

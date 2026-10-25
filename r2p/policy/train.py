@@ -36,7 +36,7 @@ def _device(torch, device, memory_fraction):
 
 def train(task, traces, name, steps=1000, device="cpu", *, seeds=(0,), batch_size=128,
           learning_rate=3e-4, out_dir=None, eval_n=5, eval_max_ticks=None,
-          memory_fraction=None, augmentation=None, width=512, blocks=3, threads=2):
+          memory_fraction=None, augmentation=None, width=512, blocks=3, threads=2, smoke_only=False):
     import torch
     from .network import StatePolicy
 
@@ -46,6 +46,8 @@ def train(task, traces, name, steps=1000, device="cpu", *, seeds=(0,), batch_siz
     target_device = _device(torch, device, memory_fraction)
     task = load_task(task) if not isinstance(task, dict) else task
     config = export_config(task, name, seeds=seeds, width=width, blocks=blocks)
+    if smoke_only:
+        config.update(smoke_only=True, synthetic=True)
     augmentation = augmentation or Augmentation()
     dataset = TraceDataset(task, traces, config, augmentation)
     config["start_q"] = dataset.start_q.tolist()
@@ -107,9 +109,14 @@ def main():
     p.add_argument("--batch-size", type=int, default=128)
     p.add_argument("--eval-n", type=int, default=5)
     p.add_argument("--memory-fraction", type=float)
+    p.add_argument("--width", type=int, default=512)
+    p.add_argument("--blocks", type=int, default=3)
+    p.add_argument("--eval-max-ticks", type=int)
+    p.add_argument("--smoke-only", action="store_true")
     a = p.parse_args()
     path = train(a.task, a.traces, a.name, a.steps, a.device, seeds=a.seeds, batch_size=a.batch_size,
-                 eval_n=a.eval_n, memory_fraction=a.memory_fraction)
+                 eval_n=a.eval_n, memory_fraction=a.memory_fraction, width=a.width, blocks=a.blocks,
+                 eval_max_ticks=a.eval_max_ticks, smoke_only=a.smoke_only)
     print(json.dumps({"export": str(path), "eval": json.loads((path/"config.json").read_text())["eval"]}, indent=2))
 
 

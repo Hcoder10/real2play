@@ -171,6 +171,7 @@ def capture(url, out, *, width=1920, height=1080, wait=3, browser=None, cdp_url=
         metrics = client.evaluate("({width:innerWidth,height:innerHeight,scrollWidth:document.documentElement.scrollWidth,scrollHeight:document.documentElement.scrollHeight,panels:[...document.querySelectorAll('.panel-heading h1')].map(e=>e.textContent),mock:document.body.dataset.mock})")
         metrics["image_badge"] = client.evaluate("document.getElementById('image-label').textContent")
         metrics["dominant_image"] = client.evaluate("[...document.querySelectorAll('.slide')].sort((a,b)=>Number(getComputedStyle(b).opacity)-Number(getComputedStyle(a).opacity))[0]?.getAttribute('aria-label')")
+        metrics["ttt_model_visible"] = client.evaluate("(()=>{const box=document.querySelector('.ttt').getBoundingClientRect(),label=document.getElementById('answer-model').getBoundingClientRect();return label.top>=box.top&&label.bottom<=box.bottom})()")
         result = client.call("Page.captureScreenshot", format="png", captureBeyondViewport=False, fromSurface=True)
         out = Path(out)
         out.parent.mkdir(parents=True, exist_ok=True)

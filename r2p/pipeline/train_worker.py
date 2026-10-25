@@ -6,10 +6,10 @@ import sys
 
 
 def main():
-    if not os.getenv("LANDLORD_LEASE_ID") or not os.getenv("R2P_LEASE_VRAM_GB"):
-        raise RuntimeError("Training worker requires a verified landlord lease")
     argv = sys.argv[1:]
     device = argv[argv.index("--device") + 1] if "--device" in argv else "cpu"
+    if device != "cpu" and (not os.getenv("LANDLORD_LEASE_ID") or not os.getenv("R2P_LEASE_VRAM_GB")):
+        raise RuntimeError("Accelerator training requires a verified landlord lease")
     if device == "cuda":
         import torch
         cap = float(os.environ["R2P_LEASE_VRAM_GB"]) * 1024 ** 3

@@ -4,6 +4,7 @@
   "game_url": null,
   "real2sim_live": "out/live",
   "real2sim_run": null,
+  "auto_discover": true,
   "headline_eval": null,
   "scaling": "runs/scaling.json",
   "traces": ["roblox/out/traces"],

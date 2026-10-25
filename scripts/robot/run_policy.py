@@ -41,11 +41,13 @@ def main(argv=None):
     if not args.dry_run and not args.perception_setup:
         parser.error("real runs require a saved --perception-setup")
     arm, task = Arm(), load_task(args.task)
+    control_speed = min(args.speed, .5) if not args.dry_run and not joint_map.verified else args.speed
     results = []
     stamp = datetime.now().strftime("%Y%m%d_%H%M%S_%f")
     with Operator(cfg["control_file"], keyboard=not args.dry_run) as operator:
         for attempt in range(args.attempts):
-            policy = ScriptedPolicy(task, arm, cfg) if args.policy == "stub" else load_policy(args.policy)
+            policy = (ScriptedPolicy(task, arm, cfg, speed=control_speed, gravity_comp=args.gravity_comp)
+                      if args.policy == "stub" else load_policy(args.policy))
             policy_cfg = policy_config(policy, None if args.policy == "stub" else args.policy)
             if policy_cfg.get("task") != task["name"]:
                 parser.error("policy task does not match --task")
@@ -72,7 +74,7 @@ def main(argv=None):
                 publisher = Publisher(args.publish) if args.publish else None
                 session = Session(robot, policy, task, arm=arm, joint_map=joint_map, camera=camera if (not args.dry_run or args.record) else None,
                                   perceiver=perceiver, world=world, cfg=cfg, operator=operator,
-                                  gravity_comp=args.gravity_comp, speed=min(args.speed, .5) if not args.dry_run and not joint_map.verified else args.speed,
+                                  gravity_comp=args.gravity_comp, speed=control_speed,
                                   realtime=not args.dry_run, record=record, policy_cfg=policy_cfg, publisher=publisher)
                 result = session.run(timeout_s=args.timeout)
                 if record:

@@ -123,9 +123,18 @@ class DashboardData:
 
     def twin(self):
         pinned = self.config.get("real2sim_run")
+        discovered = None
+        if not pinned and self.config.get("auto_discover"):
+            candidates = list(self.path(self.config.get("real2sim_live", "out/live")).rglob("run.json"))
+            candidates += list(self.path(self.config.get("runs", "runs")).glob("*/r*/twin/*/run.json"))
+            candidates = [p for p in candidates if (read_json(p, {}) or {}).get("schema") == "r2s_live/1"]
+            if candidates:
+                # Prefer recorded bench evidence; synthetic runs stay explicitly labelled.
+                discovered = max(candidates, key=lambda p: (not synthetic(read_json(p, {})), p.stat().st_mtime_ns))
+                pinned = str(discovered.parent.relative_to(self.root))
         if not pinned:
             return {"available": False, "message": "Pin real2sim_run in dashboard/config.json"}
-        base = self.path(self.config.get("real2sim_live", "out/live")) / pinned
+        base = discovered.parent if discovered else self.path(self.config.get("real2sim_live", "out/live")) / pinned
         run = read_json(base / "run.json")
         if not isinstance(run, dict) or run.get("schema") != "r2s_live/1":
             return {"available": False, "message": f"Pinned twin {pinned} is missing or incomplete"}
@@ -167,12 +176,14 @@ class DashboardData:
                 if src:
                     images.append({"label": label, "src": src, "crop": crop})
         return {"available": True, "run": pinned, "status": run.get("status"), "stage": run.get("stage"),
+                "smoke_fixture": bool(run.get("smoke_fixture")),
                 "synthetic": synthetic(run), "session_kind": run.get("session_kind", "unknown"),
                 "history": history, "gap": selected[2]["gap"] if selected else None,
                 "motion_px": selected[2]["motion_px"] if selected else None, "images": images,
                 "best_iter": run.get("best_iter"), "shown_iter": selected[0]["iter"] if selected else None,
                 "stop_reason": run.get("stop_reason"), "calls": run.get("calls", {}),
-                "message": "Best accepted twin" if run.get("status") == "done" else run.get("stage", "In progress")}
+                "message": ("Synthetic oracle fixture; no model critique" if run.get("smoke_fixture") else
+                            "Best accepted twin" if run.get("status") == "done" else run.get("stage", "In progress"))}
 
     def game(self):
         groups = {source: {"rounds": 0, "successes": 0, "hours": 0.0} for source in ("human", "bot", "expert", "other")}
@@ -187,6 +198,8 @@ class DashboardData:
                 invalid += 1
                 continue
             meta = row["meta"]
+            if meta.get("test_only"):
+                continue
             source = meta.get("source", "other")
             source = source if source in groups else "other"
             target = groups[source]
@@ -210,6 +223,12 @@ class DashboardData:
 
     def policy(self):
         pinned = self.config.get("headline_eval")
+        if not pinned and self.config.get("auto_discover"):
+            candidates = [p for p in (self.root / "exports").glob("*/config.json")
+                          if (read_json(p, {}) or {}).get("eval", {}).get("n", 0)]
+            if candidates:
+                chosen = max(candidates, key=lambda p: (not synthetic(read_json(p, {})), p.stat().st_mtime_ns))
+                pinned = str(chosen.relative_to(self.root))
         result = {"available": False, "message": "Pin headline_eval in dashboard/config.json", "scaling": []}
         if pinned:
             report = read_json(self.path(pinned))
@@ -228,7 +247,9 @@ class DashboardData:
                 result.update(available=clean is not None or real is not None, clean=clean, real=real,
                               n=evaluation.get("n", len(report.get("results", {}).get("clean", [])) or None),
                               name=report.get("name", report.get("policy", Path(pinned).parent.name)), pinned=pinned,
-                              evidence="TWIN EVALUATION", message="Pinned evaluation • simulation")
+                              evidence="SMOKE EVALUATION" if report.get("smoke_only") or report.get("synthetic") else "TWIN EVALUATION",
+                              message=("Tiny offline smoke test; not a production success rate" if report.get("smoke_only") or report.get("synthetic")
+                                       else "Pinned evaluation • simulation"))
             else:
                 result["message"] = f"Pinned evaluation unavailable: {pinned}"
         scaling = read_json(self.path(self.config.get("scaling", "runs/scaling.json")), [])
@@ -265,6 +286,7 @@ class DashboardData:
                 "why": decision.get("why", status.get("argon_says", "No explanation recorded")),
                 "model": decision.get("model", status.get("model")), "source": decision.get("source"),
                 "move": decision.get("move"), "synthetic": synthetic(status),
+                "status": status.get("status"), "updated": status.get("updated"),
                 "label": "SYNTHETIC" if synthetic(status) else "RECORDED BOARD"}
 
     def snapshot(self):

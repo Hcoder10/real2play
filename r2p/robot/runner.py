@@ -132,7 +132,8 @@ class Session:
         return frame, poses
 
     def run(self, *, timeout_s=None, prepare=True):
-        from r2p.tasks import check, encode_slots, commands
+        from r2p.tasks import check, encode_slots
+        from r2p.policy.eval import CommandTracker
         timeout_s = float(timeout_s or self.cfg["timeout_s"])
         if timeout_s <= 0 or not math.isfinite(timeout_s):
             raise ValueError("timeout must be positive and finite")
@@ -145,6 +146,7 @@ class Session:
         outcome = "timeout"
         error = None
         initial_poses = None
+        tracker = None
         command_segments = []
         ensemble = Ensembler(self.cfg["ensemble_m"])
         replan = int(self.cfg["replan_every"])
@@ -207,15 +209,19 @@ class Session:
                         continue
                     if initial_poses is None:
                         initial_poses = deepcopy(poses)
-                    vocabulary = commands(self.task)
-                    command = getattr(self.policy, "command", None) or (vocabulary[0] if vocabulary else "")
+                        if not getattr(self.policy, "command", None):
+                            tracker = CommandTracker(self.task, initial_poses)
+                    command = tracker.command if tracker else self.policy.command
+                    obs = {"q": q_obs, "slots": encode_slots(self.task, poses), "command": command}
+                    if tick % replan == 0 or not ensemble.chunks:
+                        ensemble.add(tick, self.policy.act(obs))
+                        # A scripted policy may advance its phase during act().
+                        if tracker is None:
+                            command = self.policy.command
                     if not command_segments or command_segments[-1][2] != command:
                         command_segments.append([tick*self.dt, (tick+1)*self.dt, command])
                     else:
                         command_segments[-1][1] = (tick+1)*self.dt
-                    obs = {"q": q_obs, "slots": encode_slots(self.task, poses), "command": command}
-                    if tick % replan == 0 or not ensemble.chunks:
-                        ensemble.add(tick, self.policy.act(obs))
                     nominal = ensemble.target(tick)
                     # Expert exports already contain servo-space compensation.
                     correction = (np.zeros(6) if self.policy_cfg.get("gravity_compensation") == "included_in_expert_targets"
@@ -235,6 +241,10 @@ class Session:
                     mid = self.arm.tips(measured)[2]
                     gripper_open = bool(measured[5] > 0.5 and self.last_sent[5] > 0.5)
                     state = {"objects": poses, "gripper_open": gripper_open, "site_xyz": mid.tolist(), "initial": initial_poses}
+                    if tracker is not None:
+                        tracker.update(state, measured, self.start_q)
+                        if command != tracker.command:
+                            ensemble.clear()
                     perceived = check(self.task, state)
                     eligible = perceived["ok"] and gripper_open and mid[2] >= 0.07
                     goal_ticks = goal_ticks + 1 if eligible else 0
