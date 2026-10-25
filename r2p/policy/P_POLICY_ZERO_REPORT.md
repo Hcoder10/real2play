@@ -127,8 +127,9 @@ input dimension.
 
 Acceptance: `.venv/Scripts/python.exe -m pytest -q tests/policy tests/robot`:
 **72 passed in 145.29 seconds**, including a fresh twenty-trace collection,
-training run and five physical closed-loop episodes. The final handoff records
-the commit identifiers.
+training run and five physical closed-loop episodes. Implementation, regression
+and evidence commit: **`f50e7b5`** (`fix(policy): preserve command progress through
+contact resets`). This report's follow-up commit is recorded in the final handoff.
 Local raw evidence is under `runs/P_policy_zero`, with baseline and ablation logs
 in `runs/P_*.json` / `runs/P_*.log`. The versioned results JSON accompanies this
 report: [P_POLICY_ZERO_RESULTS.json](P_POLICY_ZERO_RESULTS.json). The diagnostic
