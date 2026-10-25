@@ -13,7 +13,7 @@ class GuardResult:
 
 
 class Guard:
-    def __init__(self, arm, cfg=None, *, hz=30, speed=1.0, start_q=None):
+    def __init__(self, arm, cfg=None, *, hz=30, speed=1.0, start_q=None, joint_limits=None):
         from .config import load_config
         self.arm = arm
         self.cfg = {**load_config()["guard"], **(cfg or {})}
@@ -22,7 +22,10 @@ class Guard:
         if not 0 < self.speed <= 1:
             raise ValueError("speed must be in (0, 1]")
         margin = np.deg2rad(self.cfg["margin_deg"])
-        self.limits = np.asarray(arm.range) + np.array([margin, -margin])
+        bounds = arm.range if joint_limits is None else joint_limits
+        self.limits = np.asarray(bounds) + np.array([margin, -margin])
+        if self.limits.shape != (6, 2) or not np.isfinite(self.limits).all() or np.any(self.limits[:, 0] >= self.limits[:, 1]):
+            raise ValueError("invalid guard joint limits")
         self.roll_origin = float(start_q[4]) if start_q is not None else 0.0
 
     def violations(self, q):

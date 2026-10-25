@@ -39,12 +39,18 @@ class TraceDataset:
         raw, labels, weights, previous, pick, starts = [], [], [], [], [], []
         self.provenance = []
         self.physics = None
+        self.deployment = None
+        deployment_seen = False
         for path in files:
             meta, ticks = read_trace(path)
             if meta["task_name"] != task["name"]:
                 continue
             if not ticks:
                 continue
+            deployment = meta.get("deployment")
+            if deployment_seen and deployment != self.deployment:
+                raise ValueError("Trace deployment conventions disagree; regenerate all traces for one bench profile")
+            self.deployment, deployment_seen = deepcopy(deployment), True
             from r2p.sim.twin import load_physics
             physics = meta.get("physics_config") or load_physics(meta.get("physics", meta.get("rig") or "so101_bench"))
             if self.physics is None:

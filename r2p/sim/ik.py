@@ -8,16 +8,23 @@ from r2p.model import Arm
 
 
 class JawIK:
-    def __init__(self, arm=None):
+    def __init__(self, arm=None, *, roll=None):
         self.arm = arm or Arm()
+        self.roll = roll
+        if roll is not None and not self.arm.range[4, 0] <= roll <= self.arm.range[4, 1]:
+            raise ValueError("locked wrist roll is outside joint limits")
 
     def solve(self, xyz, q=None, grip=0.3, yaw=None, iterations=60):
         q = np.array(HOME_Q if q is None else q, float).copy()
         q[5] = grip
+        if self.roll is not None:
+            q[4] = self.roll
         target = np.asarray(xyz, float)
         for _ in range(iterations):
             a, b, mid = self.arm.tips(q)
             J, R, axis = self.arm.jac_tip(q)
+            if self.roll is not None:
+                J[:, 4], R[:, 4] = 0, 0
             err = target - mid
             inv = J.T @ np.linalg.solve(J @ J.T + 0.000015 * np.eye(3), np.eye(3))
             # Tilt the finger axis just enough to keep both actual fingertips level.
@@ -31,7 +38,7 @@ class JawIK:
             flat_axis /= max(np.linalg.norm(flat_axis), 1e-8)
             rot_err += np.cross(flat_axis, [0, 0, -1])
             orient = R.T @ np.linalg.solve(R @ R.T + .01*np.eye(3), rot_err)
-            if yaw is not None:
+            if yaw is not None and self.roll is None:
                 # The cross-product error is zero at an upside-down yaw and can
                 # strand the wrist against its limit after a long carry. Resolve
                 # that branch using the SO-101's down-facing roll convention.
@@ -44,6 +51,8 @@ class JawIK:
             delta = inv @ np.clip(err, -.025, .025) + (np.eye(5)-inv@J) @ (0.6*orient)
             q[:5] += np.clip(delta, -.15, .15)
             q = np.clip(q, self.arm.range[:, 0]+1e-5, self.arm.range[:, 1]-1e-5)
+            if self.roll is not None:
+                q[4] = self.roll
             if np.linalg.norm(err) < .00015 and np.linalg.norm(delta) < .001:
                 break
         return q

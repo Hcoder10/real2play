@@ -149,7 +149,7 @@ class RealRobot(ReadOnlyBus):
 
 class MockRobot:
     """Deterministic first-order servo. Call step once per tick; reads are pure."""
-    def __init__(self, sag=None, *, arm=None, joint_map=None, q0=None, tau_s=0.07):
+    def __init__(self, sag=None, *, arm=None, joint_map=None, q0=None, tau_s=0.07, latency_ticks=0):
         from r2p.model import Arm, JointMap
         from r2p.frames import HOME_Q
         from .gravity import GravitySag
@@ -158,6 +158,11 @@ class MockRobot:
         self.sag = sag if sag is not None else GravitySag(self.arm)
         self.q = vector(HOME_Q if q0 is None else q0)
         self.target = self.q.copy()
+        from collections import deque
+        if not isinstance(latency_ticks, int) or latency_ticks < 0:
+            raise ValueError("latency_ticks must be a nonnegative integer")
+        self.latency_ticks = latency_ticks
+        self.pending = deque([self.target.copy() for _ in range(latency_ticks)])
         self.tau_s = float(tau_s)
         self.torque_enabled = True
         self.holding = False
@@ -176,7 +181,8 @@ class MockRobot:
 
     def step(self, dt=1/30):
         if self.torque_enabled:
-            equilibrium = self.sag(self.target)
+            self.pending.append(self.target.copy())
+            equilibrium = self.sag(self.pending.popleft())
             self.q += (1 - np.exp(-dt / self.tau_s)) * (equilibrium - self.q)
             if self.holding:
                 self.q[5] = max(self.q[5], self.grip_floor)
@@ -192,6 +198,8 @@ class MockRobot:
 
     def hold(self):
         self.target = self.q.copy()
+        self.pending.clear()
+        self.pending.extend(self.target.copy() for _ in range(self.latency_ticks))
 
     def torque_off(self):
         self.torque_enabled = False

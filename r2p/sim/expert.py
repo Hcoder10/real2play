@@ -23,10 +23,22 @@ from .twin import TaskTwin, extents, load_physics
 
 
 class Expert:
-    def __init__(self, task, *, dart=0.0, seed=0):
+    def __init__(self, task, *, dart=0.0, seed=0, deployment=None):
         self.task = load_task(task) if not isinstance(task, dict) else deepcopy(task)
         self.ik = JawIK()
         self.arm = self.ik.arm
+        self.deployment = None
+        self.close_grip, self.release_grip = -.12, .5
+        if deployment is not None:
+            from .bench import load_profile
+            self.deployment = load_profile(deployment)
+            self.arm.range = np.asarray(self.deployment["model_limits"], float)
+            self.ik = JawIK(self.arm, roll=self.deployment["roll_rad"])
+            self.close_grip = self.deployment["gripper_close_rad"]
+            self.release_grip = self.deployment["gripper_open_rad"]
+            pieces = [o for o in self.task["objects"] if o["role"] == "manipulated"]
+            if any(o["shape"] != "cylinder" or o.get("axis", "z") != "z" for o in pieces):
+                raise ValueError("locked-roll bench profile supports upright round caps only")
         self.dart = float(dart)
         self.rng = np.random.default_rng(seed)
         self.ticks, self.states = [], []
@@ -39,12 +51,16 @@ class Expert:
         self.twin = twin
         self.qplan = twin.q()
         self.start_q = self.qplan.copy()
+        if self.deployment and not np.allclose(self.start_q, self.deployment["start_q"], atol=1e-5):
+            raise ValueError("bench twin must start at the profile start_q")
         self.initial = twin.poses()
         self.goal_xyz = self.arm.tips(twin.q())[2]
         self.yaw = None
 
     def _tick(self, label):
         label = np.clip(np.asarray(label, float), *self.arm.range.T)
+        if self.deployment:
+            label[4] = self.deployment["roll_rad"]
         q_before = self.twin.q()
         poses_before = self.twin.poses()
         closed_before = bool(self.twin.grip_closed())
@@ -78,7 +94,10 @@ class Expert:
         correction = J.T @ np.linalg.solve(J@J.T + 0.0001*np.eye(3), np.clip(predicted-actual, -.005, .005))
         label[:5] += .35 * correction
         previous = self.twin.commanded_q
-        label[:5] = previous[:5] + np.clip(label[:5]-previous[:5], -.075, .075)
+        step = self.deployment["joint_step_rad"] if self.deployment else .075
+        label[:5] = previous[:5] + np.clip(label[:5]-previous[:5], -step, step)
+        if self.deployment:
+            label[4] = self.deployment["roll_rad"]
         self._tick(label)
 
     def move(self, xyz, grip=-.12, yaw=None, *, speed=.075, settle=12, phase="move"):
@@ -86,12 +105,21 @@ class Expert:
         xyz = np.asarray(xyz, float)
         start = self.arm.tips(self.twin.q())[2].copy()
         n = max(12, int(np.linalg.norm(xyz-start)/speed*HZ))
+        if self.deployment:
+            end = self.ik.solve(xyz, self.qplan, grip=grip, yaw=yaw)
+            # Preserve the joint-rate distribution of the half-speed live guard.
+            n = max(n, int(np.ceil(1.5*np.max(np.abs(end[:5]-self.qplan[:5]))/self.deployment["joint_step_rad"])))
         for t in range(1, n+1):
             u = t/n
             u = u*u*(3-2*u)
             self._servo(start+(xyz-start)*u, grip, yaw)
         for _ in range(settle):
             self._servo(xyz, grip, yaw)
+        if self.deployment:
+            for _ in range(90):
+                if np.linalg.norm(self.arm.tips(self.twin.q())[2]-xyz) < .003:
+                    break
+                self._servo(xyz, grip, yaw)
         self.goal_xyz, self.yaw = xyz.copy(), yaw
 
     def _hold(self, ticks, grip, phase):
@@ -100,6 +128,10 @@ class Expert:
             self._servo(self.goal_xyz, grip, self.yaw)
 
     def _grasp_yaw(self, obj):
+        if self.deployment:
+            # A vertical cylinder has continuous yaw symmetry. Keep the roll
+            # measured on the real bench; do not rotate it toward object yaw.
+            return None
         pose = self.twin.poses()[obj]
         dims = extents(self.twin.objects[obj])
         angle = np.deg2rad(pose["yaw_deg"]) + (np.pi/2 if dims[0] > dims[1]+1e-6 else 0)
@@ -114,20 +146,25 @@ class Expert:
         width = min(dims[:2])
         yaw = self._grasp_yaw(obj)
         open_grip = float(np.clip((width+.018-.017)/.081, .35, .95))
+        if self.deployment:
+            open_grip = self.release_grip
         for attempt in range(2):
             pos = np.asarray(self.twin.poses()[obj]["xyz"])
             yaw = self._grasp_yaw(obj)
             low = max(.0035, pos[2]-dims[2]/2+.0035)
             safe = max(.09, pos[2]+.06)
+            if self.deployment:
+                safe = self.deployment["travel_height_m"]
+                low = max(.009, pos[2]-dims[2]/2+.009)
             current = self.arm.tips(self.twin.q())[2]
             if current[2] < safe-.01:
                 self.move([*current[:2], safe], open_grip, yaw, phase="approach_up")
             self.move([*pos[:2], safe], open_grip, yaw, phase="approach")
             self.move([*pos[:2], low], open_grip, yaw, speed=.045, settle=20, phase="descend")
-            self._hold(35, -.12, "close" if not attempt else "recovery_close")
-            self.move([*pos[:2], low+.065], -.12, yaw, speed=.045, settle=20, phase="lift")
+            self._hold(35, self.close_grip, "close" if not attempt else "recovery_close")
+            self.move([*pos[:2], safe if self.deployment else low+.065], self.close_grip, yaw, speed=.045, settle=20, phase="lift")
             actual = np.asarray(self.twin.poses()[obj]["xyz"])
-            if actual[2]-pos[2] > .04:
+            if actual[2]-pos[2] > (.03 if self.deployment else .04):
                 self.held = obj
                 return True
             self.phase = "recovery"
@@ -151,7 +188,7 @@ class Expert:
         if target_id:
             target = self.twin.objects[target_id]
             target_yaw = np.deg2rad(self.twin.poses()[target_id]["yaw_deg"])
-            if skill in ("place_on", "place_at", "place_in"):
+            if skill in ("place_on", "place_at", "place_in") and not self.deployment:
                 period = np.pi/2 if abs(dims[0]-dims[1]) < 1e-6 else np.pi
                 obj_yaw = np.deg2rad(self.twin.poses()[obj]["yaw_deg"])
                 yaw += (target_yaw-obj_yaw+period/2) % period-period/2
@@ -171,21 +208,30 @@ class Expert:
         else:
             surface = 0
         safe = max(.09, surface+.065)
-        self.move([*(dest[:2]-offset[:2]), safe], -.12, yaw, speed=.065, settle=25, phase="carry")
+        if self.deployment:
+            safe = self.deployment["travel_height_m"]
+        self.move([*(dest[:2]-offset[:2]), safe], self.close_grip, yaw, speed=.065, settle=25, phase="carry")
         # Measure the grasp after rotating, so the held object, not the jaw, is centred.
         current = np.asarray(self.twin.poses()[obj]["xyz"])
         mid = self.arm.tips(self.twin.q())[2]
+        if self.deployment and np.linalg.norm(current-mid) > max(dims)+.025:
+            self.held = None
+            self.fail_reason = f"dropped_during_carry:{obj}"
+            return False
         offset = current-mid
         target_mid = np.r_[dest[:2], surface+dims[2]/2+.002]-offset
         target_mid[2] = max(.003, target_mid[2])
-        self.move(target_mid, -.12, yaw, speed=.035, settle=20, phase="lower")
+        if self.deployment:
+            target_mid[2] = max(.012, target_mid[2])
+        self.move(target_mid, self.close_grip, yaw, speed=.035, settle=20, phase="lower")
         for _ in range(12):
             error = dest[:2]-np.asarray(self.twin.poses()[obj]["xyz"])[:2]
             self.goal_xyz[:2] += np.clip(error, -.0008, .0008)
-            self._servo(self.goal_xyz, -.12, yaw)
-        self._hold(6 if skill == "place_in" else 22, .5, "release")
+            self._servo(self.goal_xyz, self.close_grip, yaw)
+        self._hold(6 if skill == "place_in" else 22, self.release_grip, "release")
         self.held = None
-        self.move([*self.goal_xyz[:2], safe], .5, yaw, speed=.045, settle=10, phase="retreat")
+        self.move([*self.goal_xyz[:2], safe], self.release_grip, yaw, speed=.045, settle=10, phase="retreat")
+        return True
 
     def push(self, step):
         obj = step["obj"]
@@ -225,12 +271,13 @@ class Expert:
 
     def home(self):
         current = self.arm.tips(self.twin.q())[2]
-        self.move([*current[:2], max(.1, current[2])], .5, self.yaw, phase="home_up")
+        self.move([*current[:2], max(.05 if self.deployment else .1, current[2])], self.release_grip, self.yaw, phase="home_up")
         start = self.twin.commanded_q.copy()
         self.phase = "home"
-        target = self.ik.compensate(HOME_Q, self.twin.physics)
-        for i in range(60):
-            u = (i+1)/60
+        target = self.ik.compensate(self.start_q if self.deployment else HOME_Q, self.twin.physics)
+        ticks = max(60, int(np.ceil(np.max(np.abs(target-start))/self.deployment["joint_step_rad"]))) if self.deployment else 60
+        for i in range(ticks):
+            u = (i+1)/ticks
             self._tick(start+(target-start)*u)
         for _ in range(20):
             self._tick(target)
@@ -240,7 +287,7 @@ class Expert:
         own_twin = twin is None
         if own_twin:
             scene = scene or sample_scene(self.task, np.random.default_rng(seed))
-            twin = TaskTwin(scene)
+            twin = TaskTwin(scene, q0=self.deployment["start_q"] if self.deployment else HOME_Q)
         self.ticks, self.states, self.segments = [], [], []
         self.fail_reason, self.held = None, None
         self._bind(twin)
@@ -252,8 +299,7 @@ class Expert:
                 if skill == "pick":
                     ok = self.pick(step["obj"])
                 elif skill in ("place_in", "place_on", "place_at"):
-                    self.place(step)
-                    ok = True
+                    ok = self.place(step)
                 elif skill == "push_to":
                     self.push(step)
                     ok = True
@@ -261,7 +307,7 @@ class Expert:
                     self.home()
                     ok = True
                 elif skill == "release":
-                    self._hold(15, .5, "release")
+                    self._hold(15, self.release_grip, "release")
                     ok = True
                 elif skill == "wait":
                     self._hold(max(1, round(step["s"]*HZ)), twin.commanded_q[5], "wait")
@@ -280,6 +326,8 @@ class Expert:
             meta["physics_config"] = deepcopy(twin.physics)
             meta["physics_sha256"] = hashlib.sha256(json.dumps(twin.physics, sort_keys=True).encode()).hexdigest()
             meta["target_space"] = "servo"
+            if self.deployment:
+                meta["deployment"] = deepcopy(self.deployment)
             return {"meta": meta, "ticks": self.ticks, "check": result, "final": twin.poses()}
         finally:
             if own_twin:

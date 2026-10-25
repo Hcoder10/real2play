@@ -27,13 +27,14 @@ NOISE = {"clean": 0., "real": 1., "realx0.5": .5}
 
 class CommandTracker:
     """State-based subtask completion; no expert actions or hidden waypoint labels."""
-    def __init__(self, task, initial):
+    def __init__(self, task, initial, *, pick_lift_m=.04):
         self.task = task
         self.initial = initial
         self.vocab = commands(task)
         self.index = 0
         self.age = 0
         self.stable = 0
+        self.pick_lift_m = float(pick_lift_m)
 
     @property
     def command(self):
@@ -53,7 +54,7 @@ class CommandTracker:
         poses = state["objects"]
         complete = False
         if skill == "pick" and obj in poses and obj in self.initial:
-            complete = not state["gripper_open"] and poses[obj]["xyz"][2]-self.initial[obj]["xyz"][2] > .04
+            complete = not state["gripper_open"] and poses[obj]["xyz"][2]-self.initial[obj]["xyz"][2] > self.pick_lift_m
         elif skill in ("place_in", "place_on", "place_at", "push_to"):
             goals = [g for g in self.task["goal"] if g.get("a") == obj]
             if not goals:
@@ -94,7 +95,7 @@ def rollout(policy, scene, *, seed=0, noise="clean", max_ticks=None):
         raise ValueError("max_ticks must be positive")
     with TaskTwin(scene, physics=policy.config.get("physics", "so101_bench"), q0=start_q) as twin:
         initial = twin.poses()
-        tracker = CommandTracker(task, initial)
+        tracker = CommandTracker(task, initial, pick_lift_m=policy.config.get("pick_lift_m", .04))
         commanded = start_q.copy()
         divergences = 0
         for tick in range(budget):
@@ -126,7 +127,10 @@ def rollout(policy, scene, *, seed=0, noise="clean", max_ticks=None):
             executed = pending.popleft()
             twin.step(executed-offset)
             commanded = executed.copy()
-            state = {"objects": twin.poses(), "initial": initial, "gripper_open": not twin.grip_closed(),
+            threshold = policy.config.get("gripper_open_threshold_rad")
+            opened = (not twin.grip_closed() if threshold is None else
+                      bool(twin.q()[5] > threshold and twin.commanded_q[5] > threshold))
+            state = {"objects": twin.poses(), "initial": initial, "gripper_open": opened,
                      "site_xyz": arm.tips(twin.q())[2].tolist()}
             states.append(state)
             old_command = tracker.command

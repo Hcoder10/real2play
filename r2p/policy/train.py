@@ -5,6 +5,7 @@ python -m r2p.policy.train --task T --traces DIR --name NAME --steps S --device 
 from __future__ import annotations
 
 import argparse
+from copy import deepcopy
 from dataclasses import asdict
 import hashlib
 import json
@@ -51,6 +52,15 @@ def train(task, traces, name, steps=1000, device="cpu", *, seeds=(0,), batch_siz
     augmentation = augmentation or Augmentation()
     dataset = TraceDataset(task, traces, config, augmentation)
     config["start_q"] = dataset.start_q.tolist()
+    if dataset.deployment is not None:
+        config["deployment"] = dataset.deployment
+        config["gripper_open_threshold_rad"] = dataset.deployment["gripper_open_threshold_rad"]
+        config["pick_lift_m"] = .03
+        config["joint_limits"] = deepcopy(dataset.deployment["model_limits"])
+        # Round caps have no target yaw. Keep the actually calibrated roll even
+        # if a network extrapolates; this convention is part of NEW exports.
+        roll = dataset.deployment["roll_rad"]
+        config["joint_limits"][4] = [roll, roll]
     config["physics"] = dataset.physics
     config["physics_sha256"] = hashlib.sha256(json.dumps(dataset.physics, sort_keys=True).encode()).hexdigest()
     norm, config["obs_const"] = dataset.normalization()

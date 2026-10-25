@@ -154,7 +154,7 @@ def build_xml(scene, physics):
 
 
 class TaskTwin:
-    def __init__(self, scene, physics="so101_bench", q0=HOME_Q):
+    def __init__(self, scene, physics="so101_bench", q0=HOME_Q, *, joint_limits=None):
         self.scene = deepcopy(scene)
         self.physics = load_physics(physics)
         self.m = mujoco.MjModel.from_xml_string(build_xml(scene, self.physics))
@@ -164,10 +164,20 @@ class TaskTwin:
         self.dofadr = np.array([self.m.joint(j).dofadr[0] for j in JOINTS])
         self.actadr = np.array([self.m.actuator(j).id for j in JOINTS])
         self.range = np.array([self.m.joint(j).range for j in JOINTS])
+        if joint_limits is not None:
+            bounds = np.asarray(joint_limits, float)
+            if bounds.shape != (6, 2) or not np.isfinite(bounds).all() or np.any(bounds[:, 0] >= bounds[:, 1]):
+                raise ValueError("joint_limits must be six finite increasing intervals")
+            self.range = bounds.copy()
+            for name, limits in zip(JOINTS, bounds):
+                self.m.joint(name).range[:] = limits
+                self.m.actuator(name).ctrlrange[:] = limits
         self.objects = {o["id"]: o for o in scene.get("objects", []) if o.get("present", True)}
         self.body_ids = {k: self.m.body(f"object:{k}").id for k in self.objects}
         self.commanded_q = np.clip(np.asarray(q0, float), *self.range.T)
-        self.d.qpos[self.qadr] = self.commanded_q
+        # Encoder readings can be just outside calibrated soft limits. Preserve
+        # the measured physical initial state; only motor targets are clipped.
+        self.d.qpos[self.qadr] = np.asarray(q0, float) if joint_limits is not None else self.commanded_q
         self.d.ctrl[self.actadr] = self.commanded_q
         self._delay = deque([self.commanded_q.copy() for _ in range(self.physics.get("latency_ticks", 0))])
         self._renderer = None
