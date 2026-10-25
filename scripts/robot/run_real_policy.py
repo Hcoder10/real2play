@@ -67,6 +67,8 @@ def main(argv=None):
         return 1
     if not args.real:
         return 0
+    if policy.config.get("smoke_only"):
+        parser.error("this export declares smoke_only; use an evaluated placement candidate for --real")
     if not joint_map.verified and not args.allow_unverified:
         parser.error("joint map is unverified; --allow-unverified explicitly selects half-speed execution")
     if args.perception_setup is None or not args.perception_setup.is_file():

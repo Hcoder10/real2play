@@ -22,6 +22,7 @@ def main(argv=None):
     parser.add_argument("--timeout", type=float, default=60)
     parser.add_argument("--record", type=Path)
     parser.add_argument("--transport", choices=("direct", "armd"), default="direct")
+    parser.add_argument("--measured-task", type=Path, help="Replay a saved measured task JSON; default reads the current bench task")
     args = parser.parse_args(argv)
     cfg = load_config(args.config)
     if args.capture_profile:
@@ -40,7 +41,7 @@ def main(argv=None):
     from r2p.ttt import CELL_IDS
     from r2p.tasks import load_task
     profile = load_profile(args.bench_profile)
-    measured = load_task("place_on_cell")
+    measured = load_task(args.measured_task or "place_on_cell")
     rows = []
     for cell in [args.cell] if args.cell else CELL_IDS:
         for cap in [args.cap] if args.cap is not None else range(3):

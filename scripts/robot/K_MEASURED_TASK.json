@@ -1,0 +1,595 @@
+{
+  "schema": "argon_task/1",
+  "name": "place_on_cell",
+  "instruction": "Place the supply piece on the highlighted cell without moving other pieces.",
+  "board": {
+    "center_xy": [
+      0.178,
+      0.0581
+    ],
+    "cell_m": 0.0366,
+    "cells": {
+      "r0c0": [
+        0.1359,
+        0.028
+      ],
+      "r0c1": [
+        0.1415,
+        0.0638
+      ],
+      "r0c2": [
+        0.1472,
+        0.0997
+      ],
+      "r1c0": [
+        0.1723,
+        0.0222
+      ],
+      "r1c1": [
+        0.178,
+        0.0581
+      ],
+      "r1c2": [
+        0.1837,
+        0.094
+      ],
+      "r2c0": [
+        0.2088,
+        0.0164
+      ],
+      "r2c1": [
+        0.2145,
+        0.0523
+      ],
+      "r2c2": [
+        0.2201,
+        0.0882
+      ]
+    }
+  },
+  "objects": [
+    {
+      "id": "piece",
+      "role": "manipulated",
+      "shape": "cylinder",
+      "size_m": [
+        0.034,
+        0.017
+      ],
+      "color": "white",
+      "mass_kg": 0.004,
+      "friction": 0.5,
+      "grasp": "top",
+      "xy": [
+        0.175,
+        -0.125
+      ]
+    },
+    {
+      "id": "cell",
+      "role": "target",
+      "shape": "plate",
+      "size_m": [
+        0.0366,
+        0.0366,
+        0.001
+      ],
+      "color": "green",
+      "fixed": true,
+      "collide": false
+    },
+    {
+      "id": "r0c0",
+      "role": "target",
+      "shape": "plate",
+      "size_m": [
+        0.0366,
+        0.0366,
+        0.001
+      ],
+      "color": "gray",
+      "fixed": true,
+      "collide": false,
+      "xy": [
+        0.1359,
+        0.028
+      ]
+    },
+    {
+      "id": "r0c1",
+      "role": "target",
+      "shape": "plate",
+      "size_m": [
+        0.0366,
+        0.0366,
+        0.001
+      ],
+      "color": "gray",
+      "fixed": true,
+      "collide": false,
+      "xy": [
+        0.1415,
+        0.0638
+      ]
+    },
+    {
+      "id": "r0c2",
+      "role": "target",
+      "shape": "plate",
+      "size_m": [
+        0.0366,
+        0.0366,
+        0.001
+      ],
+      "color": "gray",
+      "fixed": true,
+      "collide": false,
+      "xy": [
+        0.1472,
+        0.0997
+      ]
+    },
+    {
+      "id": "r1c0",
+      "role": "target",
+      "shape": "plate",
+      "size_m": [
+        0.0366,
+        0.0366,
+        0.001
+      ],
+      "color": "gray",
+      "fixed": true,
+      "collide": false,
+      "xy": [
+        0.1723,
+        0.0222
+      ]
+    },
+    {
+      "id": "r1c1",
+      "role": "target",
+      "shape": "plate",
+      "size_m": [
+        0.0366,
+        0.0366,
+        0.001
+      ],
+      "color": "gray",
+      "fixed": true,
+      "collide": false,
+      "xy": [
+        0.178,
+        0.0581
+      ]
+    },
+    {
+      "id": "r1c2",
+      "role": "target",
+      "shape": "plate",
+      "size_m": [
+        0.0366,
+        0.0366,
+        0.001
+      ],
+      "color": "gray",
+      "fixed": true,
+      "collide": false,
+      "xy": [
+        0.1837,
+        0.094
+      ]
+    },
+    {
+      "id": "r2c0",
+      "role": "target",
+      "shape": "plate",
+      "size_m": [
+        0.0366,
+        0.0366,
+        0.001
+      ],
+      "color": "gray",
+      "fixed": true,
+      "collide": false,
+      "xy": [
+        0.2088,
+        0.0164
+      ]
+    },
+    {
+      "id": "r2c1",
+      "role": "target",
+      "shape": "plate",
+      "size_m": [
+        0.0366,
+        0.0366,
+        0.001
+      ],
+      "color": "gray",
+      "fixed": true,
+      "collide": false,
+      "xy": [
+        0.2145,
+        0.0523
+      ]
+    },
+    {
+      "id": "r2c2",
+      "role": "target",
+      "shape": "plate",
+      "size_m": [
+        0.0366,
+        0.0366,
+        0.001
+      ],
+      "color": "gray",
+      "fixed": true,
+      "collide": false,
+      "xy": [
+        0.2201,
+        0.0882
+      ]
+    },
+    {
+      "id": "other1",
+      "role": "obstacle",
+      "shape": "box",
+      "size_m": [
+        0.03,
+        0.03,
+        0.014
+      ],
+      "color": "blue",
+      "mass_kg": 0.02,
+      "friction": 0.6,
+      "fixed": true
+    },
+    {
+      "id": "other2",
+      "role": "obstacle",
+      "shape": "box",
+      "size_m": [
+        0.03,
+        0.03,
+        0.014
+      ],
+      "color": "brown",
+      "mass_kg": 0.02,
+      "friction": 0.6,
+      "fixed": true
+    },
+    {
+      "id": "other3",
+      "role": "obstacle",
+      "shape": "box",
+      "size_m": [
+        0.03,
+        0.03,
+        0.014
+      ],
+      "color": "blue",
+      "mass_kg": 0.02,
+      "friction": 0.6,
+      "fixed": true
+    },
+    {
+      "id": "other4",
+      "role": "obstacle",
+      "shape": "box",
+      "size_m": [
+        0.03,
+        0.03,
+        0.014
+      ],
+      "color": "brown",
+      "mass_kg": 0.02,
+      "friction": 0.6,
+      "fixed": true
+    }
+  ],
+  "goal": [
+    {
+      "pred": "at",
+      "a": "piece",
+      "xy": "cell",
+      "tol_m": 0.01
+    },
+    {
+      "pred": "not_moved",
+      "a": "other1",
+      "tol_m": 0.01,
+      "optional": true
+    },
+    {
+      "pred": "not_moved",
+      "a": "other2",
+      "tol_m": 0.01,
+      "optional": true
+    },
+    {
+      "pred": "not_moved",
+      "a": "other3",
+      "tol_m": 0.01,
+      "optional": true
+    },
+    {
+      "pred": "not_moved",
+      "a": "other4",
+      "tol_m": 0.01,
+      "optional": true
+    }
+  ],
+  "skeleton": [
+    {
+      "skill": "pick",
+      "obj": "piece"
+    },
+    {
+      "skill": "place_at",
+      "obj": "piece",
+      "xy": "cell"
+    },
+    {
+      "skill": "release"
+    },
+    {
+      "skill": "home"
+    }
+  ],
+  "randomize": {
+    "cell": {
+      "xy_choice": [
+        [
+          0.1359,
+          0.028
+        ],
+        [
+          0.1415,
+          0.0638
+        ],
+        [
+          0.1472,
+          0.0997
+        ],
+        [
+          0.1723,
+          0.0222
+        ],
+        [
+          0.178,
+          0.0581
+        ],
+        [
+          0.1837,
+          0.094
+        ],
+        [
+          0.2088,
+          0.0164
+        ],
+        [
+          0.2145,
+          0.0523
+        ],
+        [
+          0.2201,
+          0.0882
+        ]
+      ]
+    },
+    "other1": {
+      "xy_choice": [
+        [
+          0.1359,
+          0.028
+        ],
+        [
+          0.1415,
+          0.0638
+        ],
+        [
+          0.1472,
+          0.0997
+        ],
+        [
+          0.1723,
+          0.0222
+        ],
+        [
+          0.178,
+          0.0581
+        ],
+        [
+          0.1837,
+          0.094
+        ],
+        [
+          0.2088,
+          0.0164
+        ],
+        [
+          0.2145,
+          0.0523
+        ],
+        [
+          0.2201,
+          0.0882
+        ]
+      ],
+      "p_present": 0.5
+    },
+    "other2": {
+      "xy_choice": [
+        [
+          0.1359,
+          0.028
+        ],
+        [
+          0.1415,
+          0.0638
+        ],
+        [
+          0.1472,
+          0.0997
+        ],
+        [
+          0.1723,
+          0.0222
+        ],
+        [
+          0.178,
+          0.0581
+        ],
+        [
+          0.1837,
+          0.094
+        ],
+        [
+          0.2088,
+          0.0164
+        ],
+        [
+          0.2145,
+          0.0523
+        ],
+        [
+          0.2201,
+          0.0882
+        ]
+      ],
+      "p_present": 0.5
+    },
+    "other3": {
+      "xy_choice": [
+        [
+          0.1359,
+          0.028
+        ],
+        [
+          0.1415,
+          0.0638
+        ],
+        [
+          0.1472,
+          0.0997
+        ],
+        [
+          0.1723,
+          0.0222
+        ],
+        [
+          0.178,
+          0.0581
+        ],
+        [
+          0.1837,
+          0.094
+        ],
+        [
+          0.2088,
+          0.0164
+        ],
+        [
+          0.2145,
+          0.0523
+        ],
+        [
+          0.2201,
+          0.0882
+        ]
+      ],
+      "p_present": 0.5
+    },
+    "other4": {
+      "xy_choice": [
+        [
+          0.1359,
+          0.028
+        ],
+        [
+          0.1415,
+          0.0638
+        ],
+        [
+          0.1472,
+          0.0997
+        ],
+        [
+          0.1723,
+          0.0222
+        ],
+        [
+          0.178,
+          0.0581
+        ],
+        [
+          0.1837,
+          0.094
+        ],
+        [
+          0.2088,
+          0.0164
+        ],
+        [
+          0.2145,
+          0.0523
+        ],
+        [
+          0.2201,
+          0.0882
+        ]
+      ],
+      "p_present": 0.5
+    },
+    "min_sep_m": 0,
+    "piece": {
+      "x": [
+        0.1185,
+        0.2385
+      ],
+      "y": [
+        -0.062,
+        -0.031
+      ],
+      "size_m": [
+        [
+          0.03,
+          0.037
+        ],
+        [
+          0.014,
+          0.02
+        ]
+      ],
+      "mass_kg": [
+        0.002,
+        0.007
+      ],
+      "friction": [
+        0.35,
+        0.7
+      ],
+      "follow_board": true
+    },
+    "board_pose": {
+      "dx": [
+        -0.03,
+        0.03
+      ],
+      "dy": [
+        -0.035,
+        0.045
+      ],
+      "yaw_deg": [
+        -8,
+        8
+      ]
+    }
+  },
+  "limits": {
+    "episode_s": 40,
+    "max_objects": 15
+  },
+  "bench_note": "Oct 25 12:4x (after the paper was reset): grid re-measured by the calibrated camera (36.3 mm cells, centre 0.1695/-0.0169). Robot pieces = white plastic bottle caps (~33 mm, ~17 mm tall); supply line on the robot's right, located by gemini-4-argon at x 0.127/0.175/0.221, y -0.125. Humans play coins."
+}

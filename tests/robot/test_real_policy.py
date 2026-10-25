@@ -193,6 +193,40 @@ def test_captured_streaming_target_is_refused_before_any_policy_write():
     assert "owner limits" in result["error"]
 
 
+def test_streaming_twin_exercises_server_rate_cap_without_double_stepping(profile):
+    from r2p.robot.rehearsal import TwinRobot, twin_daemon_robot
+    from r2p.sim.twin import TaskTwin
+    jm = load_joint_map()
+    limits = OwnerLimits.from_state(profile["owner_state"])
+    scene = sample_scene(placement_task("r1c1"), np.random.default_rng(0))
+    start = np.asarray(profile["start_q"])
+    with TaskTwin(scene, q0=start, joint_limits=limits.model_bounds(jm)) as twin:
+        physical = TwinRobot(twin, jm, limits)
+        robot = twin_daemon_robot(physical, jm, load_config(), {"q_target": start, "rest_q": start})
+        target = start.copy()
+        target[0] += np.deg2rad(1)
+        before = twin.data.time
+        accepted = jm.to_model(robot.write(jm.to_owner(target)))
+        assert accepted[0]-start[0] == pytest.approx(np.deg2rad(20)/30)
+        assert robot.daemon_clipped_commands == 1 and len(physical.sent) == 1
+        assert twin.data.time == before
+        robot.step(1/30)
+        assert twin.data.time-before == pytest.approx(1/30)
+
+
+def test_smoke_only_export_cannot_reach_live_handshake(profile, monkeypatch):
+    import r2p.policy
+    monkeypatch.syspath_prepend(str(ROOT/"scripts/robot"))
+    policy = hold_policy(placement_task("r1c1"), profile["start_q"])
+    policy.config["smoke_only"] = True
+    monkeypatch.setattr(r2p.policy, "load", lambda *a: policy)
+    monkeypatch.setattr(socket, "create_connection", lambda *a, **kw: pytest.fail("network for smoke export"))
+    main = runpy.run_path(str(ROOT/"scripts/robot/run_real_policy.py"))["main"]
+    with pytest.raises(SystemExit) as exc:
+        main(["--export", "smoke", "--real", "--cell", "r1c1"])
+    assert exc.value.code == 2
+
+
 def test_stale_calibration_refuses_before_opening_serial(profile, tmp_path, monkeypatch):
     import r2p.robot.io
     from r2p.frames import JOINTS

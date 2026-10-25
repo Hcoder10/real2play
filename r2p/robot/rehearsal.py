@@ -192,6 +192,40 @@ class TwinRobot:
         self.twin.close()
 
 
+def twin_daemon_robot(robot, joint_map, cfg, state):
+    """Exercise the actual server controller and client without HTTP or serial.
+
+    Physics advances once per runner tick. The controller sees a bus without a
+    step method, as on hardware. Network/inference scheduling jitter is not
+    modeled; the daemon's nominal 30 Hz rate cap and accepted targets are.
+    """
+    from types import SimpleNamespace
+    from .daemon import ArmController, DaemonRobot
+    from .io import vector
+    bus = SimpleNamespace(read=robot.read, write=robot.write, hold=robot.hold,
+                          loads=robot.loads, torque_off=robot.torque_off)
+    controller = ArmController(bus, joint_map=joint_map, cfg=cfg, realtime=False)
+    controller.target, controller.rest_q = vector(state["q_target"]), vector(state["rest_q"])
+
+    class InProcessDaemon(DaemonRobot):
+        def __init__(self):
+            super().__init__(joint_map=joint_map)
+            self.daemon_clipped_commands = 0
+
+        def request(self, command=None):
+            if command is None:
+                return controller.state()
+            result = controller.command(command)
+            if "joints" in command and not np.allclose(command["joints"], result["q_target"], atol=1e-9, rtol=0):
+                self.daemon_clipped_commands += 1
+            return result
+
+        def step(self, dt):
+            robot.step(dt)
+
+    return InProcessDaemon()
+
+
 def require_stream_handover(state, profile, joint_map):
     validate_stream_state(state, joint_map)
     OwnerLimits.from_state(profile["owner_state"]).require(joint_map.to_owner(state["q_target"]))
@@ -270,8 +304,10 @@ def rehearse(policy, task, profile, *, cfg=None, timeout_s=60, record=None, tran
     rest = joint_map.to_model(initial_owner)
     with TaskTwin(scene, physics=physics, q0=rest, joint_limits=limits.model_bounds(joint_map)) as twin:
         robot = TwinRobot(twin, joint_map, limits)
+        interface = (twin_daemon_robot(robot, joint_map, cfg, profile["streaming_state"])
+                     if transport == "armd" else robot)
         world = TwinWorld(twin, task, arm, policy.config.get("gripper_open_threshold_rad", .5))
-        session = make_session(robot, policy, task, profile, cfg=cfg, arm=arm, world=world,
+        session = make_session(interface, policy, task, profile, cfg=cfg, arm=arm, world=world,
                                realtime=False, operator=Operator(None, keyboard=False), record=record)
         handover_error = None
         if transport == "armd" and diagnostics["start_valid"]:
@@ -294,6 +330,7 @@ def rehearse(policy, task, profile, *, cfg=None, timeout_s=60, record=None, tran
                 "placement_error_mm": error, "audit": diagnostics,
                 "sent_owner_limit_hits": sum(int(np.any(limits.violations(q))) for q in robot.sent),
                 "sent_commands": len(robot.sent), "final_poses": poses,
+                "daemon_clipped_commands": getattr(interface, "daemon_clipped_commands", 0),
                 "transport": transport, "initial_owner": initial_owner,
                 "physics_sha256": digest(physics), "latency_ticks": physics.get("latency_ticks", 0),
                 "task_sha256": digest(task), "synthetic": True, "load_abort_tested": False}

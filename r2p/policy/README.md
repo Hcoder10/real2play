@@ -56,3 +56,23 @@ The tiny CPU test verifies the pipeline and NumPy/Torch parity; it is not a
 trained deployment candidate. Successful hardware transfer, the held-out
 physical twin gate, and a large-data/GPU trained incumbent remain separate
 validation steps for the lead.
+
+The current real bench additionally requires calibrated owner-space bounds.
+`scripts/robot/rehearse_policy.py --export NAME` uses the same guarded runner as
+`scripts/robot/run_real_policy.py`, starts at the captured supported rest pose,
+and evaluates every measured cell against all three measured supply caps.
+An incompatible `start_q` is refused before any command, never clipped into a
+different start distribution. Existing HOME_Q exports exceed the real wrist-flex
+limit under `vcal_oct25b`.
+
+For fresh round-cap traces, opt into
+`.venv/Scripts/python.exe -m r2p.sim.traces --task place_on_cell --n N --out-dir traces/cell_bench
+--workers 1 --bench-profile scripts/robot/K_BENCH_PROFILE.json`.
+This profile fixes wrist roll at the calibrated owner 81.9 degrees (model -82.5
+degrees), uses the owner-20 opening / owner-6 squeeze mapped through open_rad
+2.699, lowers travel height, and declares a reachable start with compensation
+headroom. Training carries the profile into the export, bounds its absolute
+outputs, and refuses mixed deployment conventions. The default expert remains
+unchanged. Regenerate all traces; changing old export angles after training is
+not a valid migration. The profile is a constraint convention, not evidence of
+successful grasps: inspect the recorded expert failures before a large run.

@@ -4,6 +4,27 @@ All commands run from the repository root. Python on Windows is
 `.venv/Scripts/python.exe`; the bench uses its Python 3.12 environment with
 `lerobot[feetech]==0.6.1`. Imports do not open a port or request Gemini.
 
+## Agent K: current bench learned-policy path
+
+Use [K_POLICY_REAL_REPORT.md](K_POLICY_REAL_REPORT.md) for the measured Oct 25
+joint map, owner limits, 27-case rehearsal, export compatibility findings, and
+release-at-rest checklist. The current repo daemon supports checked streaming
+with `--transport armd --bench-profile scripts/robot/K_STREAM_PROFILE.json`.
+The earlier external `argon-hack` waypoint daemon is rejected by that path.
+
+```console
+.venv/Scripts/python.exe scripts/robot/rehearse_policy.py --export YOUR_EXPORT
+.venv/Scripts/python.exe scripts/robot/run_real_policy.py --export YOUR_EXPORT --check --cell r1c1
+```
+
+The rehearsal uses the physical MuJoCo twin with real owner limits, captured
+rest pose, sag and latency. It exercises the same `Session` as direct live
+execution. `run_real_policy.py` defaults to a no-motion check. Its explicit real
+streaming mode sends guarded targets through the existing daemon; direct mode
+requires release at rest. K exercised only GETs on the real daemon. The
+checked-in `k_place_on_cell_cpu_smoke` export is a five-step plumbing
+fixture, with zero demonstrated placements; it is not a deployment candidate.
+
 ## Offline acceptance
 
 ```console
