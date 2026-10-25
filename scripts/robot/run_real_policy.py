@@ -44,7 +44,11 @@ def main(argv=None):
     mode.add_argument("--check", action="store_true")
     parser.add_argument("--arm-released", action="store_true")
     parser.add_argument("--allow-unverified", action="store_true")
-    parser.add_argument("--perception-setup", type=Path)
+    perception = parser.add_mutually_exclusive_group()
+    perception.add_argument("--perception-setup", type=Path)
+    perception.add_argument("--argon-perception", action="store_true",
+                            help="Survey white caps with Argon before motion, then refresh asynchronously; "
+                                 "--check also checks camera/perception without opening the robot")
     parser.add_argument("--timeout", type=float, default=60)
     parser.add_argument("--record", type=Path, default=ROOT/"runs/robot/k_policy")
     args = parser.parse_args(argv)
@@ -65,20 +69,21 @@ def main(argv=None):
     if not diagnostics["start_valid"]:
         print("Refused: export start_q exceeds the real envelope. Regenerate traces and retrain; do not clip start_q.")
         return 1
-    if not args.real:
+    if not args.real and not args.argon_perception:
         return 0
-    if policy.config.get("smoke_only"):
+    if args.real and policy.config.get("smoke_only"):
         parser.error("this export declares smoke_only; use an evaluated placement candidate for --real")
-    if not joint_map.verified and not args.allow_unverified:
+    if args.real and not joint_map.verified and not args.allow_unverified:
         parser.error("joint map is unverified; --allow-unverified explicitly selects half-speed execution")
-    if args.perception_setup is None or not args.perception_setup.is_file():
-        parser.error("live mode requires an existing --perception-setup for this cap and current camera")
+    if not args.argon_perception and (args.perception_setup is None or not args.perception_setup.is_file()):
+        parser.error("live mode requires --argon-perception or an existing --perception-setup")
     if args.timeout <= 0 or not np.isfinite(args.timeout):
         parser.error("--timeout must be finite and positive")
-    if args.transport == "direct":
-        require_released_bus(cfg, args.arm_released)
-    else:
-        streaming_robot(cfg, profile, joint_map)  # handshake performs only GET
+    if args.real:
+        if args.transport == "direct":
+            require_released_bus(cfg, args.arm_released)
+        else:
+            streaming_robot(cfg, profile, joint_map)  # handshake performs only GET
     from r2p.perception import CameraModel, open_camera
     from r2p.robot.io import RealRobot
     from r2p.robot.operator import Operator
@@ -102,11 +107,18 @@ def main(argv=None):
             raise ValueError("requested cell is occupied")
         task = placement_task(cell, args.cap, board=board, supply_xy=args.supply_xy)
         audit(policy, task, profile, joint_map, cfg)
-        from r2p.robot.policy_vision import load_placement_setup
-        perceiver = load_placement_setup(calibration, task, args.perception_setup)
+        if args.argon_perception:
+            from r2p.robot.argon_perception import ArgonPerceiver
+            perceiver = ArgonPerceiver(calibration, task)
+        else:
+            from r2p.robot.policy_vision import load_placement_setup
+            perceiver = load_placement_setup(calibration, task, args.perception_setup)
         # Recheck ownership/streaming identity immediately before execution.
         # Preflight performs no daemon writes, including rest/release.
-        if args.transport == "direct":
+        if not args.real:
+            # Read-only Argon check uses captured q, never connects to the arm.
+            initial_q = joint_map.to_model(profile["owner_state"]["q"])
+        elif args.transport == "direct":
             require_released_bus(cfg, args.arm_released)
             checked_rest(cfg, profile, joint_map)
             initial_q = joint_map.to_model(profile["owner_state"]["rest"])
@@ -118,16 +130,24 @@ def main(argv=None):
         piece = next(o for o in task["objects"] if o["role"] == "manipulated")
         pose = initial.get(piece["id"], {})
         if not pose.get("seen") or pose.get("source") != "vision":
-            raise ValueError("saved setup cannot currently see the selected cap")
+            raise ValueError("perception cannot currently see the selected cap")
         if np.linalg.norm(np.asarray(pose["xyz"])[:2]-np.asarray(piece["xyz"])[:2]) > .015:
-            raise ValueError("tracked cap is not at the selected supply position; update --supply-xy/setup")
+            raise ValueError("tracked cap is not at the selected supply position; update --supply-xy or --cap")
+        if not args.real:
+            print(json.dumps({"motion": False, "decision": decision, "perception": initial,
+                              "joint_pose_source": "captured_bench_profile"}, indent=2), flush=True)
+            return 0
         record = args.record/datetime.now().strftime("%Y%m%d_%H%M%S_%f")
         print(json.dumps({"decision": decision, "record": str(record), "speed": .5 if not joint_map.verified else 1.}), flush=True)
         if args.transport == "direct":
             robot = RealRobot(cfg)
         with Operator(cfg["control_file"], keyboard=True) as operator:
-            result = make_session(robot, policy, task, profile, cfg=cfg, camera=camera, perceiver=perceiver,
-                                  realtime=True, operator=operator, record=record).run(timeout_s=args.timeout)
+            session = make_session(robot, policy, task, profile, cfg=cfg, camera=camera, perceiver=perceiver,
+                                   realtime=True, operator=operator, record=record)
+            if args.argon_perception:
+                # Accepted servo target, not measured q or an unguarded policy output.
+                perceiver.commanded_q = lambda: session.last_sent
+            result = session.run(timeout_s=args.timeout)
         calibration.save(record/"camera.json")
         (record/"decision.json").write_text(json.dumps(decision, indent=2)+"\n", encoding="utf-8")
         print(json.dumps(result, indent=2))
