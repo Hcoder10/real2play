@@ -29,6 +29,20 @@ def managed_helpers(root):
     return _managed
 
 
+def offline_experiment_client():
+    """Keep legacy dry orchestration offline across the active patch schema change."""
+    from r2p.real2sim.active import EXPERIMENT_SCHEMA, ACTIVE_PATCH_SCHEMA
+    from r2p.real2sim.patch import PATCH_SCHEMA
+    def respond(**request):
+        schema = request["config"]["response_json_schema"]
+        if schema in (PATCH_SCHEMA, ACTIVE_PATCH_SCHEMA):
+            return {"objects": [], "why": "Offline numeric identification; no model request", "done": False}
+        if schema == EXPERIMENT_SCHEMA:
+            return json.loads(request["parts"][0])["menu"][0]
+        raise ValueError("Unknown offline experiment schema")
+    return gemini.FakeGemini(responder=respond)
+
+
 def gate_metrics(metrics, baseline=None):
     reasons = []
     for key in ("joint_deg", "jaw_mm", "object_mm", "iou"):
@@ -226,7 +240,8 @@ class LocalTools:
             return observation
         mover.execute = record
         result = run_campaign(mover, budget=budget or (4 if self.dry else 6), out_dir=folder,
-                              physics=self.physics, candidate_dir=folder / "candidates", max_nfev=2 if self.dry else 9)
+                              physics=self.physics, candidate_dir=folder / "candidates", max_nfev=2 if self.dry else 9,
+                              client=offline_experiment_client() if self.dry else None)
         self.campaign = result
         self.physics = read_json(result["candidate_physics"])
         self.scene = read_json(folder / "candidate_scene.json")
@@ -446,6 +461,8 @@ class LocalTools:
                     "--export", str(self.export), "--cell", cell, "--supply-xy", *map(str, self.caps[0]),
                     "--bench-profile", str(self.r.options["bench_profile"]), "--perception-setup", str(setup),
                     "--record", str(folder / "attempt"), "--timeout", "60"]
+            if self.r.options.get("deployment_board"):
+                argv += ["--board", str(self.r.options["deployment_board"])]
         completed = subprocess.run(argv, cwd=self.root, capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=120)
         (folder / "command.log").write_text(gemini._safe(completed.stdout + completed.stderr), encoding="utf-8")
         traces = list((folder / "attempt").rglob("trace.jsonl"))

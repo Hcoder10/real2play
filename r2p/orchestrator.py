@@ -41,6 +41,8 @@ TOOLS = {
     "finish": ("Stop only when these numeric conditions AND every local gate pass.", object_schema()),
 }
 ORDER = [name for name in TOOLS if name not in {"author_task", "finish"}]
+LAB_ORDER = ["twin_gate", "build_game", "collect_play", "train_plan", "replay_and_train", "deploy_real"]
+LAB_DEPENDENCIES = {name: [LAB_ORDER[i-1]] for i, name in enumerate(LAB_ORDER) if i}
 DEPENDENCIES = {
     "calibrate_arm": ["measure_scene"], "active_twin": ["calibrate_arm"],
     "analyze_experiments": ["active_twin"], "twin_gate": ["analyze_experiments"],
@@ -153,7 +155,7 @@ class FakeController:
     def decide(self, state, feedback=None):
         if feedback and not feedback.get("ok"):
             raise RuntimeError("Offline stage failed: " + str(feedback.get("error", feedback)))
-        name = next((name for name in ORDER if name not in state["results"]), "finish")
+        name = next((name for name in state.get("order", ORDER) if name not in state["results"]), "finish")
         return {"tool": name, "args": {}, "why": "Exercise " + name + " using measured offline evidence.",
                 "done_when": [{"metric": "deploy_real.attempts", "op": "gte", "value": 1}]}, {
                     "served_by": "fake-argon", "cached": False, "latency": 0, "requests": 0}
@@ -167,32 +169,43 @@ class Orchestrator:
         self.root = Path(root or ROOT).resolve()
         self.task = load_task(task)
         self.dry_run, self.approve = dry_run, approve
-        if approve not in ("ask", "auto") or approve == "auto" and not dry_run:
+        if approve not in ("ask", "auto", "owner-authorized") or approve == "auto" and not dry_run:
             raise ValueError("--approve auto is permitted only with --dry-run")
         if not 1 <= max_steps <= 100:
             raise ValueError("max_steps must be 1..100")
         self.max_steps, self.prompt = max_steps, prompt
         self.options = options or {}
+        self.lab_run = self.options.get("lab_run")
+        self.order = LAB_ORDER if self.lab_run else ORDER
+        self.dependencies = LAB_DEPENDENCIES if self.lab_run else DEPENDENCIES
         name = run or time.strftime("%Y%m%d-%H%M%S-") + uuid.uuid4().hex[:6]
         import re
         if not re.fullmatch(r"[A-Za-z0-9_-]{1,100}", name):
             raise ValueError("Unsafe run name")
         self.out = self.root / "runs/argon_orchestrator" / name
         self.out.mkdir(parents=True, exist_ok=False)
-        self.controller = controller or (FakeController() if dry_run else InteractionsController(
+        from r2p.orchestrator_client import StatelessController
+        self.controller = controller or (FakeController() if dry_run else StatelessController(
             self.out / "controller_cache", max_requests=self.options.get("request_budget", 15), retries=0, timeout_s=90))
         if backend is None:
-            from r2p.orchestrator_tools import LocalTools
-            backend = LocalTools(self)
+            if self.lab_run:
+                from r2p.orchestrator_lab import LabTools
+                backend = LabTools(self)
+            else:
+                from r2p.orchestrator_tools import LocalTools
+                backend = LocalTools(self)
         self.backend = backend
         self.state = {"schema": "r2p_argon_orchestrator/1", "run": name, "task": self.task["name"],
                       "goal": self.task["instruction"], "synthetic": dry_run, "status": "READY", "stage": "planning",
                       "started": time.time(), "last_tool": None, "why": "", "metrics": {}, "results": {},
-                      "thresholds": THRESHOLDS, "dependencies": DEPENDENCIES, "next": "measure_scene", "managed": []}
+                      "thresholds": {"sealed": 1, "improved": 1} if self.lab_run else THRESHOLDS,
+                      "dependencies": self.dependencies, "order": self.order,
+                      "lab_run": str(self.lab_run) if self.lab_run else None,
+                      "approval": approve, "next": self.order[0], "managed": []}
         self.publish()
 
     def event(self, kind, **values):
-        row = {"time": time.time(), "kind": kind, **values}
+        row = {"time": time.time(), "kind": kind, "authorization": self.approve, **values}
         with (self.out / "ledger.jsonl").open("a", encoding="utf-8") as stream:
             stream.write(gemini._safe(gemini._canonical(row)) + "\n")
         return row
@@ -202,28 +215,32 @@ class Orchestrator:
         gemini.atomic_json(self.out / "status.json", self.state)
 
     def approval(self, name, args):
-        risky = name in {"measure_scene", "calibrate_arm", "active_twin", "deploy_real", "analyze_experiments", "author_task", "build_game",
+        risky = name in {"measure_scene", "calibrate_arm", "active_twin", "deploy_real", "analyze_experiments", "author_task", "build_game", "collect_play",
                          "train_plan", "replay_and_train"}
         action = self.backend.action(name, args)
         accepted, source = True, "dry-run" if self.dry_run else "read-only"
-        if risky and not self.dry_run:
+        if risky and not self.dry_run and self.approve == "owner-authorized":
+            source = "owner-authorized"
+        elif risky and not self.dry_run:
             self.publish(stage="approval", next=action)
             try:
                 accepted = self.prompt(f"Approve exact action: {action}\nType yes to execute: ").strip().lower() == "yes"
             except (EOFError, KeyboardInterrupt):
                 accepted = False
             source = "terminal"
-        self.event("approval", tool=name, args=args, action=action, approved=accepted, source=source)
+        self.event("approval", tool=name, args=args, action=action, approved=accepted, source=source,
+                   authorization="Owner authorized autonomous operation for this session" if source == "owner-authorized" else None)
         if not accepted:
             raise PermissionError("Operator declined: " + action)
 
     def numeric_gates(self):
         results = self.state["results"]
-        missing = [name for name in ORDER if not results.get(name, {}).get("ok")]
+        missing = [name for name in self.order if not results.get(name, {}).get("ok")]
         if missing:
             return False, ["Missing successful stages: " + ", ".join(missing)]
         reasons = []
-        for name in ("calibrate_arm", "twin_gate", "build_game", "train_plan"):
+        for name in (("twin_gate", "build_game", "train_plan") if self.lab_run else
+                     ("calibrate_arm", "twin_gate", "build_game", "train_plan")):
             if results[name]["metrics"].get("passed") != 1:
                 reasons.append(name + " failed")
         if results["collect_play"]["metrics"].get("traces", 0) < 1:
@@ -232,13 +249,18 @@ class Orchestrator:
         if train.get("replayed", 0) < 1 or train.get("eval_n", 0) < 1:
             reasons.append("Missing replay/evaluation evidence")
         if not self.dry_run:
-            if min(train.get("clean", 0), train.get("real", 0)) < .8 or train.get("eval_n", 0) < 12:
+            policy_used = not self.lab_run or results["deploy_real"].get("executor") == "learned_policy"
+            if policy_used and (min(train.get("clean", 0), train.get("real", 0)) < .8 or train.get("eval_n", 0) < 12):
                 reasons.append("Policy below live gate: >=.8 clean/real on >=12 scenes")
-            if train.get("improved") != 1:
+            if policy_used and train.get("improved") != 1:
                 reasons.append("Policy did not beat incumbent")
-            if results["deploy_real"]["metrics"].get("success") != 1:
+            if not self.lab_run and results["deploy_real"]["metrics"].get("success") != 1:
                 reasons.append("Real attempt did not succeed")
-            if results["build_game"]["metrics"].get("published") != 1:
+            if self.lab_run and results["deploy_real"]["metrics"].get("attempts") != 1:
+                reasons.append("No completed tic-tac-toe turn")
+            if self.lab_run and results["deploy_real"].get("executor") not in ("learned_policy", "calibrated_ik"):
+                reasons.append("Missing deployment executor provenance")
+            if not self.lab_run and results["build_game"]["metrics"].get("published") != 1:
                 reasons.append("No confirmed publication")
         return not reasons, reasons
 
@@ -255,6 +277,8 @@ class Orchestrator:
     def execute(self, decision):
         decision = validate_decision(decision)
         name, args = decision["tool"], decision["args"]
+        if self.lab_run and name not in self.order and name != "finish":
+            raise ValueError("Lab mode uses the existing Lab evidence; old experiment/calibration tools are disabled")
         self.event("decision", **decision)
         self.publish(last_tool=name, why=decision["why"], stage=name, next=decision["done_when"])
         if name == "finish":
@@ -262,14 +286,17 @@ class Orchestrator:
             stopped = self.stop_met(decision["done_when"])
             return {"ok": passed and stopped, "metrics": {"gates_passed": int(passed), "stop_met": int(stopped)},
                     "error": reasons if not passed else None}
-        for dependency in DEPENDENCIES.get(name, []):
+        for dependency in self.dependencies.get(name, []):
             previous = self.state["results"].get(dependency, {})
-            if not previous.get("ok") or previous.get("metrics", {}).get("passed", 1) != 1:
+            provisional = bool(self.lab_run and name == "build_game" and dependency == "twin_gate")
+            if not previous.get("ok") or (not provisional and previous.get("metrics", {}).get("passed", 1) != 1):
                 raise ValueError(f"{name} requires passed {dependency}")
-        if name == "collect_play" and not self.dry_run:
+        if self.lab_run and name == "deploy_real" and self.state["results"]["twin_gate"]["metrics"].get("passed") != 1:
+            raise ValueError("Real deployment requires a sealed, improved Lab gate")
+        if name == "collect_play" and not self.dry_run and not self.lab_run:
             if self.state["results"]["build_game"]["metrics"].get("published") != 1:
                 raise ValueError("Live play collection requires build_game(publish=true) and the owner's publication receipt")
-        if name == "deploy_real" and not self.dry_run:
+        if name == "deploy_real" and not self.dry_run and not self.lab_run:
             m = self.state["results"]["replay_and_train"]["metrics"]
             if min(m.get("clean", 0), m.get("real", 0)) < .8 or m.get("eval_n", 0) < 12 or m.get("improved") != 1:
                 raise ValueError("Policy live gate failed; motion refused before approval")
@@ -295,7 +322,7 @@ class Orchestrator:
         # Invalidate BEFORE execution, including failures: an old pass cannot survive a failed retry.
         invalid = {name}
         while True:
-            expanded = invalid | {n for n, deps in DEPENDENCIES.items() if invalid.intersection(deps)}
+            expanded = invalid | {n for n, deps in self.dependencies.items() if invalid.intersection(deps)}
             if expanded == invalid:
                 break
             invalid = expanded
@@ -342,13 +369,14 @@ def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--task", default="place_on_cell")
     parser.add_argument("--dry-run", action="store_true")
-    parser.add_argument("--approve", choices=("ask", "auto"), default="ask")
+    parser.add_argument("--approve", choices=("ask", "auto", "owner-authorized"), default="ask")
+    parser.add_argument("--lab-run", help="Existing runs/lab/<name> (or an explicit Lab directory)")
     parser.add_argument("--plan-only", action="store_true", help="One Argon decision, no tool execution")
     parser.add_argument("--run")
     parser.add_argument("--root", type=Path)
     parser.add_argument("--max-steps", type=int, default=24)
     parser.add_argument("--request-budget", type=int, default=15)
-    parser.add_argument("--controller", choices=("interactions", "managed"), default="interactions")
+    parser.add_argument("--controller", choices=("stateless", "interactions", "managed"), default="stateless")
     parser.add_argument("--mcp-url", help="Owner's existing public HTTPS tunnel ending in /mcp")
     parser.add_argument("--mcp-port", type=int, default=8798)
     parser.add_argument("--poses", type=Path, help="Recorded calibration poses including open-jaw frames")
@@ -357,13 +385,17 @@ def main(argv=None):
     parser.add_argument("--perception-setup", type=Path)
     parser.add_argument("--bench-profile", type=Path, default=Path("scripts/robot/K_STREAM_PROFILE.json"))
     parser.add_argument("--wait-seconds", type=float, default=3600)
+    parser.add_argument("--board", type=Path, help="Last confirmed tic-tac-toe board; default out/ttt/status.json")
     args = vars(parser.parse_args(argv))
     plan_only = args.pop("plan_only")
     controller_mode, mcp_url, mcp_port = (args.pop(k) for k in ("controller", "mcp_url", "mcp_port"))
     options = {key: args.pop(key) for key in ("request_budget", "poses", "scene", "from_game", "perception_setup",
-                                             "bench_profile", "wait_seconds")}
+                                             "bench_profile", "wait_seconds", "lab_run", "board")}
     try:
         runner = Orchestrator(**args, options=options)
+        if controller_mode == "interactions" and not runner.dry_run:
+            runner.controller = InteractionsController(runner.out / "controller_cache",
+                max_requests=options["request_budget"], retries=0, timeout_s=90)
         if controller_mode == "managed":
             if plan_only:
                 raise ValueError("--plan-only uses the local Interactions controller")
