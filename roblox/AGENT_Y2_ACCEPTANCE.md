@@ -54,7 +54,8 @@ the existing bot controller moves the arm through the normal simulation.
 | `out/demo/roblox_cap.mp4` | 25 s | Seated avatar, physical cap placement |
 | `out/demo/roblox_bowl.mp4` | 20 s | Blue bowl and two brown cubes, physical pickup |
 
-The cap run passed the shared success checker after 22.17 simulated seconds.
+The cap runs passed the shared success checker after 22.17 and 15.20 simulated
+seconds. The final cap clip includes the success panel, then the bowl transition.
 Raw window recordings remain as `roblox_*_studio.mp4`; file hashes and format
 metadata are in `roblox/out/y2_videos.json`.
 
