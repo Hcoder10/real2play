@@ -27,6 +27,12 @@ from .experiments import (Validator, choose_experiment, excited_parameters, expe
 from .session import SessionData
 
 
+WRIST_REVIEW_SCHEMA = {"type": "object", "additionalProperties": False,
+    "required": ["grasp_confirmed", "slip", "release_confirmed", "evidence"], "properties": {
+        **{k: {"type": ["boolean", "null"]} for k in ("grasp_confirmed", "slip", "release_confirmed")},
+        "evidence": {"type": "string"}}}
+
+
 def parameter_space(task, scene, physics):
     values = {"stiffness_scale": 1., "damping_scale": 1.,
               "table_friction": float(scene.get("table", {}).get("friction", .6)),
@@ -99,9 +105,23 @@ def residual(observations, physics, scene):
     return np.asarray(values)
 
 
+def require_contact_evidence(observation):
+    if observation.experiment.kind not in ("push", "pick_lift_place"):
+        return
+    session = observation.session
+    task = session.meta.get("task")
+    required = ({task["skeleton"][observation.experiment.step]["obj"]} if isinstance(task, dict) else
+                {o["id"] for o in session.meta["scene"]["objects"] if o.get("role") == "manipulated"})
+    final = session.ticks[session.tick_index(len(session.frames)-1)]["poses"]
+    if not required.issubset(final):
+        raise ValueError("Final contact observation is missing the manipulated object; cannot identify/gate contact")
+
+
 def fit_parameters(training, task, physics, scene, current, *, max_nfev=5):
     if not training or any(o.split != "train" for o in training):
         raise ValueError("Fitting requires training experiments only")
+    for observation in training:
+        require_contact_evidence(observation)
     _, bounds = parameter_space(task, scene, physics)
     keys = sorted(set(k for o in training for k in excited_parameters(task, o.experiment)) & bounds.keys())
     uncertainty = {k: {"std": None, "identified": False, "excited": k in keys, "bounds": list(b)}
@@ -151,6 +171,7 @@ def score(observations, physics, scene):
     from r2p.model import Arm
     arm, rows, ious = Arm(), [], {}
     for observation in observations:
+        require_contact_evidence(observation)
         pairs = samples(observation, physics, scene)
         joint, jaw, sag, positions = [], [], [], []
         for measured, predicted in pairs:
@@ -192,6 +213,7 @@ class SimMover(BenchSimMover):
         renderer = CalibratedRenderer(twin, self.camera)
         indices = set(np.linspace(0, len(plan.targets), 7, dtype=int))
         ticks, images, masks, states = [], [], {}, []
+        initial_poses = twin.poses()
         try:
             for i in range(len(plan.targets)+1):
                 target = plan.targets[min(i, len(plan.targets)-1)]
@@ -219,7 +241,7 @@ class SimMover(BenchSimMover):
                 ticks.append(_trace_row(i/HZ, twin.q(), target, poses, plan.phases[min(i, len(plan.phases)-1)]))
                 if i >= len(plan.targets)-HZ:
                     states.append({"objects": twin.poses(), "gripper_open": not twin.grip_closed(),
-                                   "site_xyz": self.validator.arm.tips(twin.q())[2].tolist()})
+                                   "site_xyz": self.validator.arm.tips(twin.q())[2].tolist(), "initial": initial_poses})
                 if i < len(plan.targets):
                     twin.step(target)
             outcome = check_window(self.task, states)
@@ -274,8 +296,6 @@ def run_campaign(mover, task, *, out_dir, budget=6, physics="so101_bench", clien
         before = best = score(heldout, best_physics, best_scene)
         status.update(before=before, heldout=best)
         while status["experiments_used"] < budget:
-            if hasattr(mover, "prepare"):
-                mover.prepare()
             q0 = mover.q0 if hasattr(mover, "q0") else mover.measured_q(mover.request(mover.url+"/state"))
             wrist = mover.wrist_parts(training[-1]) if training and hasattr(mover, "wrist_parts") else ()
             e, choice = choose_experiment(client, task, mover.scene, values, uncertainty, history, tried,
@@ -286,6 +306,16 @@ def run_campaign(mover, task, *, out_dir, budget=6, physics="so101_bench", clien
             publish("executing")
             observation = mover.execute(e, out/f"train_{len(training)+1:02d}", split="train")
             training.append(observation); status["experiments_used"] += 1
+            wrist_review = None
+            if e.kind in ("push", "pick_lift_place") and hasattr(mover, "wrist_parts"):
+                parts = mover.wrist_parts(observation)
+                if parts:
+                    answer, record = client.call([
+                        "Review this TRAINING experiment's timed wrist frames. Report visible grasp, slip and release "
+                        "evidence. Use null when occluded or not applicable; never infer success from the commands. "
+                        +json.dumps(json_experiment(e)), *parts], role="main", thinking="high",
+                        tag="general_wrist_review", schema=WRIST_REVIEW_SCHEMA)
+                    wrist_review = {"observation": gemini.parse_json(answer), "record": record}
             publish("fitting")
             fitted, estimated, diagnostics = fit_parameters(training, task, physics, scene, values, max_nfev=max_nfev)
             proposed_physics, proposed_scene = materialize(physics, scene, fitted)
@@ -294,9 +324,13 @@ def run_campaign(mover, task, *, out_dir, budget=6, physics="so101_bench", clien
             if verdict["kept"]:
                 values, uncertainty = fitted, estimated
                 best_physics, best_scene, best = proposed_physics, proposed_scene, candidate
-            history.append(score(training[-1:], best_physics, best_scene))
+            for key in uncertainty:
+                uncertainty[key]["excited"] = estimated[key]["excited"]
+            status["heldout"] = best
+            history.append({**score(training[-1:], best_physics, best_scene), "wrist_review": wrist_review})
             row = {"experiment": json_experiment(e), "choice": choice, "fit": diagnostics, "verdict": verdict,
-                   "estimated_parameters": fitted, "estimated_uncertainty": estimated, "heldout": candidate}
+                   "estimated_parameters": fitted, "estimated_uncertainty": estimated, "heldout": candidate,
+                   "wrist_review": wrist_review}
             status["iterations"].append(row)
             gemini.atomic_json(out/f"iter_{len(training):02d}.json", row)
             gemini.atomic_json(out/"residuals.json", {"training": history, "heldout": best})
@@ -306,6 +340,23 @@ def run_campaign(mover, task, *, out_dir, budget=6, physics="so101_bench", clien
         gemini.atomic_json(out/"candidate_physics.json", best_physics)
         gemini.atomic_json(out/"candidate_scene.json", best_scene)
         status.update(heldout=best, candidate_physics=str(out/"candidate_physics.json"))
+        status["task_outcomes"] = {o.session.path.name: o.session.meta.get("synthetic_task_check")
+                                   for o in [*heldout, *training]}
+        lines = [f"# General active twin: {task['name']}", "",
+                 "Synthetic experiment campaign; no real transfer claim." if status["synthetic"] else
+                 "Recorded real experiments; candidate is inactive.", "",
+                 "| Held-out metric | Before | Best |", "|---|---:|---:|"]
+        lines += [f"| {k} | {before[k]:.6f} | {best[k]:.6f} |"
+                  for k in ("error", "joint_deg", "jaw_mm", "sag_mm", "object_mm", "iou")]
+        lines += ["", f"Experiments: {status['experiments_used']}/{budget}; two complete held-out sequences.",
+                  "Task-derived menu and safety refusals: `menu.json`. Training choices and fit eligibility: `iter_*.json`.",
+                  "Use `candidate_physics.json` together with `candidate_scene.json`; neither was activated.",
+                  "Repeated held-out gating is model selection, not an independent transfer audit.",
+                  "Synthetic camera evidence uses sparse rendered masks; poor/occluded silhouette fits are omitted.",
+                  "", "Task outcomes (diagnostics, never optimizer input):", "```json",
+                  json.dumps(status["task_outcomes"], indent=2), "```", "", "Parameters and uncertainty:",
+                  "```json", json.dumps({"parameters": values, "uncertainty": uncertainty}, indent=2), "```"]
+        (out/"report.md").write_text("\n".join(lines)+"\n", encoding="utf-8")
         publish("complete")
         if videos:
             from .twin_videos import build_videos

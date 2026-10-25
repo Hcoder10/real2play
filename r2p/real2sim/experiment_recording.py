@@ -20,6 +20,91 @@ from .active import UnsafeExperiment, http_json
 from .loop import atomic_image
 
 
+SURVEY_SCHEMA = {"type": "object", "required": ["objects"], "additionalProperties": False,
+    "properties": {"objects": {"type": "array", "items": {"type": "object", "additionalProperties": False,
+        "required": ["id", "top_center_yx", "outline_yx", "support"], "properties": {
+            "id": {"type": "string"}, "support": {"type": "string"},
+            "top_center_yx": {"type": "array", "minItems": 2, "maxItems": 2,
+                "items": {"type": "number", "minimum": 0, "maximum": 1000}},
+            "outline_yx": {"type": "array", "minItems": 3, "maxItems": 64,
+                "items": {"type": "array", "minItems": 2, "maxItems": 2,
+                    "items": {"type": "number", "minimum": 0, "maximum": 1000}}}}}}}}
+
+
+class ArgonSurveyPerceiver:
+    """MAIN sensor for white caps and arbitrary task objects, shared hard budget.
+
+    Explicit read() calls survey BEFORE and observe the LAST recorded frame.
+    estimate() only serves that fresh survey for the mover's reset gate. No
+    per-frame model requests and no stale cached observations in the fit.
+    """
+    def __init__(self, task, scene, camera, client):
+        self.task, self.scene, self.camera, self.client = task, scene, camera, client
+        self.last = None
+        self.reset_pending = False
+
+    def read(self, frame, q=None):
+        from r2p.perception.geometry import fit_pose
+        from r2p.sim.twin import extents
+        started = time.monotonic()
+        objects = {o["id"]: o for o in self.scene["objects"]}
+        text, record = self.client.call([
+            "Survey the task objects in this camera image. Return only visible objects from the supplied scene. "
+            "For each, outline its visible silhouette as normalized [y,x] 0..1000 points, and point at the centre "
+            "of its TOP face/rim (especially white open bottle caps). Identify support as table or the supporting "
+            "object id (bowl or stack base). Omit uncertain/occluded objects. Never infer success from the task. "
+            +json.dumps({"task": self.task, "survey_prior": self.scene}), gemini.image_part(frame)],
+            role="main", thinking="high", tag="general_experiment_survey", schema=SURVEY_SCHEMA)
+        answer = gemini.parse_json(text)
+        errors = gemini.schema_errors(answer, SURVEY_SCHEMA)
+        if errors:
+            raise UnsafeExperiment("Invalid Argon survey: "+"; ".join(errors))
+        poses, masks = {}, {}
+        height, width = frame.shape[:2]
+        for item in answer["objects"]:
+            oid = item["id"]
+            if oid not in objects or oid in poses:
+                raise UnsafeExperiment("Survey returned unknown/duplicate object")
+            obj = objects[oid]
+            support = item["support"]
+            bottom = 0.
+            if support != "table":
+                base = objects.get(support)
+                if base is None or support == oid:
+                    raise UnsafeExperiment("Unknown survey support")
+                bottom = base.get("wall_m", .005) if base["shape"] == "bowl" else base["xyz"][2]+extents(base)[2]/2
+            points = np.asarray(item["outline_yx"], float)[:, ::-1]*[width/1000, height/1000]
+            if not np.isfinite(points).all():
+                raise UnsafeExperiment("Nonfinite survey pixels")
+            mask = np.zeros((height, width), np.uint8)
+            cv2.fillConvexPoly(mask, cv2.convexHull(points.astype(np.int32)), 1)
+            if mask.sum() < 8:
+                continue
+            if obj["shape"] == "cylinder" and obj.get("axis", "z") == "z":
+                uv = np.asarray(item["top_center_yx"], float)[::-1]*[width/1000, height/1000]
+                if not np.isfinite(uv).all():
+                    raise UnsafeExperiment("Nonfinite survey centre")
+                xyz = self.camera.deproject(uv, h=bottom+extents(obj)[2])
+                xyz[2] = bottom+extents(obj)[2]/2
+                pose = {"xyz": xyz.tolist(), "yaw_deg": 0., "yaw_observable": False}
+            else:
+                pose = fit_pose(self.camera, obj, mask, bottom=bottom)
+                if pose["fit_px"] > 8:
+                    continue
+            poses[oid] = {**pose, "seen": True, "source": "vision"}
+            masks[oid] = mask.astype(bool)
+        result = {"poses": poses, "masks": masks, "record": record}
+        self.last = (started, result)
+        self.reset_pending = True
+        return result
+
+    def estimate(self, frame, q=None):
+        if self.reset_pending and self.last is not None and time.monotonic()-self.last[0] < 30:
+            self.reset_pending = False
+            return self.last[1]
+        return {"poses": {}, "masks": {}}
+
+
 def http_capture(url="http://127.0.0.1:8794", *, request=http_json):
     def capture():
         now = time.monotonic()
@@ -70,7 +155,11 @@ class DualCameraRecorder:
         self.path.mkdir(parents=True, exist_ok=False)
         # Both cameras must work before any motion is allowed.
         for name in self.capture:
-            self._one(name)
+            try:
+                self._one(name)
+            except Exception as exc:
+                self.errors.append(f"{name}: {exc}")
+                raise
         def poll(name):
             while not self.stop.wait(1/self.hz):
                 try:
@@ -102,11 +191,12 @@ class SurveyedMover:
     returns labelled fixed paper landmarks (at least three XY points); compare
     all of them so a rotation about the centre cannot slip past the guard.
     """
-    def __init__(self, mover, *, survey, sheet_geometry, wrist_capture=None):
+    def __init__(self, mover, *, survey, sheet_geometry, wrist_capture=None, final_observe=None):
         self.mover = mover
         self.survey = survey
         self.sheet_geometry = sheet_geometry
         self.wrist_capture = wrist_capture or http_capture()
+        self.final_observe = final_observe
         self.reference = None
 
     def __getattr__(self, name):
@@ -172,28 +262,61 @@ class SurveyedMover:
             recorder.start()
             self.mover.request = guarded_request
             observation = self.mover.execute(experiment, destination, split=split)
+            observation.session.meta["task"] = deepcopy(self.validator.task)
+            observation.session.meta["task_name"] = self.validator.task["name"]
             recorder.check()
+            if self.final_observe is not None:
+                # Ask the sensor about the last RECORDED image, then attach the
+                # evidence at that image's timestamp, not the later response time.
+                from r2p.traces import write_trace
+                session = observation.session
+                index = len(session.frames)-1
+                result = self.final_observe(session.frame(index), session.q(index))
+                session.ticks[session.tick_index(index)]["poses"] = result["poses"]
+                session.masks[index] = result["masks"]
+                session.meta["final_survey_record"] = result.get("record", {})
+                write_trace(Path(destination)/"trace.jsonl", session.meta, session.ticks)
+                for obj in self.mover.scene["objects"]:
+                    pose = result["poses"].get(obj["id"])
+                    if pose is not None and not obj.get("fixed"):
+                        obj["xyz"] = list(pose["xyz"])
+                        obj["yaw_deg"] = pose.get("yaw_deg", obj.get("yaw_deg", 0))
             return observation
         finally:
             self.mover.request = original_request
             recorder.close()
             # Also check after a failed/aborted experiment; raw camera evidence is
             # already on disk even if either guard raises.
-            displacement = self._guard(self.mover.capture()[0])
-            gemini.atomic_json(recorder.path/"sheet_guard.json", {"max_displacement_m": displacement, "ok": True})
+            try:
+                displacement = self._guard(self.mover.capture()[0])
+                gemini.atomic_json(recorder.path/"sheet_guard.json", {"max_displacement_m": displacement, "ok": True})
+            except Exception as exc:
+                gemini.atomic_json(recorder.path/"sheet_guard.json", {"ok": False, "reason": str(exc)})
+                raise
             if observation is not None:
                 raw_path = Path(destination).with_name(Path(destination).name+"_raw.json")
                 raw = json.loads(raw_path.read_text()) if raw_path.exists() else {}
                 captures = raw.get("captures", [])
-                origin = None
+                origin, command_origin = None, None
                 if captures:
                     first = captures[0]
                     absolute = first["received_at"]-first.get("age_s", 0)
                     origin = absolute-first["t"]
+                    command_origin = origin
                     sensors = raw.get("sensors", [])
                     if sensors:
                         origin += sensors[0]["t"]
-                meta = {"dual_camera_path": str(recorder.path.resolve()), "trace_origin_monotonic_estimate": origin}
+                events = {}
+                commands = raw.get("commands", [])
+                if command_origin is not None and commands:
+                    for phase in ("close", "lift", "release"):
+                        indices = [i for i, p in enumerate(observation.plan.phases) if p == phase]
+                        if indices:
+                            index = min(indices[len(indices)//2], len(commands)-1)
+                            events[phase] = command_origin+commands[index]["t"]
+                meta = {"task": deepcopy(self.validator.task), "task_name": self.validator.task["name"],
+                        "dual_camera_path": str(recorder.path.resolve()), "trace_origin_monotonic_estimate": origin,
+                        "command_event_monotonic_estimates": events}
                 gemini.atomic_json(Path(destination)/"meta.json", meta)
                 observation.session.meta.update(meta)
 
@@ -205,14 +328,13 @@ class SurveyedMover:
         rows = manifest["frames"]["wrist"]
         if not rows:
             return ()
-        origin = observation.session.meta.get("trace_origin_monotonic_estimate")
+        events = observation.session.meta.get("command_event_monotonic_estimates", {})
         chosen = []
         # Match close/lift/release events to wrist timestamps. When old traces
         # lack phases, provide explicitly timed coverage without event labels.
         for phase in ("close", "lift", "release"):
-            indices = [i for i, p in enumerate(observation.plan.phases) if p == phase]
-            if indices and origin is not None:
-                t = origin + indices[len(indices)//2]/30
+            if phase in events:
+                t = events[phase]
                 chosen.append((phase, min(rows, key=lambda r: abs(r["captured_at"]-t))))
         if not chosen:
             chosen = [("timed wrist observation", rows[i]) for i in np.linspace(0, len(rows)-1, 3, dtype=int)]

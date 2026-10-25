@@ -12,6 +12,7 @@ import json
 import math
 
 import numpy as np
+from scipy.optimize import least_squares
 
 from r2p import gemini
 from r2p.frames import HZ
@@ -135,6 +136,11 @@ def experiment_menu(task, scene):
     result = []
     arm = BenchValidator(task).arm
     for i, step in motion_steps(task):
+        goals = [g for g in task["goal"] if g.get("a") == step["obj"] or step["obj"] in g.get("objs", [])]
+        settle = 2. if any(g["pred"] in ("on_top", "stacked", "upright") for g in goals) else 1.
+        required_lift = max([.09] + [g["h_m"]+.02 for g in goals if g["pred"] == "lifted"])
+        if required_lift > .14:
+            raise UnsafeExperiment("Task lift predicate exceeds this rig's experiment envelope")
         e = TaskExperiment("hold_pose", i, "source")
         _, obj, target, destination = resolve(task, scene, TaskExperiment("hold_pose", i))
         result.extend([e, TaskExperiment("hold_pose", i)])
@@ -146,11 +152,12 @@ def experiment_menu(task, scene):
         if step["skill"] == "push_to":
             result.append(TaskExperiment("push", i))
         else:
-            result.append(TaskExperiment("pick_lift_place", i))
+            result.append(TaskExperiment("pick_lift_place", i, height_m=required_lift, duration_s=settle))
             if step["skill"] == "place_in" and target and target["shape"] == "bowl":
                 radius = max(0., target["size_m"][0]/2 - np.linalg.norm(extents(obj)[:2])/2 - .004)
-                result.append(TaskExperiment("pick_lift_place", i, offset_xy=(0., radius)))
-            result.append(TaskExperiment("pick_lift_place", i, "return"))
+                result.append(TaskExperiment("pick_lift_place", i, offset_xy=(0., radius),
+                                             height_m=required_lift, duration_s=settle))
+            result.append(TaskExperiment("pick_lift_place", i, "return", height_m=required_lift, duration_s=settle))
     return list({e.key: e for e in result}.values())
 
 
@@ -174,6 +181,42 @@ def excited_parameters(task, e):
     return keys
 
 
+def _solve_oriented(arm, point, q, grip, yaw, margin):
+    """Position-priority IK with a continuous, object-aligned jaw orientation.
+
+    The old position-only solver can spin wrist roll by 180 degrees during a
+    lift. That drops an otherwise physical grasp and never excites bowl contact.
+    """
+    initial = np.asarray(q, float)
+    desired = np.array([math.cos(yaw), math.sin(yaw), 0.])
+    def residual(joints):
+        command = np.r_[joints, grip]
+        a, b, mid = arm.tips(command)
+        across = (b-a)/max(np.linalg.norm(b-a), 1e-8)
+        axis = arm.jac_tip(command)[2]
+        return np.r_[mid-point, .006*(axis-[0, 0, -1]), .008*(across-desired),
+                     .0002*(joints-initial[:5])]
+    limits = arm.range[:5]+np.deg2rad([margin, -margin])+[1e-5, -1e-5]
+    result = least_squares(residual, np.clip(initial[:5], *limits.T), bounds=limits.T,
+                           max_nfev=80, ftol=1e-8, xtol=1e-8, gtol=1e-8)
+    return np.r_[result.x, grip]
+
+
+def apply_owner_limits(validator, joint_map, state):
+    """Require an explicit calibrated range for real planning, including wrist."""
+    from r2p.robot.limits import OwnerLimits
+    if state.get("joint_map") != joint_map.name:
+        raise UnsafeExperiment("Calibrated owner limits and client joint map differ")
+    try:
+        limits = OwnerLimits.from_state(state)
+    except (KeyError, ValueError) as exc:
+        raise UnsafeExperiment("Live planning requires calibrated owner lo/hi limits") from exc
+    validator.arm.range = limits.model_bounds(joint_map, validator.arm.range)
+    validator.safety.joint_map = joint_map
+    validator.safety.owner_lo = limits.lo.tolist()
+    validator.safety.owner_hi = limits.hi.tolist()
+
+
 class Validator(BenchValidator):
     """Validate every absolute joint target, including low Cartesian segments."""
     def __init__(self, task, safety=None):
@@ -188,6 +231,7 @@ class Validator(BenchValidator):
         if q.shape != (6,) or not np.isfinite(q).all() or e.speed > s.speed_cap:
             raise UnsafeExperiment("Invalid joints or excessive speed")
         qstart = q.copy()
+        yaw = None
         targets, phases, points = [], [], []
         source = np.asarray(obj["xyz"], float)
         self._allowed = [source[:2], dest] if e.kind == "pick_lift_place" else []
@@ -214,7 +258,9 @@ class Validator(BenchValidator):
             for a in np.linspace(0, 1, n+1)[1:]:
                 point = current+a*(p-current)
                 self._point(point)
-                goal = _solve(self.arm, point, q, q[5] if grip is None else grip, margin_deg=s.joint_margin_deg)
+                g = q[5] if grip is None else grip
+                goal = (_solve(self.arm, point, q, g, margin_deg=s.joint_margin_deg) if yaw is None else
+                        _solve_oriented(self.arm, point, q, g, yaw, s.joint_margin_deg))
                 if np.linalg.norm(self.arm.tips(goal)[2]-point) > .003:
                     raise UnsafeExperiment("IK residual exceeds 3 mm")
                 joint(goal, phase)
@@ -256,6 +302,14 @@ class Validator(BenchValidator):
             grasp = max(s.grasp_z, source[2]-dims[2]/2+s.grasp_z)
             if grasp > source[2]+dims[2]/2:
                 raise UnsafeExperiment("Object too short for sag-safe grasp")
+            if obj["shape"] == "cylinder":
+                a, b, _ = self.arm.tips(q)
+                yaw = math.atan2((b-a)[1], (b-a)[0])
+            else:
+                angle = math.radians(obj.get("yaw_deg", 0))+(math.pi/2 if dims[0] > dims[1]+1e-6 else 0)
+                period = math.pi/2 if abs(dims[0]-dims[1]) < 1e-6 else math.pi
+                bearing = math.atan2(source[1], source[0])
+                yaw = bearing+(angle-bearing+period/2)%period-period/2
             release_z = s.place_z
             if target and e.location == "target" and target.get("collide", True):
                 release_z += target["xyz"][2]+extents(target)[2]/2
