@@ -112,7 +112,14 @@ class Pipeline:
                     if (self.options.no_cascade and name == round_name and target == stage) or (
                             not self.options.no_cascade and downstream):
                         old = row["stages"][target]
-                        row["stages"][target] = {"status": "INVALIDATED", "result": {}, "attempt": old.get("attempt", 0)}
+                        row["stages"][target] = {"status": "INVALIDATED", "result": {}, "attempt": old.get("attempt", 0),
+                                                 "generation": old.get("generation", 1)}
+
+    @staticmethod
+    def generation(previous):
+        # A retry can adopt the attempt recorded by a printed plan command. A force or
+        # changed completed stage must use a new location, never silently adopt the old attempt.
+        return previous.get("generation", 1) + (previous.get("status") in {"DONE", "INVALIDATED"})
 
     def fingerprints(self, round_name, stage):
         options = asdict(self.options)
@@ -143,8 +150,10 @@ class Pipeline:
                 blocked_by = None
                 for stage in STAGES:
                     if blocked_by:
+                        previous = stage_rows.get(stage, {})
                         stage_rows[stage] = {"status": "BLOCKED", "message": f"Waiting for {name}:{blocked_by}",
-                                             "updated": utcnow(), "result": {}}
+                                             "updated": utcnow(), "result": {}, "attempt": previous.get("attempt", 0),
+                                             "generation": self.generation(previous)}
                         continue
                     fingerprint, base_fingerprint = self.fingerprints(name, stage)
                     previous = stage_rows.get(stage, {})
@@ -156,7 +165,8 @@ class Pipeline:
                         continue
                     row = {"status": "RUNNING", "started": utcnow(), "fingerprint": fingerprint,
                            "base_fingerprint": base_fingerprint,
-                           "result": {}, "attempt": previous.get("attempt", 0) + 1}
+                           "result": {}, "attempt": previous.get("attempt", 0) + 1,
+                           "generation": self.generation(previous)}
                     stage_rows[stage] = row
                     self.save()
                     start = time.monotonic()

@@ -31,7 +31,7 @@ def episode(directory, task, *, source="expert", seed=0, frames=False):
     meta = {"schema":"r2p_trace/1","task":task,"task_name":task["name"],"source":source,
             "player":"fixture","level":task["name"],"seed":seed,"scene":scene,"success":True,
             "fail_reason":None,"commands":[[0,3/30,commands(task)[0]]],"rig":"so101_bench"}
-    ticks = [{"t":i/30,"q":[0,-.3,.4,-.1,0,.5],"q_target":[0,-.3,.4,-.1,0,.5],
+    ticks = [{"t":i/30,"q":[0,-.3,.4,-.1,0,.5],"q_target":[.1,-.3,.4,-.1,0,.5],
               "poses":copy.deepcopy(poses),"grip_closed":False,"command":commands(task)[0],"phase":"pick"}
              for i in range(3)]
     path = directory / f"episode_{seed}.jsonl"
@@ -44,7 +44,8 @@ def episode(directory, task, *, source="expert", seed=0, frames=False):
     return path
 
 
-def test_two_round_adapters_then_cache_resume(tmp_path, monkeypatch):
+@pytest.mark.parametrize("fitted", [False, True])
+def test_two_round_adapters_then_cache_resume(tmp_path, monkeypatch, fitted):
     import r2p.labeling  # Load the real deterministic labeler before replacing its expensive parent component.
     from r2p.pipeline import stages
     from r2p.pipeline import evaluation
@@ -70,7 +71,9 @@ def test_two_round_adapters_then_cache_resume(tmp_path, monkeypatch):
     gate = {"passed":False,"metrics":{"jaw_rms_mm":3},"thresholds":{"jaw_rms_mm":2},"failures":["jaw_rms_mm"]}
     def fit(attempts, physics, *, heldout, max_nfev):
         calls["fits"].append((attempts,heldout))
-        return {"physics":physics,"gate":gate}
+        candidate=copy.deepcopy(physics)
+        candidate["object"]["friction"]=.4
+        return {"physics":candidate,"gate":{**gate,"passed":fitted}}
     module(monkeypatch,"r2p.sysid",validation_gate=lambda attempts,physics:gate,fit_parameters=fit,
            plan_experiments=lambda residuals,q0:[{"execute":False,"reason":"fixture"}])
 
@@ -78,6 +81,11 @@ def test_two_round_adapters_then_cache_resume(tmp_path, monkeypatch):
         calls["data"].append((n,seed))
         return [episode(out_dir,task,seed=seed+i) for i in range(n)]
     module(monkeypatch,"r2p.sim",gen_traces=generate)
+    def collect(task,n,out_dir,workers,physics,seed=0):
+        assert read_json(physics)["object"]["friction"]==.4
+        return generate(task,n,out_dir,workers,seed=seed)
+    from r2p.pipeline import collection
+    monkeypatch.setattr(collection,"collect",collect)
     module(monkeypatch,"r2p.synthbench",World=lambda:None)
     module(monkeypatch,"r2p.policy.train")
     monkeypatch.setattr(stages,"validate_lease",lambda *a,**kw:{"LANDLORD_LEASE_ID":"fixture-lease"})
@@ -115,9 +123,19 @@ def test_two_round_adapters_then_cache_resume(tmp_path, monkeypatch):
     assert calls["evals"][0]["noise"]==["clean","real"]
     assert pipeline.result("r2","train")["incumbent"]==pipeline.result("r1","gate")["selected"]
     assert read_json(pipeline.result("r1","twin")["live"])["session_kind"]=="synthetic"
+    from r2p.traces import read_trace
+    _,ticks=read_trace(next(Path(pipeline.result("r1","label")["traces"]).glob("*.jsonl")))
+    assert ticks[0]["q_target"][0]==.1 and ticks[0]["q"][0]==0
+    assert read_json(pipeline.result("r2","close")["physics"])["object"]["friction"]==(.4 if fitted else .6)
     before=copy.deepcopy(calls)
     assert Pipeline(options,emit=lambda _:None).run()
     assert calls==before
+    from dataclasses import replace
+    old_session=pipeline.result("r2","deploy")["session"]
+    forced=Pipeline(replace(options,force=("r2:deploy",)),emit=lambda _:None)
+    assert forced.run()
+    assert len(calls["commands"])==len(before["commands"])+1
+    assert forced.result("r2","deploy")["session"]!=old_session
 
 
 def test_instruction_uses_video_source_and_owned_inference_output(tmp_path, monkeypatch):

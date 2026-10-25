@@ -93,7 +93,7 @@ class DashboardData:
                    "path": str(path.relative_to(self.root))}
             self.trace_cache[path] = (stamp, row)
             return row
-        except (OSError, ValueError, KeyError, StopIteration):
+        except (OSError, ValueError, KeyError, StopIteration, TypeError, AttributeError):
             return None
 
     def real(self):
@@ -235,6 +235,8 @@ class DashboardData:
         if isinstance(scaling, dict):
             scaling = scaling.get("points", scaling.get("runs", []))
         for row in scaling if isinstance(scaling, list) else []:
+            if not isinstance(row, dict):
+                continue
             n = row.get("episodes", row.get("n", row.get("traces")))
             clean = ratio(row.get("clean", row.get("success_rate")))
             if finite(n) and n >= 0 and clean is not None:
@@ -268,7 +270,9 @@ class DashboardData:
     def snapshot(self):
         if self.mock:
             from .mock import snapshot
-            return snapshot()
+            state = snapshot()
+            state["game"]["url"] = self.config.get("game_url")
+            return state
         real = self.real()
         return {"mock": False, "updated": time.time(), "real": real, "twin": self.twin(), "game": self.game(),
                 "policy": self.policy(), "ttt": self.ttt(), "runs": self.runs()}

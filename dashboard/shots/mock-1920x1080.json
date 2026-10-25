@@ -1,7 +1,7 @@
 {
   "url": "http://127.0.0.1:8800",
   "screenshot": "C:\\Users\\sarta\\real2play\\dashboard\\shots\\mock-1920x1080.png",
-  "wall_clock_wait_s": 3,
+  "wall_clock_wait_s": 5.7,
   "virtual_time": false,
   "metrics": {
     "width": 1920,
@@ -14,7 +14,9 @@
       "GAME",
       "POLICY"
     ],
-    "mock": "true"
+    "mock": "true",
+    "image_badge": "REAL",
+    "dominant_image": "REAL twin evidence"
   },
   "javascript_errors": []
 }

@@ -150,6 +150,30 @@ def test_model_changes_invalidate_cache(tmp_path):
     assert len(fake.calls) == len(STAGES)
 
 
+def test_no_cascade_does_not_ignore_changed_models(tmp_path):
+    fake = FakeStages()
+    assert pipeline(tmp_path, fake).run()
+    fake.calls.clear()
+    assert pipeline(tmp_path, fake, main_model="changed", force=("r1:data",), no_cascade=True).run()
+    assert len(fake.calls) == len(STAGES)
+
+
+def test_blocked_retry_preserves_generation_and_force_advances_it(tmp_path):
+    fake = FakeStages(fail="deploy")
+    p = pipeline(tmp_path, fake)
+    assert not p.run()
+    first=p.manifest["rounds"]["r1"]["stages"]["deploy"]
+    assert first["generation"]==1
+    fake.fail=None
+    resumed=pipeline(tmp_path,fake)
+    assert resumed.run()
+    row=resumed.manifest["rounds"]["r1"]["stages"]["deploy"]
+    assert row["generation"]==1 and row["attempt"]==2
+    forced=pipeline(tmp_path,fake,force=("r1:deploy",))
+    assert forced.run()
+    assert forced.manifest["rounds"]["r1"]["stages"]["deploy"]["generation"]==2
+
+
 @pytest.mark.parametrize("exception_name", ["CacheMiss", "QuotaError", "ModuleNotFoundError"])
 def test_blocked_error_paths_redact_key(tmp_path, monkeypatch, exception_name):
     monkeypatch.setenv("GEMINI_API_KEY", "never-print-this-test-key")

@@ -5,7 +5,7 @@ import json
 import os
 from pathlib import Path
 
-from .pipeline import Pipeline, RunOptions
+from .pipeline import Pipeline, RunOptions, STAGES
 from .pipeline.storage import read_json
 
 
@@ -66,7 +66,10 @@ def main(argv=None):
                 label = "SIM DRY RUN" if manifest.get("synthetic") else manifest.get("mode", "plan").upper()
                 print(f"{manifest.get('run', manifest['task'])} [{label}] {manifest.get('status', 'UNKNOWN')}")
                 for name, row in manifest.get("rounds", {}).items():
-                    for stage, detail in row.get("stages", {}).items():
+                    for stage in STAGES:
+                        detail = row.get("stages", {}).get(stage)
+                        if not detail:
+                            continue
                         print(f"  {name}:{stage} {detail['status']} {detail.get('message', '')}")
         return 0
     values = vars(args).copy()

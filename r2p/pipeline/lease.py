@@ -2,6 +2,7 @@
 
 from datetime import datetime, timezone
 import json
+import math
 import urllib.request
 
 from .engine import Blocked
@@ -29,11 +30,16 @@ def _records(value):
             yield from _records(child)
 
 
-def _future(value):
+def _future(value, server_time=None):
     if isinstance(value, (int, float)):
         return value > datetime.now(timezone.utc).timestamp()
     try:
         when = datetime.fromisoformat(str(value).replace("Z", "+00:00"))
+        if when.tzinfo is None and server_time is not None:
+            # Landlord formats both time and expires_time in its local clock without
+            # an offset. Compare those together, never to the launch machine's timezone.
+            reference = datetime.fromisoformat(str(server_time).replace("Z", "+00:00"))
+            return reference.tzinfo is None and when > reference
         return when.tzinfo is not None and when > datetime.now(timezone.utc)
     except ValueError:
         return False
@@ -42,13 +48,33 @@ def _future(value):
 def validate_lease(path, *, task, round_name, fetch=None):
     hint = lease_step(task, round_name)
     try:
-        lease = read_json(path)
+        receipt = read_json(path)
     except (OSError, ValueError) as exc:
         raise Blocked(hint) from exc
-    lease = lease.get("lease", lease)
+    # Both a bare receipt and the MCP's whole structured result are accepted.
+    if not isinstance(receipt, dict):
+        raise Blocked("Invalid landlord receipt; expected a JSON object. " + hint)
+    receipt = receipt.get("structuredContent", receipt)
+    if not isinstance(receipt, dict):
+        raise Blocked("Invalid landlord structured receipt. " + hint)
+    if isinstance(receipt.get("result"), dict):
+        receipt = receipt["result"]
+    if "content" in receipt and "lease_id" not in receipt and "lease" not in receipt:
+        for block in receipt["content"]:
+            if block.get("type") == "text":
+                try:
+                    receipt = json.loads(block["text"])
+                    break
+                except (ValueError, KeyError):
+                    continue
+    if not isinstance(receipt, dict):
+        raise Blocked("Invalid landlord receipt content. " + hint)
+    lease = receipt.get("lease", receipt)
+    if not isinstance(lease, dict):
+        raise Blocked("Invalid lease object. " + hint)
     lease_id = lease.get("lease_id", lease.get("id"))
-    env = lease.get("env", {})
-    if not lease_id or str(env.get("LANDLORD_LEASE_ID")) != str(lease_id):
+    env = receipt.get("env", lease.get("env", {}))
+    if not isinstance(env, dict) or not lease_id or str(env.get("LANDLORD_LEASE_ID")) != str(lease_id):
         raise Blocked("Lease file must contain landlord's matching LANDLORD_LEASE_ID env. " + hint)
     if not env.get("CUDA_VISIBLE_DEVICES"):
         raise Blocked("Lease is missing landlord's CUDA_VISIBLE_DEVICES. " + hint)
@@ -63,16 +89,20 @@ def validate_lease(path, *, task, round_name, fetch=None):
     active = None
     for row in _records(ledger):
         if str(row.get("lease_id", row.get("id", ""))) == str(lease_id):
-            expiry = row.get("expires_at", row.get("expires", row.get("expiry")))
-            if row.get("status", "active") in {"active", "rented"} and _future(expiry):
+            expiry = row.get("expires_time", row.get("expires_at", row.get("expires", row.get("expiry"))))
+            remaining = row.get("minutes_left")
+            future = (math.isfinite(remaining) and remaining > 0) if isinstance(remaining, (int, float)) else _future(
+                expiry, ledger.get("time") if isinstance(ledger, dict) else None)
+            if row.get("status", "active") in {"active", "rented"} and future:
                 active = row
                 break
     if active is None:
         raise Blocked(f"Landlord lease {lease_id} is absent, inactive or expired. " + hint)
     vram = active.get("vram_gb", lease.get("vram_gb"))
-    if not isinstance(vram, (int, float)) or vram <= 0:
+    if not isinstance(vram, (int, float)) or not math.isfinite(vram) or vram <= 0:
         raise Blocked("Lease has no positive VRAM cap; request a complete rent_apartment receipt. " + hint)
     # Do not copy arbitrary receipt environment into the process (e.g. PYTHONPATH).
+    env = {**env, **active.get("env", {})}
     allowed = {key: str(value) for key, value in env.items()
                if key.startswith("LANDLORD_") or key in {"CUDA_VISIBLE_DEVICES", "CUDA_MPS_ACTIVE_THREAD_PERCENTAGE"}}
     allowed["R2P_LEASE_VRAM_GB"] = str(vram)

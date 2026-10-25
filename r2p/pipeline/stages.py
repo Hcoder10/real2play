@@ -97,6 +97,10 @@ class ComponentStages:
         path.mkdir(parents=True, exist_ok=True)
         return path
 
+    def attempt_folder(self, round_name, stage):
+        row = self.p.manifest.get("rounds", {}).get(round_name, {}).get("stages", {}).get(stage, {})
+        return self.folder(round_name, stage) / "attempts" / f"generation_{row.get('generation', 1):03d}"
+
     def write(self, path, value):
         atomic_json(path, value)
         return self.p.artifact(path)
@@ -117,7 +121,7 @@ class ComponentStages:
         if stage in {"close", "data", "eval"}:
             files.append(self.root / "config/physics/so101_bench.json")
         if stage in {"eval", "gate", "deploy"}:
-            for role in ("incumbent", "export"):
+            for role in ("incumbent",):
                 value = self.p.result(round_name, "train").get(role)
                 if value:
                     files.extend(self.path(value).glob("*"))
@@ -178,7 +182,8 @@ class ComponentStages:
     def recorded_session(self, folder):
         candidates = sorted(folder.rglob("*.jsonl"))
         for trace in candidates:
-            if trace_meta(trace).get("schema") == "r2p_trace/1" and (trace.parent / "frames").is_dir():
+            if (trace_meta(trace).get("schema") == "r2p_trace/1" and
+                    any((trace.parent / "frames").glob("*.jpg"))):
                 return trace.parent
         raise Blocked(f"No recorded r2p_trace/1 session with frames in {folder}; run the printed bench command")
 
@@ -196,7 +201,7 @@ class ComponentStages:
             if not session.exists():
                 raise Blocked(f"Recorded session does not exist: {session}")
         else:
-            out = folder / "attempt"
+            out = self.attempt_folder(name, "session")
             try:
                 session = self.recorded_session(out)
             except Blocked:
@@ -226,7 +231,12 @@ class ComponentStages:
         session = self.p.result(name, "session")
         function = entrypoint([("r2p.real2sim", "run_twin"), ("r2p.real2sim.loop", "run_twin"),
                                ("r2p.real2sim", "run")])
-        result = invoke(function, source=Path(session["session"]), session=Path(session["session"]), task=self.task(name),
+        source = Path(session["session"])
+        loader = getattr(dependency("r2p.real2sim"), "load_session", None)
+        if session["synthetic"] and callable(loader):
+            source = loader(source)
+            source.meta = {**source.meta, "session_kind": "synthetic"}
+        result = invoke(function, source=source, session=source, task=self.task(name),
                         out_dir=folder, out=folder, run_dir=folder, max_iters=self.o.twin_iters,
                         iterations=self.o.twin_iters, synthetic=session["synthetic"])
         # Require actual scene evidence, not merely a successful exit code.
@@ -436,7 +446,7 @@ class ComponentStages:
     def deploy(self, name):
         folder = self.folder(name, "deploy")
         selected = self.p.result(name, "gate")["selected"]
-        out = folder / "attempt"
+        out = self.attempt_folder(name, "deploy")
         argv = self.bench_command(selected, self.p.result(name, "session")["task_file"], out, self.o.mode == "dry-run")
         try:
             session = self.recorded_session(out)

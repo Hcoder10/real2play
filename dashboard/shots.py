@@ -169,6 +169,8 @@ def capture(url, out, *, width=1920, height=1080, wait=3, browser=None, cdp_url=
         client.evaluate("document.fonts.ready.then(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))))", await_promise=True)
         time.sleep(max(0, wait))  # actual wall-clock paint time, not virtual-time emulation
         metrics = client.evaluate("({width:innerWidth,height:innerHeight,scrollWidth:document.documentElement.scrollWidth,scrollHeight:document.documentElement.scrollHeight,panels:[...document.querySelectorAll('.panel-heading h1')].map(e=>e.textContent),mock:document.body.dataset.mock})")
+        metrics["image_badge"] = client.evaluate("document.getElementById('image-label').textContent")
+        metrics["dominant_image"] = client.evaluate("[...document.querySelectorAll('.slide')].sort((a,b)=>Number(getComputedStyle(b).opacity)-Number(getComputedStyle(a).opacity))[0]?.getAttribute('aria-label')")
         result = client.call("Page.captureScreenshot", format="png", captureBeyondViewport=False, fromSurface=True)
         out = Path(out)
         out.parent.mkdir(parents=True, exist_ok=True)
@@ -194,6 +196,9 @@ def capture(url, out, *, width=1920, height=1080, wait=3, browser=None, cdp_url=
                 process.terminate()  # Only the isolated process started above.
                 process.wait(timeout=5)
         if profile:
+            resolved = Path(profile.name).resolve()
+            if resolved.parent != Path(tempfile.gettempdir()).resolve() or not resolved.name.startswith("real2play-shots-"):
+                raise RuntimeError("Refusing to remove an unexpected browser profile directory")
             # Windows browser children can briefly hold profile handles after Browser.close.
             for attempt in range(10):
                 try:
