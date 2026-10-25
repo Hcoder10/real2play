@@ -8,3 +8,4 @@ cache/
 MUJOCO_LOG.TXT
 exports/*/weights.npz
 roblox/*.rbxl.lock
+.env

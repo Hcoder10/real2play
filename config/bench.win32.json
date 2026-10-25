@@ -1,0 +1,30 @@
+{
+ "note": "Windows laptop bench (Oct 25): arm on COM3, phone scene camera over Wi-Fi (scripts/lead/phonecam.py).",
+ "robot": {
+  "port": "COM3",
+  "id": "follower_1",
+  "calibration_dir": "C:/Users/sarta/ego16-storage/lerobot_calibration/robots/so_follower"
+ },
+ "camera": {
+  "source": "http",
+  "url": "http://127.0.0.1:8792/frame/{index}.jpg",
+  "index": 0,
+  "width": 960,
+  "height": 540,
+  "calibration": "config/camera.json"
+ },
+ "board": {
+  "dictionary": "DICT_4X4_50",
+  "grid": [
+   4,
+   3
+  ],
+  "marker_length_m": 0.04,
+  "separation_m": 0.01,
+  "base_front_x_m": 0.0478,
+  "dist_from_base_front_m": null,
+  "dist_from_base_front_right_m": null,
+  "left_edge_y_m": null,
+  "board_z_m": 0.002
+ }
+}
