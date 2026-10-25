@@ -30,8 +30,8 @@ class Expert:
         self.deployment = None
         self.close_grip, self.release_grip = -.12, .5
         if deployment is not None:
-            from .bench import load_profile
-            self.deployment = load_profile(deployment)
+            from .bench import contact_profile
+            self.deployment = contact_profile(deployment)
             self.arm.range = np.asarray(self.deployment["model_limits"], float)
             self.ik = JawIK(self.arm, roll=self.deployment["roll_rad"])
             self.close_grip = self.deployment["gripper_close_rad"]
@@ -50,6 +50,7 @@ class Expert:
     def _bind(self, twin):
         self.twin = twin
         self.qplan = twin.q()
+        self.nominal_command = twin.commanded_q.copy()
         self.start_q = self.qplan.copy()
         if self.deployment and not np.allclose(self.start_q, self.deployment["start_q"], atol=1e-5):
             raise ValueError("bench twin must start at the profile start_q")
@@ -57,13 +58,32 @@ class Expert:
         self.goal_xyz = self.arm.tips(twin.q())[2]
         self.yaw = None
 
+    def _gripper_open(self):
+        if self.deployment:
+            threshold = self.deployment["gripper_open_threshold_rad"]
+            return bool(self.twin.q()[5] > threshold and self.twin.commanded_q[5] > threshold)
+        return not self.twin.grip_closed()
+
     def _tick(self, label):
         label = np.clip(np.asarray(label, float), *self.arm.range.T)
         if self.deployment:
             label[4] = self.deployment["roll_rad"]
+            # The profile's close angle is a travel endpoint, not a contact
+            # position. Driving a stalled cap all the way there saturates the
+            # 0.8 Nm actuator and rolls it out of these asymmetric finger pads.
+            # Bound the position-servo effort while retaining physical contact.
+            if label[5] < self.release_grip - .01:
+                kp = self.twin.physics["joints"]["gripper"]["kp"]
+                effort = self.deployment["expert_control"]["gripper_hold_torque_nm"]
+                label[5] = max(label[5], self.twin.q()[5] - effort / kp)
+            step = self.deployment["joint_step_rad"]
+            previous = self.twin.commanded_q[5]
+            label[5] = previous + np.clip(label[5] - previous, -step, step)
+            label[5] = np.clip(label[5], *self.arm.range[5])
+        self.nominal_command = label.copy()
         q_before = self.twin.q()
         poses_before = self.twin.poses()
-        closed_before = bool(self.twin.grip_closed())
+        closed_before = not self._gripper_open()
         q_input = self.twin.commanded_q.copy()
         if np.max(np.abs(q_input-q_before)) > np.deg2rad(4):
             q_input = q_before.copy()
@@ -71,11 +91,19 @@ class Expert:
         if self.dart:
             executed[:5] += self.rng.normal(0, self.dart, 5)
         executed = np.clip(executed, *self.arm.range.T)
+        if self.deployment:
+            # DART is an executed-target disturbance. The bench still applies
+            # its rate guard; otherwise .01 rad noise bypasses the .0023 rad
+            # step and the resulting contacts do not represent this profile.
+            previous = self.twin.commanded_q
+            step = self.deployment["joint_step_rad"]
+            executed = previous + np.clip(executed-previous, -step, step)
+            executed[4] = self.deployment["roll_rad"]
         self.twin.step(executed)
         self.ticks.append({"t": len(self.ticks)/HZ, "q": q_before.tolist(), "q_commanded": q_input.tolist(),
                            "q_target": label.tolist(), "q_exec": executed.tolist(), "poses": poses_before,
                            "grip_closed": closed_before, "command": self.command, "phase": self.phase})
-        self.states.append({"objects": self.twin.poses(), "gripper_open": not self.twin.grip_closed(),
+        self.states.append({"objects": self.twin.poses(), "gripper_open": self._gripper_open(),
                             "site_xyz": self.arm.tips(self.twin.q())[2].tolist(), "initial": self.initial})
 
     def _servo(self, xyz, grip, yaw=None):
@@ -93,7 +121,10 @@ class Expert:
         J = self.arm.jac_tip(measured)[0]
         correction = J.T @ np.linalg.solve(J@J.T + 0.0001*np.eye(3), np.clip(predicted-actual, -.005, .005))
         label[:5] += .35 * correction
-        previous = self.twin.commanded_q
+        # The planned path must advance independently of DART. Anchoring each
+        # small nominal step to the disturbed execution attenuates its speed
+        # toward zero when noise is larger than the bench's rate allowance.
+        previous = self.nominal_command if self.deployment else self.twin.commanded_q
         step = self.deployment["joint_step_rad"] if self.deployment else .075
         label[:5] = previous[:5] + np.clip(label[:5]-previous[:5], -step, step)
         if self.deployment:
@@ -124,8 +155,35 @@ class Expert:
 
     def _hold(self, ticks, grip, phase):
         self.phase = phase
+        if self.deployment and phase in ("close", "recovery_close", "release"):
+            # There is one fixed jaw. Holding the fingertip midpoint while the
+            # hinge moves sweeps that jaw through the cap, especially on release.
+            # Hold the arm targets instead, then rebase FK on the new opening.
+            label = self.nominal_command.copy()
+            travel = abs(grip - label[5]) / self.deployment["joint_step_rad"]
+            label[5] = grip
+            for _ in range(max(ticks, int(np.ceil(travel)) + 30)):
+                self._tick(label)
+            self.qplan = self.twin.q()
+            self.goal_xyz = self.arm.tips(self.qplan)[2].copy()
+            return
         for _ in range(ticks):
             self._servo(self.goal_xyz, grip, self.yaw)
+
+    def _carry_height(self, xy, preferred):
+        """Highest reachable bench carry height with the measured grasp opening.
+
+        The calibrated wrist-flex stop makes 50 mm unreachable at near-row cells.
+        Do not spend a whole carry commanding that unreachable Cartesian pose.
+        The final placement still uses the observed cap-to-jaw offset below.
+        """
+        grip = self.twin.q()[5]
+        for height in np.arange(preferred, .011, -.002):
+            target = np.r_[xy, height]
+            q = self.ik.solve(target, self.qplan, grip=grip, iterations=120)
+            if np.linalg.norm(self.arm.tips(q)[2] - target) < .002:
+                return float(height)
+        return preferred
 
     def _grasp_yaw(self, obj):
         if self.deployment:
@@ -155,7 +213,11 @@ class Expert:
             safe = max(.09, pos[2]+.06)
             if self.deployment:
                 safe = self.deployment["travel_height_m"]
-                low = max(.009, pos[2]-dims[2]/2+.009)
+                # FK reports the bottom tips, whereas contact pads extend 16 mm
+                # upward. A 9 mm tip height pinches a 14-20 mm cap above its
+                # centre and lets it tip out during the slow bench carry.
+                tip_height = self.deployment["expert_control"]["grasp_tip_height_m"]
+                low = max(tip_height, pos[2]-dims[2]/2+tip_height)
             current = self.arm.tips(self.twin.q())[2]
             if current[2] < safe-.01:
                 self.move([*current[:2], safe], open_grip, yaw, phase="approach_up")
@@ -210,7 +272,9 @@ class Expert:
         safe = max(.09, surface+.065)
         if self.deployment:
             safe = self.deployment["travel_height_m"]
-        self.move([*(dest[:2]-offset[:2]), safe], self.close_grip, yaw, speed=.065, settle=25, phase="carry")
+        carry_xy = dest[:2]-offset[:2]
+        carry_height = self._carry_height(carry_xy, safe) if self.deployment else safe
+        self.move([*carry_xy, carry_height], self.close_grip, yaw, speed=.065, settle=25, phase="carry")
         # Measure the grasp after rotating, so the held object, not the jaw, is centred.
         current = np.asarray(self.twin.poses()[obj]["xyz"])
         mid = self.arm.tips(self.twin.q())[2]
@@ -272,7 +336,7 @@ class Expert:
     def home(self):
         current = self.arm.tips(self.twin.q())[2]
         self.move([*current[:2], max(.05 if self.deployment else .1, current[2])], self.release_grip, self.yaw, phase="home_up")
-        start = self.twin.commanded_q.copy()
+        start = (self.nominal_command if self.deployment else self.twin.commanded_q).copy()
         self.phase = "home"
         target = self.ik.compensate(self.start_q if self.deployment else HOME_Q, self.twin.physics)
         ticks = max(60, int(np.ceil(np.max(np.abs(target-start))/self.deployment["joint_step_rad"]))) if self.deployment else 60

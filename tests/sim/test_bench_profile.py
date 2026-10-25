@@ -49,3 +49,45 @@ def test_locked_roll_profile_cannot_silently_train_rectangular_grasps():
     profile = load_profile(ROOT/"scripts/robot/K_BENCH_PROFILE.json")
     with pytest.raises(ValueError, match="round caps"):
         Expert("cube_in_bowl", deployment=profile)
+
+
+@pytest.mark.parametrize("seed,dart", [(0, 0), (3, 0), (24, 0), (0, .01)])
+def test_profile_expert_physically_places_caps_including_near_row(seed, dart):
+    from r2p.policy.data import trace_commands
+
+    profile = load_profile(ROOT/"scripts/robot/K_BENCH_PROFILE.json")
+    expert = Expert("place_on_cell", deployment=profile, dart=dart)
+    scene = sample_scene(expert.task, np.random.default_rng(seed))
+    with TaskTwin(scene, q0=profile["start_q"]) as twin:
+        result = expert.run(twin, seed=seed)
+        assert result["meta"]["success"], result["meta"]["fail_reason"]
+        assert twin.m.neq == 0
+        np.testing.assert_array_equal(twin.d.qfrc_applied, 0)
+        targets = np.asarray([row["q_target"] for row in result["ticks"]])
+        steps = np.diff(np.vstack([profile["start_q"], targets]), axis=0)
+        assert np.abs(steps).max() <= profile["joint_step_rad"] + 1e-9
+        carry = [row for row in result["ticks"] if row["phase"] == "carry"]
+        assert carry
+        # The cap must actually rise, and stop the physical hinge from closing.
+        assert carry[0]["poses"]["piece"]["xyz"][2] > .035
+        assert carry[0]["q"][5] > profile["gripper_close_rad"] + .05
+        assert carry[0]["grip_closed"]
+        # Force-limited commands must still advance the existing training and
+        # inference scheduler, even when a wide cap stalls above half-stroke.
+        aligned = trace_commands(expert.task, result["ticks"], result["meta"],
+                                 {"command_alignment": "state_tracker"})
+        assert "place_at(piece,cell)" in aligned and "home" in aligned
+        assert profile["gripper_open_threshold_rad"] == pytest.approx(.20297)
+
+
+def test_profile_dart_preserves_locked_roll_in_executed_commands():
+    profile = load_profile(ROOT/"scripts/robot/K_BENCH_PROFILE.json")
+    expert = Expert("place_on_cell", deployment=profile, dart=.01)
+    scene = sample_scene(expert.task, np.random.default_rng(0))
+    with TaskTwin(scene, q0=profile["start_q"]) as twin:
+        expert._bind(twin)
+        expert._tick(profile["start_q"])
+        row = expert.ticks[-1]
+        assert row["q_exec"][4] == row["q_target"][4] == profile["roll_rad"]
+        assert row["q_exec"][:4] != row["q_target"][:4]
+        assert np.max(np.abs(np.asarray(row["q_exec"])-profile["start_q"])) <= profile["joint_step_rad"]+1e-9

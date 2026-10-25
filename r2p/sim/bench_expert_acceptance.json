@@ -1,0 +1,3111 @@
+{
+  "task": "place_on_cell",
+  "n": 64,
+  "seed": 0,
+  "workers": 2,
+  "dart_std_rad": 0.0,
+  "successes": 63,
+  "success": 0.984375,
+  "failures": {
+    "goal_not_met": 1
+  },
+  "median_placement_mm": 1.2288071702838754,
+  "seconds": 91.33730489999289,
+  "episodes": [
+    {
+      "seed": 0,
+      "success": true,
+      "fail_reason": null,
+      "placement_mm": [
+        1.8045138060547623
+      ],
+      "ticks": 2746,
+      "max_target_step_rad": 0.002327105669325813,
+      "max_executed_step_rad": 0.002327105669325813,
+      "max_limit_violation_rad": 0.0,
+      "max_roll_error_rad": 0.0
+    },
+    {
+      "seed": 1,
+      "success": true,
+      "fail_reason": null,
+      "placement_mm": [
+        0.792295818411972
+      ],
+      "ticks": 2370,
+      "max_target_step_rad": 0.002327105669325813,
+      "max_executed_step_rad": 0.002327105669325813,
+      "max_limit_violation_rad": 0.0,
+      "max_roll_error_rad": 0.0
+    },
+    {
+      "seed": 2,
+      "success": true,
+      "fail_reason": null,
+      "placement_mm": [
+        1.0135614159782806
+      ],
+      "ticks": 2359,
+      "max_target_step_rad": 0.002327105669325813,
+      "max_executed_step_rad": 0.002327105669325813,
+      "max_limit_violation_rad": 0.0,
+      "max_roll_error_rad": 0.0
+    },
+    {
+      "seed": 3,
+      "success": true,
+      "fail_reason": null,
+      "placement_mm": [
+        3.808922697809014
+      ],
+      "ticks": 3000,
+      "max_target_step_rad": 0.002327105669325813,
+      "max_executed_step_rad": 0.002327105669325813,
+      "max_limit_violation_rad": 0.0,
+      "max_roll_error_rad": 0.0
+    },
+    {
+      "seed": 4,
+      "success": true,
+      "fail_reason": null,
+      "placement_mm": [
+        1.9634889286473294
+      ],
+      "ticks": 2583,
+      "max_target_step_rad": 0.002327105669325813,
+      "max_executed_step_rad": 0.002327105669325813,
+      "max_limit_violation_rad": 0.0,
+      "max_roll_error_rad": 0.0
+    },
+    {
+      "seed": 5,
+      "success": true,
+      "fail_reason": null,
+      "placement_mm": [
+        0.9110360713187103
+      ],
+      "ticks": 2220,
+      "max_target_step_rad": 0.002327105669325813,
+      "max_executed_step_rad": 0.002327105669325813,
+      "max_limit_violation_rad": 0.0,
+      "max_roll_error_rad": 0.0
+    },
+    {
+      "seed": 6,
+      "success": true,
+      "fail_reason": null,
+      "placement_mm": [
+        0.8262467231762141
+      ],
+      "ticks": 2672,
+      "max_target_step_rad": 0.002327105669325813,
+      "max_executed_step_rad": 0.002327105669325813,
+      "max_limit_violation_rad": 0.0,
+      "max_roll_error_rad": 0.0
+    },
+    {
+      "seed": 7,
+      "success": true,
+      "fail_reason": null,
+      "placement_mm": [
+        1.7354816750436666
+      ],
+      "ticks": 2604,
+      "max_target_step_rad": 0.002327105669325813,
+      "max_executed_step_rad": 0.002327105669325813,
+      "max_limit_violation_rad": 0.0,
+      "max_roll_error_rad": 0.0
+    },
+    {
+      "seed": 8,
+      "success": true,
+      "fail_reason": null,
+      "placement_mm": [
+        0.6402101954914001
+      ],
+      "ticks": 3004,
+      "max_target_step_rad": 0.002327105669325813,
+      "max_executed_step_rad": 0.002327105669325813,
+      "max_limit_violation_rad": 0.0,
+      "max_roll_error_rad": 0.0
+    },
+    {
+      "seed": 9,
+      "success": true,
+      "fail_reason": null,
+      "placement_mm": [
+        1.6616963839340235
+      ],
+      "ticks": 2655,
+      "max_target_step_rad": 0.002327105669325813,
+      "max_executed_step_rad": 0.002327105669325813,
+      "max_limit_violation_rad": 0.0,
+      "max_roll_error_rad": 0.0
+    },
+    {
+      "seed": 10,
+      "success": true,
+      "fail_reason": null,
+      "placement_mm": [
+        1.7618658872049089
+      ],
+      "ticks": 2752,
+      "max_target_step_rad": 0.002327105669325813,
+      "max_executed_step_rad": 0.002327105669325813,
+      "max_limit_violation_rad": 0.0,
+      "max_roll_error_rad": 0.0
+    },
+    {
+      "seed": 11,
+      "success": true,
+      "fail_reason": null,
+      "placement_mm": [
+        0.6244785628479966
+      ],
+      "ticks": 2801,
+      "max_target_step_rad": 0.002327105669325813,
+      "max_executed_step_rad": 0.002327105669325813,
+      "max_limit_violation_rad": 0.0,
+      "max_roll_error_rad": 0.0
+    },
+    {
+      "seed": 12,
+      "success": true,
+      "fail_reason": null,
+      "placement_mm": [
+        0.7595304483444106
+      ],
+      "ticks": 2846,
+      "max_target_step_rad": 0.002327105669325813,
+      "max_executed_step_rad": 0.002327105669325813,
+      "max_limit_violation_rad": 0.0,
+      "max_roll_error_rad": 0.0
+    },
+    {
+      "seed": 13,
+      "success": true,
+      "fail_reason": null,
+      "placement_mm": [
+        0.2898071836402424
+      ],
+      "ticks": 2617,
+      "max_target_step_rad": 0.002327105669325813,
+      "max_executed_step_rad": 0.002327105669325813,
+      "max_limit_violation_rad": 0.0,
+      "max_roll_error_rad": 0.0
+    },
+    {
+      "seed": 14,
+      "success": true,
+      "fail_reason": null,
+      "placement_mm": [
+        1.9213188940541022
+      ],
+      "ticks": 2202,
+      "max_target_step_rad": 0.002327105669325813,
+      "max_executed_step_rad": 0.002327105669325813,
+      "max_limit_violation_rad": 0.0,
+      "max_roll_error_rad": 0.0
+    },
+    {
+      "seed": 15,
+      "success": true,
+      "fail_reason": null,
+      "placement_mm": [
+        1.3324076660614594
+      ],
+      "ticks": 2543,
+      "max_target_step_rad": 0.002327105669325813,
+      "max_executed_step_rad": 0.002327105669325813,
+      "max_limit_violation_rad": 0.0,
+      "max_roll_error_rad": 0.0
+    },
+    {
+      "seed": 16,
+      "success": true,
+      "fail_reason": null,
+      "placement_mm": [
+        0.9574028538422265
+      ],
+      "ticks": 2236,
+      "max_target_step_rad": 0.002327105669325813,
+      "max_executed_step_rad": 0.002327105669325813,
+      "max_limit_violation_rad": 0.0,
+      "max_roll_error_rad": 0.0
+    },
+    {
+      "seed": 17,
+      "success": true,
+      "fail_reason": null,
+      "placement_mm": [
+        0.9526814412373533
+      ],
+      "ticks": 2023,
+      "max_target_step_rad": 0.002327105669325813,
+      "max_executed_step_rad": 0.002327105669325813,
+      "max_limit_violation_rad": 0.0,
+      "max_roll_error_rad": 0.0
+    },
+    {
+      "seed": 18,
+      "success": true,
+      "fail_reason": null,
+      "placement_mm": [
+        1.8185925243679828
+      ],
+      "ticks": 2919,
+      "max_target_step_rad": 0.002327105669325813,
+      "max_executed_step_rad": 0.002327105669325813,
+      "max_limit_violation_rad": 0.0,
+      "max_roll_error_rad": 0.0
+    },
+    {
+      "seed": 19,
+      "success": true,
+      "fail_reason": null,
+      "placement_mm": [
+        1.7281366481841298
+      ],
+      "ticks": 2634,
+      "max_target_step_rad": 0.002327105669325813,
+      "max_executed_step_rad": 0.002327105669325813,
+      "max_limit_violation_rad": 0.0,
+      "max_roll_error_rad": 0.0
+    },
+    {
+      "seed": 20,
+      "success": true,
+      "fail_reason": null,
+      "placement_mm": [
+        1.8217382453812425
+      ],
+      "ticks": 2762,
+      "max_target_step_rad": 0.002327105669325813,
+      "max_executed_step_rad": 0.002327105669325813,
+      "max_limit_violation_rad": 0.0,
+      "max_roll_error_rad": 0.0
+    },
+    {
+      "seed": 21,
+      "success": true,
+      "fail_reason": null,
+      "placement_mm": [
+        2.2451540867931903
+      ],
+      "ticks": 2237,
+      "max_target_step_rad": 0.0023271056693257852,
+      "max_executed_step_rad": 0.0023271056693257852,
+      "max_limit_violation_rad": 0.0,
+      "max_roll_error_rad": 0.0
+    },
+    {
+      "seed": 22,
+      "success": true,
+      "fail_reason": null,
+      "placement_mm": [
+        1.5653453291600337
+      ],
+      "ticks": 2677,
+      "max_target_step_rad": 0.002327105669325813,
+      "max_executed_step_rad": 0.002327105669325813,
+      "max_limit_violation_rad": 0.0,
+      "max_roll_error_rad": 0.0
+    },
+    {
+      "seed": 23,
+      "success": true,
+      "fail_reason": null,
+      "placement_mm": [
+        0.9876540987246523
+      ],
+      "ticks": 2854,
+      "max_target_step_rad": 0.002327105669325813,
+      "max_executed_step_rad": 0.002327105669325813,
+      "max_limit_violation_rad": 0.0,
+      "max_roll_error_rad": 0.0
+    },
+    {
+      "seed": 24,
+      "success": true,
+      "fail_reason": null,
+      "placement_mm": [
+        1.015199880799969
+      ],
+      "ticks": 2468,
+      "max_target_step_rad": 0.002327105669325813,
+      "max_executed_step_rad": 0.002327105669325813,
+      "max_limit_violation_rad": 0.0,
+      "max_roll_error_rad": 0.0
+    },
+    {
+      "seed": 25,
+      "success": true,
+      "fail_reason": null,
+      "placement_mm": [
+        1.1814344964322865
+      ],
+      "ticks": 3243,
+      "max_target_step_rad": 0.002327105669325813,
+      "max_executed_step_rad": 0.002327105669325813,
+      "max_limit_violation_rad": 0.0,
+      "max_roll_error_rad": 0.0
+    },
+    {
+      "seed": 26,
+      "success": true,
+      "fail_reason": null,
+      "placement_mm": [
+        1.1040497019098496
+      ],
+      "ticks": 2846,
+      "max_target_step_rad": 0.002327105669325813,
+      "max_executed_step_rad": 0.002327105669325813,
+      "max_limit_violation_rad": 0.0,
+      "max_roll_error_rad": 0.0
+    },
+    {
+      "seed": 27,
+      "success": true,
+      "fail_reason": null,
+      "placement_mm": [
+        2.04962536242202
+      ],
+      "ticks": 2972,
+      "max_target_step_rad": 0.002327105669325813,
+      "max_executed_step_rad": 0.002327105669325813,
+      "max_limit_violation_rad": 0.0,
+      "max_roll_error_rad": 0.0
+    },
+    {
+      "seed": 28,
+      "success": true,
+      "fail_reason": null,
+      "placement_mm": [
+        0.6618212645807132
+      ],
+      "ticks": 2689,
+      "max_target_step_rad": 0.002327105669325813,
+      "max_executed_step_rad": 0.002327105669325813,
+      "max_limit_violation_rad": 0.0,
+      "max_roll_error_rad": 0.0
+    },
+    {
+      "seed": 29,
+      "success": true,
+      "fail_reason": null,
+      "placement_mm": [
+        1.8608044062752704
+      ],
+      "ticks": 2498,
+      "max_target_step_rad": 0.002327105669325813,
+      "max_executed_step_rad": 0.002327105669325813,
+      "max_limit_violation_rad": 0.0,
+      "max_roll_error_rad": 0.0
+    },
+    {
+      "seed": 30,
+      "success": true,
+      "fail_reason": null,
+      "placement_mm": [
+        1.7236163671115023
+      ],
+      "ticks": 3536,
+      "max_target_step_rad": 0.002327105669325813,
+      "max_executed_step_rad": 0.002327105669325813,
+      "max_limit_violation_rad": 0.0,
+      "max_roll_error_rad": 0.0
+    },
+    {
+      "seed": 31,
+      "success": true,
+      "fail_reason": null,
+      "placement_mm": [
+        1.0715208289139617
+      ],
+      "ticks": 2238,
+      "max_target_step_rad": 0.002327105669325813,
+      "max_executed_step_rad": 0.002327105669325813,
+      "max_limit_violation_rad": 0.0,
+      "max_roll_error_rad": 0.0
+    },
+    {
+      "seed": 32,
+      "success": true,
+      "fail_reason": null,
+      "placement_mm": [
+        1.1357356921525177
+      ],
+      "ticks": 2995,
+      "max_target_step_rad": 0.002327105669325813,
+      "max_executed_step_rad": 0.002327105669325813,
+      "max_limit_violation_rad": 0.0,
+      "max_roll_error_rad": 0.0
+    },
+    {
+      "seed": 33,
+      "success": true,
+      "fail_reason": null,
+      "placement_mm": [
+        1.4886400045740045
+      ],
+      "ticks": 2799,
+      "max_target_step_rad": 0.002327105669325813,
+      "max_executed_step_rad": 0.002327105669325813,
+      "max_limit_violation_rad": 0.0,
+      "max_roll_error_rad": 0.0
+    },
+    {
+      "seed": 34,
+      "success": false,
+      "fail_reason": "goal_not_met",
+      "placement_mm": [
+        13.007067734904869
+      ],
+      "ticks": 3343,
+      "max_target_step_rad": 0.002327105669325813,
+      "max_executed_step_rad": 0.002327105669325813,
+      "max_limit_violation_rad": 0.0,
+      "max_roll_error_rad": 0.0
+    },
+    {
+      "seed": 35,
+      "success": true,
+      "fail_reason": null,
+      "placement_mm": [
+        1.0106300133535935
+      ],
+      "ticks": 3088,
+      "max_target_step_rad": 0.002327105669325813,
+      "max_executed_step_rad": 0.002327105669325813,
+      "max_limit_violation_rad": 0.0,
+      "max_roll_error_rad": 0.0
+    },
+    {
+      "seed": 36,
+      "success": true,
+      "fail_reason": null,
+      "placement_mm": [
+        3.1536127375222307
+      ],
+      "ticks": 3074,
+      "max_target_step_rad": 0.002327105669325813,
+      "max_executed_step_rad": 0.002327105669325813,
+      "max_limit_violation_rad": 0.0,
+      "max_roll_error_rad": 0.0
+    },
+    {
+      "seed": 37,
+      "success": true,
+      "fail_reason": null,
+      "placement_mm": [
+        0.5880365758921512
+      ],
+      "ticks": 2742,
+      "max_target_step_rad": 0.002327105669325813,
+      "max_executed_step_rad": 0.002327105669325813,
+      "max_limit_violation_rad": 0.0,
+      "max_roll_error_rad": 0.0
+    },
+    {
+      "seed": 38,
+      "success": true,
+      "fail_reason": null,
+      "placement_mm": [
+        1.6705644342889994
+      ],
+      "ticks": 2542,
+      "max_target_step_rad": 0.002327105669325813,
+      "max_executed_step_rad": 0.002327105669325813,
+      "max_limit_violation_rad": 0.0,
+      "max_roll_error_rad": 0.0
+    },
+    {
+      "seed": 39,
+      "success": true,
+      "fail_reason": null,
+      "placement_mm": [
+        1.92461704227819
+      ],
+      "ticks": 2817,
+      "max_target_step_rad": 0.002327105669325813,
+      "max_executed_step_rad": 0.002327105669325813,
+      "max_limit_violation_rad": 0.0,
+      "max_roll_error_rad": 0.0
+    },
+    {
+      "seed": 40,
+      "success": true,
+      "fail_reason": null,
+      "placement_mm": [
+        1.4307789450281112
+      ],
+      "ticks": 2535,
+      "max_target_step_rad": 0.0023271056693257852,
+      "max_executed_step_rad": 0.0023271056693257852,
+      "max_limit_violation_rad": 0.0,
+      "max_roll_error_rad": 0.0
+    },
+    {
+      "seed": 41,
+      "success": true,
+      "fail_reason": null,
+      "placement_mm": [
+        2.360947848562294
+      ],
+      "ticks": 2633,
+      "max_target_step_rad": 0.002327105669325813,
+      "max_executed_step_rad": 0.002327105669325813,
+      "max_limit_violation_rad": 0.0,
+      "max_roll_error_rad": 0.0
+    },
+    {
+      "seed": 42,
+      "success": true,
+      "fail_reason": null,
+      "placement_mm": [
+        1.0032506966695784
+      ],
+      "ticks": 2687,
+      "max_target_step_rad": 0.002327105669325813,
+      "max_executed_step_rad": 0.002327105669325813,
+      "max_limit_violation_rad": 0.0,
+      "max_roll_error_rad": 0.0
+    },
+    {
+      "seed": 43,
+      "success": true,
+      "fail_reason": null,
+      "placement_mm": [
+        0.6486689382713214
+      ],
+      "ticks": 2300,
+      "max_target_step_rad": 0.002327105669325813,
+      "max_executed_step_rad": 0.002327105669325813,
+      "max_limit_violation_rad": 0.0,
+      "max_roll_error_rad": 0.0
+    },
+    {
+      "seed": 44,
+      "success": true,
+      "fail_reason": null,
+      "placement_mm": [
+        1.3511574789132408
+      ],
+      "ticks": 3185,
+      "max_target_step_rad": 0.002327105669325813,
+      "max_executed_step_rad": 0.002327105669325813,
+      "max_limit_violation_rad": 0.0,
+      "max_roll_error_rad": 0.0
+    },
+    {
+      "seed": 45,
+      "success": true,
+      "fail_reason": null,
+      "placement_mm": [
+        2.463940725389749
+      ],
+      "ticks": 2392,
+      "max_target_step_rad": 0.002327105669325813,
+      "max_executed_step_rad": 0.002327105669325813,
+      "max_limit_violation_rad": 0.0,
+      "max_roll_error_rad": 0.0
+    },
+    {
+      "seed": 46,
+      "success": true,
+      "fail_reason": null,
+      "placement_mm": [
+        0.27376345811090363
+      ],
+      "ticks": 2199,
+      "max_target_step_rad": 0.002327105669325813,
+      "max_executed_step_rad": 0.002327105669325813,
+      "max_limit_violation_rad": 0.0,
+      "max_roll_error_rad": 0.0
+    },
+    {
+      "seed": 47,
+      "success": true,
+      "fail_reason": null,
+      "placement_mm": [
+        2.1972814771548217
+      ],
+      "ticks": 2528,
+      "max_target_step_rad": 0.0023271056693257852,
+      "max_executed_step_rad": 0.0023271056693257852,
+      "max_limit_violation_rad": 0.0,
+      "max_roll_error_rad": 0.0
+    },
+    {
+      "seed": 48,
+      "success": true,
+      "fail_reason": null,
+      "placement_mm": [
+        0.2549071028717833
+      ],
+      "ticks": 2861,
+      "max_target_step_rad": 0.002327105669325813,
+      "max_executed_step_rad": 0.002327105669325813,
+      "max_limit_violation_rad": 0.0,
+      "max_roll_error_rad": 0.0
+    },
+    {
+      "seed": 49,
+      "success": true,
+      "fail_reason": null,
+      "placement_mm": [
+        2.1499680458574915
+      ],
+      "ticks": 3370,
+      "max_target_step_rad": 0.002327105669325813,
+      "max_executed_step_rad": 0.002327105669325813,
+      "max_limit_violation_rad": 0.0,
+      "max_roll_error_rad": 0.0
+    },
+    {
+      "seed": 50,
+      "success": true,
+      "fail_reason": null,
+      "placement_mm": [
+        0.7537027602354566
+      ],
+      "ticks": 2392,
+      "max_target_step_rad": 0.0023271056693257852,
+      "max_executed_step_rad": 0.0023271056693257852,
+      "max_limit_violation_rad": 0.0,
+      "max_roll_error_rad": 0.0
+    },
+    {
+      "seed": 51,
+      "success": true,
+      "fail_reason": null,
+      "placement_mm": [
+        0.24545389682293403
+      ],
+      "ticks": 2350,
+      "max_target_step_rad": 0.002327105669325813,
+      "max_executed_step_rad": 0.002327105669325813,
+      "max_limit_violation_rad": 0.0,
+      "max_roll_error_rad": 0.0
+    },
+    {
+      "seed": 52,
+      "success": true,
+      "fail_reason": null,
+      "placement_mm": [
+        1.0873383972489934
+      ],
+      "ticks": 2879,
+      "max_target_step_rad": 0.002327105669325813,
+      "max_executed_step_rad": 0.002327105669325813,
+      "max_limit_violation_rad": 0.0,
+      "max_roll_error_rad": 0.0
+    },
+    {
+      "seed": 53,
+      "success": true,
+      "fail_reason": null,
+      "placement_mm": [
+        7.800898155078928
+      ],
+      "ticks": 3721,
+      "max_target_step_rad": 0.002327105669325813,
+      "max_executed_step_rad": 0.002327105669325813,
+      "max_limit_violation_rad": 0.0,
+      "max_roll_error_rad": 0.0
+    },
+    {
+      "seed": 54,
+      "success": true,
+      "fail_reason": null,
+      "placement_mm": [
+        1.2761798441354644
+      ],
+      "ticks": 3169,
+      "max_target_step_rad": 0.002327105669325813,
+      "max_executed_step_rad": 0.002327105669325813,
+      "max_limit_violation_rad": 0.0,
+      "max_roll_error_rad": 0.0
+    },
+    {
+      "seed": 55,
+      "success": true,
+      "fail_reason": null,
+      "placement_mm": [
+        1.1236531639380611
+      ],
+      "ticks": 3059,
+      "max_target_step_rad": 0.002327105669325813,
+      "max_executed_step_rad": 0.002327105669325813,
+      "max_limit_violation_rad": 0.0,
+      "max_roll_error_rad": 0.0
+    },
+    {
+      "seed": 56,
+      "success": true,
+      "fail_reason": null,
+      "placement_mm": [
+        0.5858048537295976
+      ],
+      "ticks": 2482,
+      "max_target_step_rad": 0.002327105669325813,
+      "max_executed_step_rad": 0.002327105669325813,
+      "max_limit_violation_rad": 0.0,
+      "max_roll_error_rad": 0.0
+    },
+    {
+      "seed": 57,
+      "success": true,
+      "fail_reason": null,
+      "placement_mm": [
+        0.34978823632519324
+      ],
+      "ticks": 2623,
+      "max_target_step_rad": 0.002327105669325813,
+      "max_executed_step_rad": 0.002327105669325813,
+      "max_limit_violation_rad": 0.0,
+      "max_roll_error_rad": 0.0
+    },
+    {
+      "seed": 58,
+      "success": true,
+      "fail_reason": null,
+      "placement_mm": [
+        0.27548028949863845
+      ],
+      "ticks": 2597,
+      "max_target_step_rad": 0.0023271056693257852,
+      "max_executed_step_rad": 0.0023271056693257852,
+      "max_limit_violation_rad": 0.0,
+      "max_roll_error_rad": 0.0
+    },
+    {
+      "seed": 59,
+      "success": true,
+      "fail_reason": null,
+      "placement_mm": [
+        0.15505475987038778
+      ],
+      "ticks": 2831,
+      "max_target_step_rad": 0.002327105669325813,
+      "max_executed_step_rad": 0.002327105669325813,
+      "max_limit_violation_rad": 0.0,
+      "max_roll_error_rad": 0.0
+    },
+    {
+      "seed": 60,
+      "success": true,
+      "fail_reason": null,
+      "placement_mm": [
+        1.6253782497340314
+      ],
+      "ticks": 3030,
+      "max_target_step_rad": 0.002327105669325813,
+      "max_executed_step_rad": 0.002327105669325813,
+      "max_limit_violation_rad": 0.0,
+      "max_roll_error_rad": 0.0
+    },
+    {
+      "seed": 61,
+      "success": true,
+      "fail_reason": null,
+      "placement_mm": [
+        2.7043146115615926
+      ],
+      "ticks": 2732,
+      "max_target_step_rad": 0.002327105669325813,
+      "max_executed_step_rad": 0.002327105669325813,
+      "max_limit_violation_rad": 0.0,
+      "max_roll_error_rad": 0.0
+    },
+    {
+      "seed": 62,
+      "success": true,
+      "fail_reason": null,
+      "placement_mm": [
+        1.042320380853006
+      ],
+      "ticks": 2346,
+      "max_target_step_rad": 0.0023271056693257852,
+      "max_executed_step_rad": 0.0023271056693257852,
+      "max_limit_violation_rad": 0.0,
+      "max_roll_error_rad": 0.0
+    },
+    {
+      "seed": 63,
+      "success": true,
+      "fail_reason": null,
+      "placement_mm": [
+        2.7009721280236287
+      ],
+      "ticks": 3127,
+      "max_target_step_rad": 0.002327105669325813,
+      "max_executed_step_rad": 0.002327105669325813,
+      "max_limit_violation_rad": 0.0,
+      "max_roll_error_rad": 0.0
+    }
+  ],
+  "task_spec": {
+    "schema": "argon_task/1",
+    "name": "place_on_cell",
+    "instruction": "Place the supply piece on the highlighted cell without moving other pieces.",
+    "board": {
+      "center_xy": [
+        0.1525,
+        0.0068
+      ],
+      "cell_m": 0.0368,
+      "cells": {
+        "r0c0": [
+          0.1084,
+          -0.0209
+        ],
+        "r0c1": [
+          0.116,
+          0.0146
+        ],
+        "r0c2": [
+          0.1237,
+          0.0502
+        ],
+        "r1c0": [
+          0.1448,
+          -0.0288
+        ],
+        "r1c1": [
+          0.1525,
+          0.0068
+        ],
+        "r1c2": [
+          0.1602,
+          0.0423
+        ],
+        "r2c0": [
+          0.1813,
+          -0.0367
+        ],
+        "r2c1": [
+          0.189,
+          -0.0011
+        ],
+        "r2c2": [
+          0.1967,
+          0.0344
+        ]
+      }
+    },
+    "objects": [
+      {
+        "id": "piece",
+        "role": "manipulated",
+        "shape": "cylinder",
+        "size_m": [
+          0.034,
+          0.017
+        ],
+        "color": "white",
+        "mass_kg": 0.004,
+        "friction": 0.5,
+        "grasp": "top",
+        "xy": [
+          0.175,
+          -0.125
+        ]
+      },
+      {
+        "id": "cell",
+        "role": "target",
+        "shape": "plate",
+        "size_m": [
+          0.0368,
+          0.0368,
+          0.001
+        ],
+        "color": "green",
+        "fixed": true,
+        "collide": false
+      },
+      {
+        "id": "r0c0",
+        "role": "target",
+        "shape": "plate",
+        "size_m": [
+          0.0368,
+          0.0368,
+          0.001
+        ],
+        "color": "gray",
+        "fixed": true,
+        "collide": false,
+        "xy": [
+          0.1084,
+          -0.0209
+        ]
+      },
+      {
+        "id": "r0c1",
+        "role": "target",
+        "shape": "plate",
+        "size_m": [
+          0.0368,
+          0.0368,
+          0.001
+        ],
+        "color": "gray",
+        "fixed": true,
+        "collide": false,
+        "xy": [
+          0.116,
+          0.0146
+        ]
+      },
+      {
+        "id": "r0c2",
+        "role": "target",
+        "shape": "plate",
+        "size_m": [
+          0.0368,
+          0.0368,
+          0.001
+        ],
+        "color": "gray",
+        "fixed": true,
+        "collide": false,
+        "xy": [
+          0.1237,
+          0.0502
+        ]
+      },
+      {
+        "id": "r1c0",
+        "role": "target",
+        "shape": "plate",
+        "size_m": [
+          0.0368,
+          0.0368,
+          0.001
+        ],
+        "color": "gray",
+        "fixed": true,
+        "collide": false,
+        "xy": [
+          0.1448,
+          -0.0288
+        ]
+      },
+      {
+        "id": "r1c1",
+        "role": "target",
+        "shape": "plate",
+        "size_m": [
+          0.0368,
+          0.0368,
+          0.001
+        ],
+        "color": "gray",
+        "fixed": true,
+        "collide": false,
+        "xy": [
+          0.1525,
+          0.0068
+        ]
+      },
+      {
+        "id": "r1c2",
+        "role": "target",
+        "shape": "plate",
+        "size_m": [
+          0.0368,
+          0.0368,
+          0.001
+        ],
+        "color": "gray",
+        "fixed": true,
+        "collide": false,
+        "xy": [
+          0.1602,
+          0.0423
+        ]
+      },
+      {
+        "id": "r2c0",
+        "role": "target",
+        "shape": "plate",
+        "size_m": [
+          0.0368,
+          0.0368,
+          0.001
+        ],
+        "color": "gray",
+        "fixed": true,
+        "collide": false,
+        "xy": [
+          0.1813,
+          -0.0367
+        ]
+      },
+      {
+        "id": "r2c1",
+        "role": "target",
+        "shape": "plate",
+        "size_m": [
+          0.0368,
+          0.0368,
+          0.001
+        ],
+        "color": "gray",
+        "fixed": true,
+        "collide": false,
+        "xy": [
+          0.189,
+          -0.0011
+        ]
+      },
+      {
+        "id": "r2c2",
+        "role": "target",
+        "shape": "plate",
+        "size_m": [
+          0.0368,
+          0.0368,
+          0.001
+        ],
+        "color": "gray",
+        "fixed": true,
+        "collide": false,
+        "xy": [
+          0.1967,
+          0.0344
+        ]
+      },
+      {
+        "id": "other1",
+        "role": "obstacle",
+        "shape": "box",
+        "size_m": [
+          0.03,
+          0.03,
+          0.014
+        ],
+        "color": "blue",
+        "mass_kg": 0.02,
+        "friction": 0.6,
+        "fixed": true
+      },
+      {
+        "id": "other2",
+        "role": "obstacle",
+        "shape": "box",
+        "size_m": [
+          0.03,
+          0.03,
+          0.014
+        ],
+        "color": "brown",
+        "mass_kg": 0.02,
+        "friction": 0.6,
+        "fixed": true
+      },
+      {
+        "id": "other3",
+        "role": "obstacle",
+        "shape": "box",
+        "size_m": [
+          0.03,
+          0.03,
+          0.014
+        ],
+        "color": "blue",
+        "mass_kg": 0.02,
+        "friction": 0.6,
+        "fixed": true
+      },
+      {
+        "id": "other4",
+        "role": "obstacle",
+        "shape": "box",
+        "size_m": [
+          0.03,
+          0.03,
+          0.014
+        ],
+        "color": "brown",
+        "mass_kg": 0.02,
+        "friction": 0.6,
+        "fixed": true
+      }
+    ],
+    "goal": [
+      {
+        "pred": "at",
+        "a": "piece",
+        "xy": "cell",
+        "tol_m": 0.01
+      },
+      {
+        "pred": "not_moved",
+        "a": "other1",
+        "tol_m": 0.01,
+        "optional": true
+      },
+      {
+        "pred": "not_moved",
+        "a": "other2",
+        "tol_m": 0.01,
+        "optional": true
+      },
+      {
+        "pred": "not_moved",
+        "a": "other3",
+        "tol_m": 0.01,
+        "optional": true
+      },
+      {
+        "pred": "not_moved",
+        "a": "other4",
+        "tol_m": 0.01,
+        "optional": true
+      }
+    ],
+    "skeleton": [
+      {
+        "skill": "pick",
+        "obj": "piece"
+      },
+      {
+        "skill": "place_at",
+        "obj": "piece",
+        "xy": "cell"
+      },
+      {
+        "skill": "release"
+      },
+      {
+        "skill": "home"
+      }
+    ],
+    "randomize": {
+      "cell": {
+        "xy_choice": [
+          [
+            0.1084,
+            -0.0209
+          ],
+          [
+            0.116,
+            0.0146
+          ],
+          [
+            0.1237,
+            0.0502
+          ],
+          [
+            0.1448,
+            -0.0288
+          ],
+          [
+            0.1525,
+            0.0068
+          ],
+          [
+            0.1602,
+            0.0423
+          ],
+          [
+            0.1813,
+            -0.0367
+          ],
+          [
+            0.189,
+            -0.0011
+          ],
+          [
+            0.1967,
+            0.0344
+          ]
+        ]
+      },
+      "other1": {
+        "xy_choice": [
+          [
+            0.1084,
+            -0.0209
+          ],
+          [
+            0.116,
+            0.0146
+          ],
+          [
+            0.1237,
+            0.0502
+          ],
+          [
+            0.1448,
+            -0.0288
+          ],
+          [
+            0.1525,
+            0.0068
+          ],
+          [
+            0.1602,
+            0.0423
+          ],
+          [
+            0.1813,
+            -0.0367
+          ],
+          [
+            0.189,
+            -0.0011
+          ],
+          [
+            0.1967,
+            0.0344
+          ]
+        ],
+        "p_present": 0.5
+      },
+      "other2": {
+        "xy_choice": [
+          [
+            0.1084,
+            -0.0209
+          ],
+          [
+            0.116,
+            0.0146
+          ],
+          [
+            0.1237,
+            0.0502
+          ],
+          [
+            0.1448,
+            -0.0288
+          ],
+          [
+            0.1525,
+            0.0068
+          ],
+          [
+            0.1602,
+            0.0423
+          ],
+          [
+            0.1813,
+            -0.0367
+          ],
+          [
+            0.189,
+            -0.0011
+          ],
+          [
+            0.1967,
+            0.0344
+          ]
+        ],
+        "p_present": 0.5
+      },
+      "other3": {
+        "xy_choice": [
+          [
+            0.1084,
+            -0.0209
+          ],
+          [
+            0.116,
+            0.0146
+          ],
+          [
+            0.1237,
+            0.0502
+          ],
+          [
+            0.1448,
+            -0.0288
+          ],
+          [
+            0.1525,
+            0.0068
+          ],
+          [
+            0.1602,
+            0.0423
+          ],
+          [
+            0.1813,
+            -0.0367
+          ],
+          [
+            0.189,
+            -0.0011
+          ],
+          [
+            0.1967,
+            0.0344
+          ]
+        ],
+        "p_present": 0.5
+      },
+      "other4": {
+        "xy_choice": [
+          [
+            0.1084,
+            -0.0209
+          ],
+          [
+            0.116,
+            0.0146
+          ],
+          [
+            0.1237,
+            0.0502
+          ],
+          [
+            0.1448,
+            -0.0288
+          ],
+          [
+            0.1525,
+            0.0068
+          ],
+          [
+            0.1602,
+            0.0423
+          ],
+          [
+            0.1813,
+            -0.0367
+          ],
+          [
+            0.189,
+            -0.0011
+          ],
+          [
+            0.1967,
+            0.0344
+          ]
+        ],
+        "p_present": 0.5
+      },
+      "min_sep_m": 0,
+      "piece": {
+        "x": [
+          0.093,
+          0.213
+        ],
+        "y": [
+          -0.1133,
+          -0.0823
+        ],
+        "size_m": [
+          [
+            0.03,
+            0.037
+          ],
+          [
+            0.014,
+            0.02
+          ]
+        ],
+        "mass_kg": [
+          0.002,
+          0.007
+        ],
+        "friction": [
+          0.35,
+          0.7
+        ],
+        "follow_board": true
+      },
+      "board_pose": {
+        "dx": [
+          -0.03,
+          0.03
+        ],
+        "dy": [
+          -0.035,
+          0.045
+        ],
+        "yaw_deg": [
+          -8,
+          8
+        ]
+      }
+    },
+    "limits": {
+      "episode_s": 40,
+      "max_objects": 15
+    },
+    "bench_note": "Oct 25 12:4x (after the paper was reset): grid re-measured by the calibrated camera (36.3 mm cells, centre 0.1695/-0.0169). Robot pieces = white plastic bottle caps (~33 mm, ~17 mm tall); supply line on the robot's right, located by gemini-4-argon at x 0.127/0.175/0.221, y -0.125. Humans play coins."
+  },
+  "deployment": {
+    "schema": "r2p_bench_policy/1",
+    "joint_map": "vcal_oct25b",
+    "joint_map_parameters": {
+      "sign": [
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "offset": [
+        -2.18,
+        -11.2,
+        1.66,
+        -18.93,
+        -164.4
+      ],
+      "closed_rad": -0.17,
+      "open_rad": 2.699
+    },
+    "owner_state": {
+      "q": [
+        0.1,
+        -89.9,
+        99.3,
+        -101.3,
+        82.3,
+        3.4
+      ],
+      "rest": [
+        0.1,
+        -89.9,
+        99.0,
+        -101.3,
+        81.9,
+        2.7
+      ],
+      "lo": [
+        -107.8,
+        -90.2,
+        -99.1,
+        -101.8,
+        -179.0,
+        0.0
+      ],
+      "hi": [
+        107.8,
+        90.2,
+        99.1,
+        101.8,
+        179.0,
+        100.0
+      ],
+      "tip": [
+        -0.012,
+        -0.006,
+        0.273
+      ],
+      "min_z": {
+        "link": 0.082,
+        "gripper": 0.173,
+        "finger": 0.183
+      },
+      "joint_map": "vcal_oct25"
+    },
+    "margin_deg": 2,
+    "model_limits": [
+      [
+        -1.884606526303477,
+        1.808510170916524
+      ],
+      [
+        -1.7104226669544358,
+        1.3439035240356336
+      ],
+      [
+        -1.6550934149601133,
+        1.6550934149601133
+      ],
+      [
+        -1.6231562644158062,
+        1.4114477660878144
+      ],
+      [
+        -2.7089407119593627,
+        0.21991148575128544
+      ],
+      [
+        -0.13509341496011343,
+        1.71042261452609
+      ]
+    ],
+    "start_q": [
+      -5e-05,
+      -0.06786,
+      -0.28181,
+      1.3416345960080411,
+      -1.4398966328953218,
+      0.40379999999999994
+    ],
+    "roll_rad": -1.4398966328953218,
+    "gripper_open_rad": 0.40379999999999994,
+    "gripper_close_rad": 0.0021399999999999753,
+    "gripper_open_threshold_rad": 0.36363399999999996,
+    "travel_height_m": 0.05,
+    "joint_step_rad": 0.0023271056693257726,
+    "notes": "Round upright caps only; locked calibrated roll. Requires fresh traces and training; not a policy certification.",
+    "captured_at": "2026-10-25T19:54:01.913482+00:00",
+    "state_url": "http://127.0.0.1:8793/state",
+    "state_read_only": true,
+    "expert_control": {
+      "gripper_hold_torque_nm": 0.1,
+      "grasp_tip_height_m": 0.002
+    }
+  },
+  "physics_config": {
+    "schema": "r2p_physics/1",
+    "rig": "so101_bench",
+    "version": 2,
+    "hz": 30,
+    "substeps": 32,
+    "gravity": [
+      0,
+      0,
+      -9.81
+    ],
+    "latency_ticks": 1,
+    "sag_gain": [
+      0,
+      0.05,
+      0.03333333333333333,
+      0.05,
+      0,
+      0
+    ],
+    "joints": {
+      "shoulder_pan": {
+        "kp": 35,
+        "kv": 0.7,
+        "armature": 0.005,
+        "frictionloss": 0.002,
+        "torque_limit": 3.35
+      },
+      "shoulder_lift": {
+        "kp": 20,
+        "kv": 0.8,
+        "armature": 0.005,
+        "frictionloss": 0.002,
+        "torque_limit": 3.35
+      },
+      "elbow_flex": {
+        "kp": 30,
+        "kv": 0.7,
+        "armature": 0.005,
+        "frictionloss": 0.002,
+        "torque_limit": 3.35
+      },
+      "wrist_flex": {
+        "kp": 20,
+        "kv": 0.4,
+        "armature": 0.003,
+        "frictionloss": 0.001,
+        "torque_limit": 3.35
+      },
+      "wrist_roll": {
+        "kp": 25,
+        "kv": 0.35,
+        "armature": 0.002,
+        "frictionloss": 0.001,
+        "torque_limit": 3.35
+      },
+      "gripper": {
+        "kp": 20,
+        "kv": 0.25,
+        "armature": 0.002,
+        "frictionloss": 0.001,
+        "torque_limit": 0.8
+      }
+    },
+    "object": {
+      "mass_kg": 0.03,
+      "friction": 0.6
+    },
+    "contact": {
+      "solref": [
+        0.015,
+        1
+      ],
+      "solimp": [
+        0.95,
+        0.99,
+        0.001
+      ],
+      "friction": [
+        0.8,
+        0.005,
+        0.0001
+      ],
+      "impratio": 10
+    },
+    "notes": "Provisional compliance calibration, not an identified hardware twin. Gravity acts through the official link inertias and finite position-servo stiffness; no Cartesian sag offset is injected. kp units Nm/rad, kv Nm*s/rad, armature kg*m^2, frictionloss and torque_limit Nm. See README.md for measured sag and refit protocol."
+  },
+  "task_sha256": "e4335723e937d9e9c142e59af53fbac351f5ce110a5b98fe03e3027170c6db21",
+  "profile_sha256": "89d8b781c143e01dfbdf317ca4309c32469f4865c6ac03c7279c16391d0948aa",
+  "physics_sha256": "8f42f7a072096cbeeb3fb0376286a5cf1c7cde3aa37d74aed2268c5e33cb62d4",
+  "code_sha256": {
+    "bench.py": "5248b75d8fa431d1dbfcb803ad12665b2a8e99f3d4ad523c8b1cbe70cbd96097",
+    "expert.py": "eb45925a140c03a67f00d927695657f7f96df93e1022fdda5922bb9e85451038",
+    "ik.py": "7061e613bc40f109439b8ed4895f0fa04722f231e446abaf4d73043de420dc15",
+    "twin.py": "3c5361af1997e99931a3514b61c7ceef63d86f87f09660188cd9ae11b62d339e"
+  },
+  "baseline": {
+    "code_git_blob": "4f9fbb367b9b7eb6ade8b6d28527eb1a8fa5a112",
+    "n": 64,
+    "seed": 0,
+    "workers": 2,
+    "dart_std_rad": 0,
+    "successes": 1,
+    "failures": {
+      "grasp_miss:piece": 44,
+      "dropped_during_carry:piece": 19
+    },
+    "seconds": 59.681736600003205,
+    "episodes": [
+      {
+        "seed": 0,
+        "ok": false,
+        "reason": "grasp_miss:piece",
+        "error_mm": 140.8561679330185,
+        "ticks": 1296
+      },
+      {
+        "seed": 1,
+        "ok": false,
+        "reason": "grasp_miss:piece",
+        "error_mm": 55.411843228344715,
+        "ticks": 1530
+      },
+      {
+        "seed": 2,
+        "ok": false,
+        "reason": "grasp_miss:piece",
+        "error_mm": 110.92136196225778,
+        "ticks": 1268
+      },
+      {
+        "seed": 3,
+        "ok": false,
+        "reason": "grasp_miss:piece",
+        "error_mm": 76.05586435600797,
+        "ticks": 1706
+      },
+      {
+        "seed": 4,
+        "ok": false,
+        "reason": "grasp_miss:piece",
+        "error_mm": 87.87242764227946,
+        "ticks": 1416
+      },
+      {
+        "seed": 5,
+        "ok": false,
+        "reason": "grasp_miss:piece",
+        "error_mm": 88.64229034472815,
+        "ticks": 1048
+      },
+      {
+        "seed": 6,
+        "ok": false,
+        "reason": "grasp_miss:piece",
+        "error_mm": 85.84910881042998,
+        "ticks": 1737
+      },
+      {
+        "seed": 7,
+        "ok": false,
+        "reason": "dropped_during_carry:piece",
+        "error_mm": 2351.176571072765,
+        "ticks": 1409
+      },
+      {
+        "seed": 8,
+        "ok": false,
+        "reason": "grasp_miss:piece",
+        "error_mm": 112.08227295220209,
+        "ticks": 2208
+      },
+      {
+        "seed": 9,
+        "ok": false,
+        "reason": "dropped_during_carry:piece",
+        "error_mm": 127.71998052694671,
+        "ticks": 1297
+      },
+      {
+        "seed": 10,
+        "ok": false,
+        "reason": "dropped_during_carry:piece",
+        "error_mm": 83.06613457047484,
+        "ticks": 1484
+      },
+      {
+        "seed": 11,
+        "ok": false,
+        "reason": "grasp_miss:piece",
+        "error_mm": 106.0094065487946,
+        "ticks": 1690
+      },
+      {
+        "seed": 12,
+        "ok": false,
+        "reason": "grasp_miss:piece",
+        "error_mm": 142.21396683057662,
+        "ticks": 1451
+      },
+      {
+        "seed": 13,
+        "ok": false,
+        "reason": "dropped_during_carry:piece",
+        "error_mm": 136.70924576105241,
+        "ticks": 1676
+      },
+      {
+        "seed": 14,
+        "ok": false,
+        "reason": "grasp_miss:piece",
+        "error_mm": 55.44203087173352,
+        "ticks": 1321
+      },
+      {
+        "seed": 15,
+        "ok": false,
+        "reason": "grasp_miss:piece",
+        "error_mm": 20.33364330959379,
+        "ticks": 1921
+      },
+      {
+        "seed": 16,
+        "ok": false,
+        "reason": "grasp_miss:piece",
+        "error_mm": 39.28168363767334,
+        "ticks": 1436
+      },
+      {
+        "seed": 17,
+        "ok": false,
+        "reason": "grasp_miss:piece",
+        "error_mm": 50.35039025874791,
+        "ticks": 1282
+      },
+      {
+        "seed": 18,
+        "ok": false,
+        "reason": "grasp_miss:piece",
+        "error_mm": 119.04503995468372,
+        "ticks": 1359
+      },
+      {
+        "seed": 19,
+        "ok": false,
+        "reason": "dropped_during_carry:piece",
+        "error_mm": 2737.034484480651,
+        "ticks": 1519
+      },
+      {
+        "seed": 20,
+        "ok": false,
+        "reason": "grasp_miss:piece",
+        "error_mm": 73.28810544389432,
+        "ticks": 1531
+      },
+      {
+        "seed": 21,
+        "ok": false,
+        "reason": "grasp_miss:piece",
+        "error_mm": 100.00954496673846,
+        "ticks": 1167
+      },
+      {
+        "seed": 22,
+        "ok": false,
+        "reason": "grasp_miss:piece",
+        "error_mm": 127.84991619936855,
+        "ticks": 1537
+      },
+      {
+        "seed": 23,
+        "ok": true,
+        "reason": null,
+        "error_mm": 7.892539631834597,
+        "ticks": 2760
+      },
+      {
+        "seed": 24,
+        "ok": false,
+        "reason": "grasp_miss:piece",
+        "error_mm": 118.40156461780958,
+        "ticks": 1377
+      },
+      {
+        "seed": 25,
+        "ok": false,
+        "reason": "dropped_during_carry:piece",
+        "error_mm": 228.32322954280608,
+        "ticks": 2473
+      },
+      {
+        "seed": 26,
+        "ok": false,
+        "reason": "dropped_during_carry:piece",
+        "error_mm": 436.5658321528538,
+        "ticks": 1466
+      },
+      {
+        "seed": 27,
+        "ok": false,
+        "reason": "grasp_miss:piece",
+        "error_mm": 68.1893857056415,
+        "ticks": 1740
+      },
+      {
+        "seed": 28,
+        "ok": false,
+        "reason": "grasp_miss:piece",
+        "error_mm": 39.26494160247953,
+        "ticks": 1810
+      },
+      {
+        "seed": 29,
+        "ok": false,
+        "reason": "dropped_during_carry:piece",
+        "error_mm": 208.7897088085517,
+        "ticks": 1259
+      },
+      {
+        "seed": 30,
+        "ok": false,
+        "reason": "grasp_miss:piece",
+        "error_mm": 130.50826955916057,
+        "ticks": 2126
+      },
+      {
+        "seed": 31,
+        "ok": false,
+        "reason": "grasp_miss:piece",
+        "error_mm": 134.19417242859433,
+        "ticks": 1099
+      },
+      {
+        "seed": 32,
+        "ok": false,
+        "reason": "grasp_miss:piece",
+        "error_mm": 112.49704914984243,
+        "ticks": 1823
+      },
+      {
+        "seed": 33,
+        "ok": false,
+        "reason": "grasp_miss:piece",
+        "error_mm": 161.91033716713684,
+        "ticks": 1169
+      },
+      {
+        "seed": 34,
+        "ok": false,
+        "reason": "dropped_during_carry:piece",
+        "error_mm": 98.15873112408671,
+        "ticks": 1647
+      },
+      {
+        "seed": 35,
+        "ok": false,
+        "reason": "grasp_miss:piece",
+        "error_mm": 106.01877857414196,
+        "ticks": 1658
+      },
+      {
+        "seed": 36,
+        "ok": false,
+        "reason": "grasp_miss:piece",
+        "error_mm": 113.428403415435,
+        "ticks": 1629
+      },
+      {
+        "seed": 37,
+        "ok": false,
+        "reason": "grasp_miss:piece",
+        "error_mm": 482.11059801659985,
+        "ticks": 1539
+      },
+      {
+        "seed": 38,
+        "ok": false,
+        "reason": "dropped_during_carry:piece",
+        "error_mm": 188.26230251287927,
+        "ticks": 1363
+      },
+      {
+        "seed": 39,
+        "ok": false,
+        "reason": "grasp_miss:piece",
+        "error_mm": 129.20424840664188,
+        "ticks": 1431
+      },
+      {
+        "seed": 40,
+        "ok": false,
+        "reason": "grasp_miss:piece",
+        "error_mm": 45.28948354204153,
+        "ticks": 1609
+      },
+      {
+        "seed": 41,
+        "ok": false,
+        "reason": "grasp_miss:piece",
+        "error_mm": 114.921893788184,
+        "ticks": 1079
+      },
+      {
+        "seed": 42,
+        "ok": false,
+        "reason": "grasp_miss:piece",
+        "error_mm": 107.84528053833901,
+        "ticks": 1227
+      },
+      {
+        "seed": 43,
+        "ok": false,
+        "reason": "grasp_miss:piece",
+        "error_mm": 56.49773370093764,
+        "ticks": 1488
+      },
+      {
+        "seed": 44,
+        "ok": false,
+        "reason": "grasp_miss:piece",
+        "error_mm": 164.76587319308786,
+        "ticks": 1746
+      },
+      {
+        "seed": 45,
+        "ok": false,
+        "reason": "grasp_miss:piece",
+        "error_mm": 76.9138073270401,
+        "ticks": 1295
+      },
+      {
+        "seed": 46,
+        "ok": false,
+        "reason": "dropped_during_carry:piece",
+        "error_mm": 122.06524327189592,
+        "ticks": 1032
+      },
+      {
+        "seed": 47,
+        "ok": false,
+        "reason": "grasp_miss:piece",
+        "error_mm": 94.99103933602012,
+        "ticks": 1448
+      },
+      {
+        "seed": 48,
+        "ok": false,
+        "reason": "dropped_during_carry:piece",
+        "error_mm": 63.22901741319394,
+        "ticks": 1586
+      },
+      {
+        "seed": 49,
+        "ok": false,
+        "reason": "grasp_miss:piece",
+        "error_mm": 117.17321260237928,
+        "ticks": 2208
+      },
+      {
+        "seed": 50,
+        "ok": false,
+        "reason": "dropped_during_carry:piece",
+        "error_mm": 428.36875609041925,
+        "ticks": 1208
+      },
+      {
+        "seed": 51,
+        "ok": false,
+        "reason": "grasp_miss:piece",
+        "error_mm": 174.9708805435968,
+        "ticks": 1961
+      },
+      {
+        "seed": 52,
+        "ok": false,
+        "reason": "grasp_miss:piece",
+        "error_mm": 64.54533859005392,
+        "ticks": 1668
+      },
+      {
+        "seed": 53,
+        "ok": false,
+        "reason": "dropped_during_carry:piece",
+        "error_mm": 276.6431396227589,
+        "ticks": 1708
+      },
+      {
+        "seed": 54,
+        "ok": false,
+        "reason": "dropped_during_carry:piece",
+        "error_mm": 280.8487698893775,
+        "ticks": 1778
+      },
+      {
+        "seed": 55,
+        "ok": false,
+        "reason": "grasp_miss:piece",
+        "error_mm": 133.681578143345,
+        "ticks": 1980
+      },
+      {
+        "seed": 56,
+        "ok": false,
+        "reason": "dropped_during_carry:piece",
+        "error_mm": 438.8642119264535,
+        "ticks": 1470
+      },
+      {
+        "seed": 57,
+        "ok": false,
+        "reason": "dropped_during_carry:piece",
+        "error_mm": 115.97047968005538,
+        "ticks": 1547
+      },
+      {
+        "seed": 58,
+        "ok": false,
+        "reason": "grasp_miss:piece",
+        "error_mm": 118.07437612198251,
+        "ticks": 1567
+      },
+      {
+        "seed": 59,
+        "ok": false,
+        "reason": "dropped_during_carry:piece",
+        "error_mm": 107.76523787706805,
+        "ticks": 1446
+      },
+      {
+        "seed": 60,
+        "ok": false,
+        "reason": "grasp_miss:piece",
+        "error_mm": 71.20959065679982,
+        "ticks": 1807
+      },
+      {
+        "seed": 61,
+        "ok": false,
+        "reason": "grasp_miss:piece",
+        "error_mm": 78.55198480485494,
+        "ticks": 1490
+      },
+      {
+        "seed": 62,
+        "ok": false,
+        "reason": "dropped_during_carry:piece",
+        "error_mm": 65.52920575720891,
+        "ticks": 1303
+      },
+      {
+        "seed": 63,
+        "ok": false,
+        "reason": "grasp_miss:piece",
+        "error_mm": 111.4248314365502,
+        "ticks": 2153
+      }
+    ]
+  },
+  "dart_acceptance": {
+    "task": "place_on_cell",
+    "n": 64,
+    "seed": 0,
+    "workers": 2,
+    "dart_std_rad": 0.01,
+    "successes": 59,
+    "success": 0.921875,
+    "failures": {
+      "goal_not_met": 5
+    },
+    "median_placement_mm": 2.645824504071505,
+    "seconds": 91.19569510000292,
+    "episodes": [
+      {
+        "seed": 0,
+        "success": true,
+        "fail_reason": null,
+        "placement_mm": [
+          1.5940486326221472
+        ],
+        "ticks": 2670,
+        "max_target_step_rad": 0.002327105669325813,
+        "max_executed_step_rad": 0.002327105669325813,
+        "max_limit_violation_rad": 0.0,
+        "max_roll_error_rad": 0.0
+      },
+      {
+        "seed": 1,
+        "success": true,
+        "fail_reason": null,
+        "placement_mm": [
+          3.54702376100223
+        ],
+        "ticks": 2365,
+        "max_target_step_rad": 0.002327105669325813,
+        "max_executed_step_rad": 0.002327105669325813,
+        "max_limit_violation_rad": 0.0,
+        "max_roll_error_rad": 0.0
+      },
+      {
+        "seed": 2,
+        "success": true,
+        "fail_reason": null,
+        "placement_mm": [
+          5.226928325566667
+        ],
+        "ticks": 2371,
+        "max_target_step_rad": 0.002327105669325813,
+        "max_executed_step_rad": 0.002327105669325813,
+        "max_limit_violation_rad": 0.0,
+        "max_roll_error_rad": 0.0
+      },
+      {
+        "seed": 3,
+        "success": false,
+        "fail_reason": "goal_not_met",
+        "placement_mm": [
+          28.174042745071677
+        ],
+        "ticks": 3316,
+        "max_target_step_rad": 0.002327105669325813,
+        "max_executed_step_rad": 0.002327105669325813,
+        "max_limit_violation_rad": 0.0,
+        "max_roll_error_rad": 0.0
+      },
+      {
+        "seed": 4,
+        "success": true,
+        "fail_reason": null,
+        "placement_mm": [
+          0.9834345123195449
+        ],
+        "ticks": 2607,
+        "max_target_step_rad": 0.002327105669325813,
+        "max_executed_step_rad": 0.002327105669325813,
+        "max_limit_violation_rad": 0.0,
+        "max_roll_error_rad": 0.0
+      },
+      {
+        "seed": 5,
+        "success": true,
+        "fail_reason": null,
+        "placement_mm": [
+          2.0673016602985705
+        ],
+        "ticks": 2225,
+        "max_target_step_rad": 0.002327105669325813,
+        "max_executed_step_rad": 0.002327105669325813,
+        "max_limit_violation_rad": 0.0,
+        "max_roll_error_rad": 0.0
+      },
+      {
+        "seed": 6,
+        "success": true,
+        "fail_reason": null,
+        "placement_mm": [
+          2.033519795008326
+        ],
+        "ticks": 2679,
+        "max_target_step_rad": 0.002327105669325813,
+        "max_executed_step_rad": 0.002327105669325813,
+        "max_limit_violation_rad": 0.0,
+        "max_roll_error_rad": 0.0
+      },
+      {
+        "seed": 7,
+        "success": true,
+        "fail_reason": null,
+        "placement_mm": [
+          4.085298571880727
+        ],
+        "ticks": 2614,
+        "max_target_step_rad": 0.002327105669325813,
+        "max_executed_step_rad": 0.002327105669325813,
+        "max_limit_violation_rad": 0.0,
+        "max_roll_error_rad": 0.0
+      },
+      {
+        "seed": 8,
+        "success": true,
+        "fail_reason": null,
+        "placement_mm": [
+          4.023257214064988
+        ],
+        "ticks": 3007,
+        "max_target_step_rad": 0.002327105669325813,
+        "max_executed_step_rad": 0.002327105669325813,
+        "max_limit_violation_rad": 0.0,
+        "max_roll_error_rad": 0.0
+      },
+      {
+        "seed": 9,
+        "success": true,
+        "fail_reason": null,
+        "placement_mm": [
+          2.922720944150228
+        ],
+        "ticks": 2674,
+        "max_target_step_rad": 0.002327105669325813,
+        "max_executed_step_rad": 0.002327105669325813,
+        "max_limit_violation_rad": 0.0,
+        "max_roll_error_rad": 0.0
+      },
+      {
+        "seed": 10,
+        "success": true,
+        "fail_reason": null,
+        "placement_mm": [
+          2.531379553047215
+        ],
+        "ticks": 2760,
+        "max_target_step_rad": 0.002327105669325813,
+        "max_executed_step_rad": 0.002327105669325813,
+        "max_limit_violation_rad": 0.0,
+        "max_roll_error_rad": 0.0
+      },
+      {
+        "seed": 11,
+        "success": true,
+        "fail_reason": null,
+        "placement_mm": [
+          2.209573558959577
+        ],
+        "ticks": 2807,
+        "max_target_step_rad": 0.002327105669325813,
+        "max_executed_step_rad": 0.002327105669325813,
+        "max_limit_violation_rad": 0.0,
+        "max_roll_error_rad": 0.0
+      },
+      {
+        "seed": 12,
+        "success": true,
+        "fail_reason": null,
+        "placement_mm": [
+          3.1217647083324853
+        ],
+        "ticks": 2839,
+        "max_target_step_rad": 0.002327105669325813,
+        "max_executed_step_rad": 0.002327105669325813,
+        "max_limit_violation_rad": 0.0,
+        "max_roll_error_rad": 0.0
+      },
+      {
+        "seed": 13,
+        "success": true,
+        "fail_reason": null,
+        "placement_mm": [
+          4.655426705996708
+        ],
+        "ticks": 2629,
+        "max_target_step_rad": 0.002327105669325813,
+        "max_executed_step_rad": 0.002327105669325813,
+        "max_limit_violation_rad": 0.0,
+        "max_roll_error_rad": 0.0
+      },
+      {
+        "seed": 14,
+        "success": true,
+        "fail_reason": null,
+        "placement_mm": [
+          2.0444837685596213
+        ],
+        "ticks": 2262,
+        "max_target_step_rad": 0.002327105669325813,
+        "max_executed_step_rad": 0.002327105669325813,
+        "max_limit_violation_rad": 0.0,
+        "max_roll_error_rad": 0.0
+      },
+      {
+        "seed": 15,
+        "success": true,
+        "fail_reason": null,
+        "placement_mm": [
+          2.1825351315397117
+        ],
+        "ticks": 2535,
+        "max_target_step_rad": 0.002327105669325813,
+        "max_executed_step_rad": 0.002327105669325813,
+        "max_limit_violation_rad": 0.0,
+        "max_roll_error_rad": 0.0
+      },
+      {
+        "seed": 16,
+        "success": false,
+        "fail_reason": "goal_not_met",
+        "placement_mm": [
+          16.21682659629708
+        ],
+        "ticks": 2261,
+        "max_target_step_rad": 0.002327105669325813,
+        "max_executed_step_rad": 0.002327105669325813,
+        "max_limit_violation_rad": 0.0,
+        "max_roll_error_rad": 0.0
+      },
+      {
+        "seed": 17,
+        "success": true,
+        "fail_reason": null,
+        "placement_mm": [
+          4.153310254584539
+        ],
+        "ticks": 2042,
+        "max_target_step_rad": 0.002327105669325813,
+        "max_executed_step_rad": 0.002327105669325813,
+        "max_limit_violation_rad": 0.0,
+        "max_roll_error_rad": 0.0
+      },
+      {
+        "seed": 18,
+        "success": true,
+        "fail_reason": null,
+        "placement_mm": [
+          1.8620420889810714
+        ],
+        "ticks": 2913,
+        "max_target_step_rad": 0.002327105669325813,
+        "max_executed_step_rad": 0.002327105669325813,
+        "max_limit_violation_rad": 0.0,
+        "max_roll_error_rad": 0.0
+      },
+      {
+        "seed": 19,
+        "success": true,
+        "fail_reason": null,
+        "placement_mm": [
+          1.5903701240157675
+        ],
+        "ticks": 2639,
+        "max_target_step_rad": 0.002327105669325813,
+        "max_executed_step_rad": 0.002327105669325813,
+        "max_limit_violation_rad": 0.0,
+        "max_roll_error_rad": 0.0
+      },
+      {
+        "seed": 20,
+        "success": true,
+        "fail_reason": null,
+        "placement_mm": [
+          3.511271129150808
+        ],
+        "ticks": 2778,
+        "max_target_step_rad": 0.002327105669325813,
+        "max_executed_step_rad": 0.002327105669325813,
+        "max_limit_violation_rad": 0.0,
+        "max_roll_error_rad": 0.0
+      },
+      {
+        "seed": 21,
+        "success": true,
+        "fail_reason": null,
+        "placement_mm": [
+          4.194746679945909
+        ],
+        "ticks": 2242,
+        "max_target_step_rad": 0.002327105669325813,
+        "max_executed_step_rad": 0.002327105669325813,
+        "max_limit_violation_rad": 0.0,
+        "max_roll_error_rad": 0.0
+      },
+      {
+        "seed": 22,
+        "success": false,
+        "fail_reason": "goal_not_met",
+        "placement_mm": [
+          16.94788085974142
+        ],
+        "ticks": 2710,
+        "max_target_step_rad": 0.002327105669325813,
+        "max_executed_step_rad": 0.002327105669325813,
+        "max_limit_violation_rad": 0.0,
+        "max_roll_error_rad": 0.0
+      },
+      {
+        "seed": 23,
+        "success": true,
+        "fail_reason": null,
+        "placement_mm": [
+          3.3053909259189926
+        ],
+        "ticks": 2842,
+        "max_target_step_rad": 0.002327105669325813,
+        "max_executed_step_rad": 0.002327105669325813,
+        "max_limit_violation_rad": 0.0,
+        "max_roll_error_rad": 0.0
+      },
+      {
+        "seed": 24,
+        "success": true,
+        "fail_reason": null,
+        "placement_mm": [
+          2.3871159094581658
+        ],
+        "ticks": 2472,
+        "max_target_step_rad": 0.002327105669325813,
+        "max_executed_step_rad": 0.002327105669325813,
+        "max_limit_violation_rad": 0.0,
+        "max_roll_error_rad": 0.0
+      },
+      {
+        "seed": 25,
+        "success": true,
+        "fail_reason": null,
+        "placement_mm": [
+          2.2711148269014085
+        ],
+        "ticks": 3239,
+        "max_target_step_rad": 0.002327105669325813,
+        "max_executed_step_rad": 0.002327105669325813,
+        "max_limit_violation_rad": 0.0,
+        "max_roll_error_rad": 0.0
+      },
+      {
+        "seed": 26,
+        "success": true,
+        "fail_reason": null,
+        "placement_mm": [
+          2.232159248892273
+        ],
+        "ticks": 2861,
+        "max_target_step_rad": 0.002327105669325813,
+        "max_executed_step_rad": 0.002327105669325813,
+        "max_limit_violation_rad": 0.0,
+        "max_roll_error_rad": 0.0
+      },
+      {
+        "seed": 27,
+        "success": true,
+        "fail_reason": null,
+        "placement_mm": [
+          1.3202962607222013
+        ],
+        "ticks": 2956,
+        "max_target_step_rad": 0.002327105669325813,
+        "max_executed_step_rad": 0.002327105669325813,
+        "max_limit_violation_rad": 0.0,
+        "max_roll_error_rad": 0.0
+      },
+      {
+        "seed": 28,
+        "success": true,
+        "fail_reason": null,
+        "placement_mm": [
+          1.0682818649913435
+        ],
+        "ticks": 2691,
+        "max_target_step_rad": 0.002327105669325813,
+        "max_executed_step_rad": 0.002327105669325813,
+        "max_limit_violation_rad": 0.0,
+        "max_roll_error_rad": 0.0
+      },
+      {
+        "seed": 29,
+        "success": true,
+        "fail_reason": null,
+        "placement_mm": [
+          0.8338600557119924
+        ],
+        "ticks": 2498,
+        "max_target_step_rad": 0.002327105669325813,
+        "max_executed_step_rad": 0.002327105669325813,
+        "max_limit_violation_rad": 0.0,
+        "max_roll_error_rad": 0.0
+      },
+      {
+        "seed": 30,
+        "success": true,
+        "fail_reason": null,
+        "placement_mm": [
+          6.204614102352247
+        ],
+        "ticks": 3507,
+        "max_target_step_rad": 0.002327105669325813,
+        "max_executed_step_rad": 0.002327105669325813,
+        "max_limit_violation_rad": 0.0,
+        "max_roll_error_rad": 0.0
+      },
+      {
+        "seed": 31,
+        "success": true,
+        "fail_reason": null,
+        "placement_mm": [
+          2.677566010889457
+        ],
+        "ticks": 2264,
+        "max_target_step_rad": 0.002327105669325813,
+        "max_executed_step_rad": 0.002327105669325813,
+        "max_limit_violation_rad": 0.0,
+        "max_roll_error_rad": 0.0
+      },
+      {
+        "seed": 32,
+        "success": true,
+        "fail_reason": null,
+        "placement_mm": [
+          1.017618353908739
+        ],
+        "ticks": 2963,
+        "max_target_step_rad": 0.002327105669325813,
+        "max_executed_step_rad": 0.002327105669325813,
+        "max_limit_violation_rad": 0.0,
+        "max_roll_error_rad": 0.0
+      },
+      {
+        "seed": 33,
+        "success": true,
+        "fail_reason": null,
+        "placement_mm": [
+          2.2867272238974805
+        ],
+        "ticks": 2805,
+        "max_target_step_rad": 0.002327105669325813,
+        "max_executed_step_rad": 0.002327105669325813,
+        "max_limit_violation_rad": 0.0,
+        "max_roll_error_rad": 0.0
+      },
+      {
+        "seed": 34,
+        "success": false,
+        "fail_reason": "goal_not_met",
+        "placement_mm": [
+          11.591431893266039
+        ],
+        "ticks": 3339,
+        "max_target_step_rad": 0.002327105669325813,
+        "max_executed_step_rad": 0.002327105669325813,
+        "max_limit_violation_rad": 0.0,
+        "max_roll_error_rad": 0.0
+      },
+      {
+        "seed": 35,
+        "success": true,
+        "fail_reason": null,
+        "placement_mm": [
+          1.4476973656246646
+        ],
+        "ticks": 3080,
+        "max_target_step_rad": 0.002327105669325813,
+        "max_executed_step_rad": 0.002327105669325813,
+        "max_limit_violation_rad": 0.0,
+        "max_roll_error_rad": 0.0
+      },
+      {
+        "seed": 36,
+        "success": true,
+        "fail_reason": null,
+        "placement_mm": [
+          3.189794820200058
+        ],
+        "ticks": 2985,
+        "max_target_step_rad": 0.002327105669325813,
+        "max_executed_step_rad": 0.002327105669325813,
+        "max_limit_violation_rad": 0.0,
+        "max_roll_error_rad": 0.0
+      },
+      {
+        "seed": 37,
+        "success": true,
+        "fail_reason": null,
+        "placement_mm": [
+          1.8162830077961591
+        ],
+        "ticks": 2783,
+        "max_target_step_rad": 0.002327105669325813,
+        "max_executed_step_rad": 0.002327105669325813,
+        "max_limit_violation_rad": 0.0,
+        "max_roll_error_rad": 0.0
+      },
+      {
+        "seed": 38,
+        "success": true,
+        "fail_reason": null,
+        "placement_mm": [
+          1.879034037101895
+        ],
+        "ticks": 2547,
+        "max_target_step_rad": 0.002327105669325813,
+        "max_executed_step_rad": 0.002327105669325813,
+        "max_limit_violation_rad": 0.0,
+        "max_roll_error_rad": 0.0
+      },
+      {
+        "seed": 39,
+        "success": true,
+        "fail_reason": null,
+        "placement_mm": [
+          2.114949476472481
+        ],
+        "ticks": 2724,
+        "max_target_step_rad": 0.002327105669325813,
+        "max_executed_step_rad": 0.002327105669325813,
+        "max_limit_violation_rad": 0.0,
+        "max_roll_error_rad": 0.0
+      },
+      {
+        "seed": 40,
+        "success": true,
+        "fail_reason": null,
+        "placement_mm": [
+          3.202918389915
+        ],
+        "ticks": 2530,
+        "max_target_step_rad": 0.002327105669325813,
+        "max_executed_step_rad": 0.002327105669325813,
+        "max_limit_violation_rad": 0.0,
+        "max_roll_error_rad": 0.0
+      },
+      {
+        "seed": 41,
+        "success": true,
+        "fail_reason": null,
+        "placement_mm": [
+          1.1829358685572862
+        ],
+        "ticks": 2650,
+        "max_target_step_rad": 0.002327105669325813,
+        "max_executed_step_rad": 0.002327105669325813,
+        "max_limit_violation_rad": 0.0,
+        "max_roll_error_rad": 0.0
+      },
+      {
+        "seed": 42,
+        "success": true,
+        "fail_reason": null,
+        "placement_mm": [
+          3.0727294396160643
+        ],
+        "ticks": 2702,
+        "max_target_step_rad": 0.002327105669325813,
+        "max_executed_step_rad": 0.002327105669325813,
+        "max_limit_violation_rad": 0.0,
+        "max_roll_error_rad": 0.0
+      },
+      {
+        "seed": 43,
+        "success": true,
+        "fail_reason": null,
+        "placement_mm": [
+          4.949247408919518
+        ],
+        "ticks": 2292,
+        "max_target_step_rad": 0.002327105669325813,
+        "max_executed_step_rad": 0.002327105669325813,
+        "max_limit_violation_rad": 0.0,
+        "max_roll_error_rad": 0.0
+      },
+      {
+        "seed": 44,
+        "success": true,
+        "fail_reason": null,
+        "placement_mm": [
+          7.699732942848207
+        ],
+        "ticks": 3183,
+        "max_target_step_rad": 0.002327105669325813,
+        "max_executed_step_rad": 0.002327105669325813,
+        "max_limit_violation_rad": 0.0,
+        "max_roll_error_rad": 0.0
+      },
+      {
+        "seed": 45,
+        "success": true,
+        "fail_reason": null,
+        "placement_mm": [
+          3.3422081092749236
+        ],
+        "ticks": 2403,
+        "max_target_step_rad": 0.002327105669325813,
+        "max_executed_step_rad": 0.002327105669325813,
+        "max_limit_violation_rad": 0.0,
+        "max_roll_error_rad": 0.0
+      },
+      {
+        "seed": 46,
+        "success": true,
+        "fail_reason": null,
+        "placement_mm": [
+          3.216515772732843
+        ],
+        "ticks": 2208,
+        "max_target_step_rad": 0.002327105669325813,
+        "max_executed_step_rad": 0.002327105669325813,
+        "max_limit_violation_rad": 0.0,
+        "max_roll_error_rad": 0.0
+      },
+      {
+        "seed": 47,
+        "success": true,
+        "fail_reason": null,
+        "placement_mm": [
+          3.131682370306282
+        ],
+        "ticks": 2549,
+        "max_target_step_rad": 0.002327105669325813,
+        "max_executed_step_rad": 0.002327105669325813,
+        "max_limit_violation_rad": 0.0,
+        "max_roll_error_rad": 0.0
+      },
+      {
+        "seed": 48,
+        "success": true,
+        "fail_reason": null,
+        "placement_mm": [
+          2.0445909361640715
+        ],
+        "ticks": 2972,
+        "max_target_step_rad": 0.002327105669325813,
+        "max_executed_step_rad": 0.002327105669325813,
+        "max_limit_violation_rad": 0.0,
+        "max_roll_error_rad": 0.0
+      },
+      {
+        "seed": 49,
+        "success": true,
+        "fail_reason": null,
+        "placement_mm": [
+          1.7314182465013916
+        ],
+        "ticks": 3372,
+        "max_target_step_rad": 0.002327105669325813,
+        "max_executed_step_rad": 0.002327105669325813,
+        "max_limit_violation_rad": 0.0,
+        "max_roll_error_rad": 0.0
+      },
+      {
+        "seed": 50,
+        "success": true,
+        "fail_reason": null,
+        "placement_mm": [
+          2.4135284524850493
+        ],
+        "ticks": 2413,
+        "max_target_step_rad": 0.002327105669325813,
+        "max_executed_step_rad": 0.002327105669325813,
+        "max_limit_violation_rad": 0.0,
+        "max_roll_error_rad": 0.0
+      },
+      {
+        "seed": 51,
+        "success": true,
+        "fail_reason": null,
+        "placement_mm": [
+          3.913820895104996
+        ],
+        "ticks": 2377,
+        "max_target_step_rad": 0.002327105669325813,
+        "max_executed_step_rad": 0.002327105669325813,
+        "max_limit_violation_rad": 0.0,
+        "max_roll_error_rad": 0.0
+      },
+      {
+        "seed": 52,
+        "success": true,
+        "fail_reason": null,
+        "placement_mm": [
+          1.35381832076201
+        ],
+        "ticks": 2889,
+        "max_target_step_rad": 0.002327105669325813,
+        "max_executed_step_rad": 0.002327105669325813,
+        "max_limit_violation_rad": 0.0,
+        "max_roll_error_rad": 0.0
+      },
+      {
+        "seed": 53,
+        "success": false,
+        "fail_reason": "goal_not_met",
+        "placement_mm": [
+          10.080725745319224
+        ],
+        "ticks": 3780,
+        "max_target_step_rad": 0.002327105669325813,
+        "max_executed_step_rad": 0.002327105669325813,
+        "max_limit_violation_rad": 0.0,
+        "max_roll_error_rad": 0.0
+      },
+      {
+        "seed": 54,
+        "success": true,
+        "fail_reason": null,
+        "placement_mm": [
+          1.576880094321991
+        ],
+        "ticks": 3165,
+        "max_target_step_rad": 0.002327105669325813,
+        "max_executed_step_rad": 0.002327105669325813,
+        "max_limit_violation_rad": 0.0,
+        "max_roll_error_rad": 0.0
+      },
+      {
+        "seed": 55,
+        "success": true,
+        "fail_reason": null,
+        "placement_mm": [
+          5.533895309519792
+        ],
+        "ticks": 2905,
+        "max_target_step_rad": 0.002327105669325813,
+        "max_executed_step_rad": 0.002327105669325813,
+        "max_limit_violation_rad": 0.0,
+        "max_roll_error_rad": 0.0
+      },
+      {
+        "seed": 56,
+        "success": true,
+        "fail_reason": null,
+        "placement_mm": [
+          6.108209432322923
+        ],
+        "ticks": 2505,
+        "max_target_step_rad": 0.002327105669325813,
+        "max_executed_step_rad": 0.002327105669325813,
+        "max_limit_violation_rad": 0.0,
+        "max_roll_error_rad": 0.0
+      },
+      {
+        "seed": 57,
+        "success": true,
+        "fail_reason": null,
+        "placement_mm": [
+          5.031721692438277
+        ],
+        "ticks": 2643,
+        "max_target_step_rad": 0.002327105669325813,
+        "max_executed_step_rad": 0.002327105669325813,
+        "max_limit_violation_rad": 0.0,
+        "max_roll_error_rad": 0.0
+      },
+      {
+        "seed": 58,
+        "success": true,
+        "fail_reason": null,
+        "placement_mm": [
+          1.8157330210389637
+        ],
+        "ticks": 2607,
+        "max_target_step_rad": 0.002327105669325813,
+        "max_executed_step_rad": 0.002327105669325813,
+        "max_limit_violation_rad": 0.0,
+        "max_roll_error_rad": 0.0
+      },
+      {
+        "seed": 59,
+        "success": true,
+        "fail_reason": null,
+        "placement_mm": [
+          1.3875998934546425
+        ],
+        "ticks": 2832,
+        "max_target_step_rad": 0.002327105669325813,
+        "max_executed_step_rad": 0.002327105669325813,
+        "max_limit_violation_rad": 0.0,
+        "max_roll_error_rad": 0.0
+      },
+      {
+        "seed": 60,
+        "success": true,
+        "fail_reason": null,
+        "placement_mm": [
+          1.7110669185065666
+        ],
+        "ticks": 3039,
+        "max_target_step_rad": 0.002327105669325813,
+        "max_executed_step_rad": 0.002327105669325813,
+        "max_limit_violation_rad": 0.0,
+        "max_roll_error_rad": 0.0
+      },
+      {
+        "seed": 61,
+        "success": true,
+        "fail_reason": null,
+        "placement_mm": [
+          2.7222604405738555
+        ],
+        "ticks": 2641,
+        "max_target_step_rad": 0.002327105669325813,
+        "max_executed_step_rad": 0.002327105669325813,
+        "max_limit_violation_rad": 0.0,
+        "max_roll_error_rad": 0.0
+      },
+      {
+        "seed": 62,
+        "success": true,
+        "fail_reason": null,
+        "placement_mm": [
+          3.4181820546891184
+        ],
+        "ticks": 2361,
+        "max_target_step_rad": 0.002327105669325813,
+        "max_executed_step_rad": 0.002327105669325813,
+        "max_limit_violation_rad": 0.0,
+        "max_roll_error_rad": 0.0
+      },
+      {
+        "seed": 63,
+        "success": true,
+        "fail_reason": null,
+        "placement_mm": [
+          2.6140829972535533
+        ],
+        "ticks": 3119,
+        "max_target_step_rad": 0.002327105669325813,
+        "max_executed_step_rad": 0.002327105669325813,
+        "max_limit_violation_rad": 0.0,
+        "max_roll_error_rad": 0.0
+      }
+    ],
+    "task_sha256": "e4335723e937d9e9c142e59af53fbac351f5ce110a5b98fe03e3027170c6db21",
+    "profile_sha256": "89d8b781c143e01dfbdf317ca4309c32469f4865c6ac03c7279c16391d0948aa",
+    "physics_sha256": "8f42f7a072096cbeeb3fb0376286a5cf1c7cde3aa37d74aed2268c5e33cb62d4",
+    "code_sha256": {
+      "bench.py": "5248b75d8fa431d1dbfcb803ad12665b2a8e99f3d4ad523c8b1cbe70cbd96097",
+      "expert.py": "eb45925a140c03a67f00d927695657f7f96df93e1022fdda5922bb9e85451038",
+      "ik.py": "7061e613bc40f109439b8ed4895f0fa04722f231e446abaf4d73043de420dc15",
+      "twin.py": "3c5361af1997e99931a3514b61c7ceef63d86f87f09660188cd9ae11b62d339e"
+    }
+  },
+  "source_profile": {
+    "schema": "r2p_bench_policy/1",
+    "joint_map": "vcal_oct25b",
+    "joint_map_parameters": {
+      "sign": [
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "offset": [
+        -2.18,
+        -11.2,
+        1.66,
+        -18.93,
+        -164.4
+      ],
+      "closed_rad": -0.17,
+      "open_rad": 2.699
+    },
+    "owner_state": {
+      "q": [
+        0.1,
+        -89.9,
+        99.3,
+        -101.3,
+        82.3,
+        3.4
+      ],
+      "rest": [
+        0.1,
+        -89.9,
+        99.0,
+        -101.3,
+        81.9,
+        2.7
+      ],
+      "lo": [
+        -107.8,
+        -90.2,
+        -99.1,
+        -101.8,
+        -179.0,
+        0.0
+      ],
+      "hi": [
+        107.8,
+        90.2,
+        99.1,
+        101.8,
+        179.0,
+        100.0
+      ],
+      "tip": [
+        -0.012,
+        -0.006,
+        0.273
+      ],
+      "min_z": {
+        "link": 0.082,
+        "gripper": 0.173,
+        "finger": 0.183
+      },
+      "joint_map": "vcal_oct25"
+    },
+    "margin_deg": 2,
+    "model_limits": [
+      [
+        -1.884606526303477,
+        1.808510170916524
+      ],
+      [
+        -1.7104226669544358,
+        1.3439035240356336
+      ],
+      [
+        -1.6550934149601133,
+        1.6550934149601133
+      ],
+      [
+        -1.6231562644158062,
+        1.4114477660878144
+      ],
+      [
+        -2.7089407119593627,
+        0.21991148575128544
+      ],
+      [
+        -0.13509341496011343,
+        1.71042261452609
+      ]
+    ],
+    "start_q": [
+      -5e-05,
+      -0.06786,
+      -0.28181,
+      1.3416345960080411,
+      -1.4398966328953218,
+      0.40379999999999994
+    ],
+    "roll_rad": -1.4398966328953218,
+    "gripper_open_rad": 0.40379999999999994,
+    "gripper_close_rad": 0.0021399999999999753,
+    "gripper_open_threshold_rad": 0.20296999999999996,
+    "travel_height_m": 0.05,
+    "joint_step_rad": 0.0023271056693257726,
+    "notes": "Round upright caps only; locked calibrated roll. Requires fresh traces and training; not a policy certification.",
+    "captured_at": "2026-10-25T19:54:01.913482+00:00",
+    "state_url": "http://127.0.0.1:8793/state",
+    "state_read_only": true
+  },
+  "source_profile_sha256": "b8054ebd0f4fb71d0e76a4f63035843666af452e809a641b40a8788918783c5f",
+  "validation": {
+    "pytest_command": ".venv/Scripts/python.exe -m pytest -q tests/sim tests/robot/test_real_policy.py tests/policy/test_bench_export.py -k 'not render_rgb'",
+    "passed": 40,
+    "deselected": 1,
+    "deselected_test": "tests/sim/test_physics.py::test_render_rgb (CPU-only assignment)",
+    "seconds": 83.94,
+    "trace_smoke": [
+      {
+        "path": "out/p3/trace_smoke/expert_place_on_cell_00000000.jsonl",
+        "seed": 0,
+        "success": true,
+        "ticks": 2670,
+        "schema_errors": []
+      },
+      {
+        "path": "out/p3/trace_smoke/expert_place_on_cell_00000001.jsonl",
+        "seed": 1,
+        "success": true,
+        "ticks": 2365,
+        "schema_errors": []
+      }
+    ]
+  }
+}
